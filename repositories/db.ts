@@ -16,9 +16,12 @@ export interface DatabaseSchema {
   continuityPlans: Record<string, any>;
   sessions: any[];
   checkInEvents?: any[];
+  emergencyDeliveries?: any[];
 }
 
-const DB_PATH = path.join(process.cwd(), "db.json");
+const DB_PATH = process.env.DB_PATH
+  ? path.resolve(process.env.DB_PATH)
+  : path.join(process.cwd(), "db.json");
 
 export function loadDb(): DatabaseSchema {
   if (fs.existsSync(DB_PATH)) {
@@ -26,6 +29,9 @@ export function loadDb(): DatabaseSchema {
       const db = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
       if (!db.checkInEvents) {
         db.checkInEvents = [];
+      }
+      if (!db.emergencyDeliveries) {
+        db.emergencyDeliveries = [];
       }
       return db;
     } catch (e) {
@@ -46,7 +52,8 @@ export function loadDb(): DatabaseSchema {
     checkInSettings: {},
     continuityPlans: {},
     sessions: [],
-    checkInEvents: []
+    checkInEvents: [],
+    emergencyDeliveries: []
   };
 }
 

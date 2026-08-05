@@ -16,8 +16,27 @@ import {
   checkInService,
   monitoringService,
   notificationService,
-  settingsService
+  settingsService,
+  sendEmergencyEmails,
+  startGraceMonitor
 } from "./services";
+import {
+  deliveryRepository,
+  userRepository,
+  settingsRepository,
+  emailRepository,
+  documentRepository,
+  alertRepository
+} from "./repositories";
+
+// Shared repository bundle for the emergency mail pipeline (report + delivery).
+const emergencyRepos = {
+  users: userRepository,
+  settings: settingsRepository,
+  emails: emailRepository,
+  docs: documentRepository,
+  alerts: alertRepository
+};
 
 dotenv.config();
 
@@ -1616,6 +1635,13 @@ ${insuranceClaimChecklist.length > 0 ? insuranceClaimChecklist.map((i: any) => `
     plan.aiSummary = aiSummary;
     await settingsService.savePlaybook(uid, plan);
 
+    // Emergency scheduled mail: fire the Life Continuity Report to all trusted
+    // contacts (non-blocking; delivery + retries happen in the background and
+    // are audited in db.emergencyDeliveries).
+    sendEmergencyEmails(uid, "manual", emergencyRepos, deliveryRepository, ai)
+      .then((r: any) => console.log(`[EMERGENCY MAIL] manual trigger ${uid}: ${r.sent}/${r.delivery?.contactCount ?? 0} sent, report ${r.reportId}`))
+      .catch((e: any) => console.error("[EMERGENCY MAIL] manual trigger failed:", e.message || e));
+
     res.json({ success: true, plan });
   } catch (err: any) {
     console.error("Emergency activation failed", err);
@@ -2202,6 +2228,10 @@ async function startServer() {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
+
+  // Emergency scheduled mail: backend grace-period monitor. Runs continuously,
+  // survives restarts (state re-read from db each tick), and is idempotent.
+  startGraceMonitor(emergencyRepos, deliveryRepository, getAI());
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);

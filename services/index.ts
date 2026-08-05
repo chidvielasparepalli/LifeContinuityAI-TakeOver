@@ -32,3 +32,4 @@ export * from "./checkin.service";
 export * from "./monitoring.service";
 export * from "./notification.service";
 export * from "./settings.service";
+export * from "./emergency.service";
