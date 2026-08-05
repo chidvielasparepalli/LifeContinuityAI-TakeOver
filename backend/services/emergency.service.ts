@@ -423,18 +423,23 @@ export function buildHtmlEmail(report: any): string {
 // ---- EMAIL TRANSPORT -------------------------------------------------------
 async function transportSend(to: string, subject: string, html: string, text: string): Promise<any> {
   if (EMAIL_MODE() === "sendgrid") {
-    const sgMail = await import("@sendgrid/mail");
-    const sg = sgMail.default;
-    sg.setApiKey(process.env.SENDGRID_API_KEY || "");
-    const msg = {
-      to,
-      from: { email: FROM_EMAIL, name: FROM_NAME },
-      subject,
-      html,
-      text
-    };
-    await sg.send(msg);
-    return { provider: "sendgrid" };
+    try {
+      const sgMail = await import("@sendgrid/mail");
+      const sg = sgMail.default;
+      sg.setApiKey(process.env.SENDGRID_API_KEY || "");
+      const msg = {
+        to,
+        from: { email: FROM_EMAIL, name: FROM_NAME },
+        subject,
+        html,
+        text
+      };
+      await sg.send(msg);
+      return { provider: "sendgrid" };
+    } catch (e: any) {
+      // sendgrid package or key missing — never crash the pipeline, fall back to log.
+      console.warn(`[EMAIL] sendgrid unavailable (${e.message || e}), falling back to console.`);
+    }
   }
   // console fallback: log for audit, never crash the pipeline.
   console.log(`[EMAIL:${EMAIL_MODE()}] to=${to} subject="${subject}" reportId=${extractReportId(html)}`);

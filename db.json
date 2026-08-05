@@ -101,6 +101,146 @@
   },
   "securityAlerts": [
     {
+      "id": "alert-5ql7k5s1f",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "timestamp": "2026-08-05T07:12:21.380Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-rxt8da6c0). No duplicate sent."
+    },
+    {
+      "id": "alert-745jm07if",
+      "uid": "user_3Gd6gh3imANxBppCOVcfM9XpTVP",
+      "timestamp": "2026-08-05T07:12:21.375Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-pv6vb3cc3). No duplicate sent."
+    },
+    {
+      "id": "alert-y9u3hx873",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-05T07:12:21.370Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-kumflmdm8). No duplicate sent."
+    },
+    {
+      "id": "alert-5xpbr8dh5",
+      "uid": "user_3Gcona6Lmnf2lyPcQszgGcAOErX",
+      "timestamp": "2026-08-05T07:12:21.365Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-tg4uvsopy). No duplicate sent."
+    },
+    {
+      "id": "alert-1lkd61h5f",
+      "uid": "sandbox-demo",
+      "timestamp": "2026-08-05T07:12:21.360Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-4gw53gpyt). No duplicate sent."
+    },
+    {
+      "id": "alert-my0za0va4",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "timestamp": "2026-08-05T06:59:48.832Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-rxt8da6c0). No duplicate sent."
+    },
+    {
+      "id": "alert-k15kb8fno",
+      "uid": "user_3Gd6gh3imANxBppCOVcfM9XpTVP",
+      "timestamp": "2026-08-05T06:59:48.825Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-pv6vb3cc3). No duplicate sent."
+    },
+    {
+      "id": "alert-f72lwndfd",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-05T06:59:48.819Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-kumflmdm8). No duplicate sent."
+    },
+    {
+      "id": "alert-0le2x9c68",
+      "uid": "user_3Gcona6Lmnf2lyPcQszgGcAOErX",
+      "timestamp": "2026-08-05T06:59:48.813Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-tg4uvsopy). No duplicate sent."
+    },
+    {
+      "id": "alert-9she4720v",
+      "uid": "sandbox-demo",
+      "timestamp": "2026-08-05T06:59:48.807Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-4gw53gpyt). No duplicate sent."
+    },
+    {
+      "id": "alert-66blc691o",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "timestamp": "2026-08-05T06:57:35.677Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-rxt8da6c0). No duplicate sent."
+    },
+    {
+      "id": "alert-t5y30kbtn",
+      "uid": "user_3Gd6gh3imANxBppCOVcfM9XpTVP",
+      "timestamp": "2026-08-05T06:57:35.672Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-pv6vb3cc3). No duplicate sent."
+    },
+    {
+      "id": "alert-7grp69prv",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-05T06:57:35.667Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-kumflmdm8). No duplicate sent."
+    },
+    {
+      "id": "alert-mbsqifr7o",
+      "uid": "user_3Gcona6Lmnf2lyPcQszgGcAOErX",
+      "timestamp": "2026-08-05T06:57:35.661Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-tg4uvsopy). No duplicate sent."
+    },
+    {
+      "id": "alert-51evpnf2k",
+      "uid": "sandbox-demo",
+      "timestamp": "2026-08-05T06:57:35.656Z",
+      "event": "Duplicate Emergency Email Attempt Blocked",
+      "details": "missed-checkin already processed (ed-4gw53gpyt). No duplicate sent."
+    },
+    {
+      "id": "alert-x6z5gccgv",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "timestamp": "2026-08-05T06:56:12.412Z",
+      "event": "Emergency Email — No Contacts",
+      "details": "Trigger missed-checkin fired but profile has no trusted contacts with email addresses."
+    },
+    {
+      "id": "alert-s9aw1bu0e",
+      "uid": "user_3Gd6gh3imANxBppCOVcfM9XpTVP",
+      "timestamp": "2026-08-05T06:56:12.391Z",
+      "event": "Emergency Email — No Contacts",
+      "details": "Trigger missed-checkin fired but profile has no trusted contacts with email addresses."
+    },
+    {
+      "id": "alert-2hbsq951e",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-05T06:56:12.369Z",
+      "event": "Emergency Email — No Contacts",
+      "details": "Trigger missed-checkin fired but profile has no trusted contacts with email addresses."
+    },
+    {
+      "id": "alert-6gvzachwv",
+      "uid": "user_3Gcona6Lmnf2lyPcQszgGcAOErX",
+      "timestamp": "2026-08-05T06:56:12.350Z",
+      "event": "Emergency Email — No Contacts",
+      "details": "Trigger missed-checkin fired but profile has no trusted contacts with email addresses."
+    },
+    {
+      "id": "alert-8g13rl2u9",
+      "uid": "sandbox-demo",
+      "timestamp": "2026-08-05T06:56:12.329Z",
+      "event": "Emergency Email — No Contacts",
+      "details": "Trigger missed-checkin fired but profile has no trusted contacts with email addresses."
+    },
+    {
       "id": "alert-f3qwxkwaa",
       "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
       "timestamp": "2026-07-18T04:56:27.657Z",
@@ -2654,6 +2794,123 @@
       "method": "login",
       "methodLabel": "App Login",
       "status": "Success"
+    }
+  ],
+  "emergencyDeliveries": [
+    {
+      "id": "ed-4gw53gpyt",
+      "uid": "sandbox-demo",
+      "trigger": "missed-checkin",
+      "reportId": "lcr-msfqh0rj-w46gli",
+      "processed": true,
+      "createdAt": "2026-08-05T06:56:12.321Z",
+      "processedAt": "2026-08-05T06:56:12.323Z",
+      "contactRecords": [],
+      "logs": [
+        {
+          "level": "info",
+          "message": "Emergency email triggered (missed-checkin) for sandbox-demo → 0 contact(s). Report lcr-msfqh0rj-w46gli.",
+          "timestamp": "2026-08-05T06:56:12.326Z"
+        },
+        {
+          "level": "info",
+          "message": "No trusted contacts with email configured for sandbox-demo. Nothing to send.",
+          "timestamp": "2026-08-05T06:56:12.328Z"
+        }
+      ],
+      "contactCount": 0
+    },
+    {
+      "id": "ed-tg4uvsopy",
+      "uid": "user_3Gcona6Lmnf2lyPcQszgGcAOErX",
+      "trigger": "missed-checkin",
+      "reportId": "lcr-msfqh0s6-nukx4c",
+      "processed": true,
+      "createdAt": "2026-08-05T06:56:12.343Z",
+      "processedAt": "2026-08-05T06:56:12.344Z",
+      "contactRecords": [],
+      "logs": [
+        {
+          "level": "info",
+          "message": "Emergency email triggered (missed-checkin) for user_3Gcona6Lmnf2lyPcQszgGcAOErX → 0 contact(s). Report lcr-msfqh0s6-nukx4c.",
+          "timestamp": "2026-08-05T06:56:12.347Z"
+        },
+        {
+          "level": "info",
+          "message": "No trusted contacts with email configured for user_3Gcona6Lmnf2lyPcQszgGcAOErX. Nothing to send.",
+          "timestamp": "2026-08-05T06:56:12.349Z"
+        }
+      ],
+      "contactCount": 0
+    },
+    {
+      "id": "ed-kumflmdm8",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "trigger": "missed-checkin",
+      "reportId": "lcr-msfqh0sq-axzb16",
+      "processed": true,
+      "createdAt": "2026-08-05T06:56:12.362Z",
+      "processedAt": "2026-08-05T06:56:12.364Z",
+      "contactRecords": [],
+      "logs": [
+        {
+          "level": "info",
+          "message": "Emergency email triggered (missed-checkin) for user_3GcqPLi4XNH5hXNkQF479COiUhX → 0 contact(s). Report lcr-msfqh0sq-axzb16.",
+          "timestamp": "2026-08-05T06:56:12.367Z"
+        },
+        {
+          "level": "info",
+          "message": "No trusted contacts with email configured for user_3GcqPLi4XNH5hXNkQF479COiUhX. Nothing to send.",
+          "timestamp": "2026-08-05T06:56:12.368Z"
+        }
+      ],
+      "contactCount": 0
+    },
+    {
+      "id": "ed-pv6vb3cc3",
+      "uid": "user_3Gd6gh3imANxBppCOVcfM9XpTVP",
+      "trigger": "missed-checkin",
+      "reportId": "lcr-msfqh0t7-f08v2v",
+      "processed": true,
+      "createdAt": "2026-08-05T06:56:12.380Z",
+      "processedAt": "2026-08-05T06:56:12.382Z",
+      "contactRecords": [],
+      "logs": [
+        {
+          "level": "info",
+          "message": "Emergency email triggered (missed-checkin) for user_3Gd6gh3imANxBppCOVcfM9XpTVP → 0 contact(s). Report lcr-msfqh0t7-f08v2v.",
+          "timestamp": "2026-08-05T06:56:12.388Z"
+        },
+        {
+          "level": "info",
+          "message": "No trusted contacts with email configured for user_3Gd6gh3imANxBppCOVcfM9XpTVP. Nothing to send.",
+          "timestamp": "2026-08-05T06:56:12.390Z"
+        }
+      ],
+      "contactCount": 0
+    },
+    {
+      "id": "ed-rxt8da6c0",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "trigger": "missed-checkin",
+      "reportId": "lcr-msfqh0tu-pugf8b",
+      "processed": true,
+      "createdAt": "2026-08-05T06:56:12.403Z",
+      "processedAt": "2026-08-05T06:56:12.404Z",
+      "contactRecords": [],
+      "logs": [
+        {
+          "level": "info",
+          "message": "Emergency email triggered (missed-checkin) for user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL → 0 contact(s). Report lcr-msfqh0tu-pugf8b.",
+          "timestamp": "2026-08-05T06:56:12.409Z"
+        },
+        {
+          "level": "info",
+          "message": "No trusted contacts with email configured for user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL. Nothing to send.",
+          "timestamp": "2026-08-05T06:56:12.411Z"
+        }
+      ],
+      "contactCount": 0
     }
   ]
 }

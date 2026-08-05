@@ -13,9 +13,9 @@ process.env.DB_PATH = tmpDb;
 process.env.EMAIL_MODE = "console";
 
 const { userRepository, settingsRepository, emailRepository, documentRepository, alertRepository, deliveryRepository } =
-  await import("../repositories/index.ts");
+  await import("../backend/repositories/index.ts");
 const { buildLifeContinuityReport, buildHtmlEmail, sendEmergencyEmails } =
-  await import("../services/emergency.service.ts");
+  await import("../backend/services/emergency.service.ts");
 
 const repos = {
   users: userRepository,

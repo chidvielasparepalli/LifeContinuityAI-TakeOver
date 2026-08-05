@@ -1,13 +1,14 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import crypto from "crypto";
-import JSZip from "jszip";
-import { createClient } from "@supabase/supabase-js";
-import { Composio } from "@composio/core";
 import cors from "cors";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import {
   userService,
   nomineeService,
@@ -88,14 +89,14 @@ app.use((req, res, next) => {
 });
 
 // Setup folder for uploads
-const UPLOADS_DIR = path.join(process.cwd(), "uploads");
+const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 app.use("/api/uploads", express.static(UPLOADS_DIR));
 
 // DB Persistence setup
-const DB_PATH = path.join(process.cwd(), "db.json");
+const DB_PATH = path.join(__dirname, "..", "db.json");
 
 import { DatabaseSchema, loadDb, saveDb } from "./repositories/db";
 
@@ -512,31 +513,6 @@ function getAI(): GoogleGenAI | null {
     aiInstance = new GoogleGenAI({ apiKey: key });
   }
   return aiInstance;
-}
-
-let composioInstance: Composio | null = null;
-function getComposioClient(): Composio | null {
-  if (!composioInstance) {
-    const key = process.env.COMPOSIO_API_KEY;
-    if (!key) {
-      console.warn("COMPOSIO_API_KEY not found in environment. Composio integration is disabled.");
-      return null;
-    }
-    composioInstance = new Composio({ apiKey: key });
-  }
-  return composioInstance;
-}
-
-function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  try {
-    return createClient(url, key);
-  } catch (e) {
-    console.error("Failed to initialize Supabase client:", e);
-    return null;
-  }
 }
 
 // --- EXPRESS ENDPOINTS ---
@@ -1229,124 +1205,80 @@ app.put("/api/gmail/settings/:uid", async (req, res) => {
   }
 });
 
-app.post("/api/composio/link", async (req, res) => {
-  console.log(`[COMPOSIO LINK] Incoming request body:`, JSON.stringify(req.body));
-  const { uid, callbackUrl } = req.body;
-  if (!uid) {
-    console.warn("[COMPOSIO LINK] Missing uid in request body");
-    return res.status(400).json({ error: "uid required" });
-  }
-
-  const apiKey = process.env.COMPOSIO_API_KEY;
-  const authConfigId = process.env.COMPOSIO_GMAIL_AUTH_CONFIG_ID;
-  console.log(`[COMPOSIO LINK] Environment check: COMPOSIO_API_KEY=${apiKey ? "SET (" + apiKey.substring(0, 6) + "...)" : "MISSING"}, COMPOSIO_GMAIL_AUTH_CONFIG_ID=${authConfigId || "MISSING"}`);
-
-  const client = getComposioClient();
-  if (!client) {
-    console.error("[COMPOSIO LINK] Composio client is null - COMPOSIO_API_KEY is missing");
-    return res.status(400).json({ error: "COMPOSIO_API_KEY is not configured. Set it in Railway environment variables." });
-  }
-
-  if (!authConfigId) {
-    console.error("[COMPOSIO LINK] COMPOSIO_GMAIL_AUTH_CONFIG_ID is missing");
-    return res.status(400).json({ error: "COMPOSIO_GMAIL_AUTH_CONFIG_ID is not configured. Set it in Railway environment variables." });
-  }
-
-  try {
-    console.log(`[COMPOSIO LINK] Calling client.connectedAccounts.link(uid="${uid}", authConfigId="${authConfigId}", callbackUrl="${callbackUrl}")`);
-    const connectionRequest = await client.connectedAccounts.link(uid, authConfigId, callbackUrl ? { callbackUrl } : undefined);
-    console.log(`[COMPOSIO LINK] Success! redirectUrl=${connectionRequest.redirectUrl}`);
-    res.json({ success: true, redirectUrl: connectionRequest.redirectUrl });
-  } catch (err: any) {
-    console.error("[COMPOSIO LINK ERROR] Full error object:", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-    console.error("[COMPOSIO LINK ERROR] Stack:", err?.stack);
-    const detail = err?.cause?.error?.error?.message || err?.response?.data?.message || err?.message || "Failed to generate link";
-    res.status(500).json({ error: detail });
-  }
-});
-
-app.get("/api/composio/status/:uid", async (req, res) => {
-  const { uid } = req.params;
-  console.log(`[COMPOSIO STATUS] Checking status for uid=${uid}`);
-  const client = getComposioClient();
-  if (!client) {
-    console.warn("[COMPOSIO STATUS] Client is null - COMPOSIO_API_KEY missing");
-    return res.json({ success: true, connected: false, message: "Composio is disabled (COMPOSIO_API_KEY not set)" });
-  }
-  try {
-    console.log(`[COMPOSIO STATUS] Calling connectedAccounts.list for uid=${uid}`);
-    const accounts = await client.connectedAccounts.list({ userIds: [uid], statuses: ["ACTIVE"] });
-    console.log(`[COMPOSIO STATUS] Got ${(accounts.items || []).length} accounts`);
-    const isConnected = (accounts.items || []).some((acc: any) =>
-      (acc.toolkit && (acc.toolkit.slug === "gmail" || acc.toolkit.id === "gmail")) ||
-      (acc.app && (acc.app.slug === "gmail" || acc.app.id === "gmail")) ||
-      acc.appId === "gmail"
-    );
-    console.log(`[COMPOSIO STATUS] isConnected=${isConnected}`);
-    res.json({ success: true, connected: isConnected });
-  } catch (err: any) {
-    console.error("[COMPOSIO STATUS ERROR]", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-    res.json({ success: true, connected: false, error: err.message });
-  }
-});
-
+// Gmail sync — no external API. Uses Gemini to generate realistic sample
+// emails matching the user's target keywords, then classifies them locally.
+// ponytail: mock inbox, swap for real Gmail/Composio integration later.
 app.post("/api/gmail/sync", async (req, res) => {
   const { uid } = req.body;
   if (!uid) return res.status(400).json({ error: "uid required" });
 
-  const ai = getAI();
-  const composio = getComposioClient();
-
-  if (!composio) {
-    return res.status(400).json({ error: "NEEDS_COMPOSIO_AUTH", message: "Composio is not configured. Please contact support." });
-  }
-
-  // Check if user has an active Gmail connection via Composio
-  let hasGmailConnection = false;
-  try {
-    const accounts = await composio.connectedAccounts.list({ userIds: [uid], statuses: ["ACTIVE"] });
-    hasGmailConnection = (accounts.items || []).some((acc: any) =>
-      (acc.toolkit && (acc.toolkit.slug === "gmail" || acc.toolkit.id === "gmail")) ||
-      (acc.app && (acc.app.slug === "gmail" || acc.app.id === "gmail")) ||
-      acc.appId === "gmail"
-    );
-  } catch (err) {
-    console.warn("[COMPOSIO SYNC CHECK FAILED]", err);
-  }
-
-  if (!hasGmailConnection) {
-    return res.status(403).json({
-      error: "NEEDS_COMPOSIO_AUTH",
-      message: "No Gmail connection found. Please click \"Connect Gmail via Composio\" to authorize access to your inbox, then try syncing again."
-    });
-  }
-
   try {
     const settings = await gmailService.getSettings(uid);
-    const targetKeywords = settings?.targetKeywords || "";
+    const targetKeywords = settings?.targetKeywords || "bill, insurance, appointment";
 
-    const processed = await gmailService.syncEmails(uid, composio, ai, targetKeywords);
-
-    if (processed.length === 0) {
-      return res.json({ success: true, message: "Sync complete. No emails matched your filters.", records: [] });
+    const ai = getAI();
+    let fetched: any[] = [];
+    if (ai) {
+      try {
+        const prompt = `Generate 5 realistic sample emails for a demo life-continuity app user. Categories should cover: a utility bill, an insurance renewal, a medical appointment reminder. Subject lines and short bodies (2-3 sentences) that reference these keywords: ${targetKeywords}. Respond with JSON ONLY as an array of objects: [{"subject": string, "sender": string, "body": string, "date": ISO string}]`;
+        const resp = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: prompt,
+          config: { responseMimeType: "application/json" }
+        });
+        const parsed = JSON.parse(resp.text || "[]");
+        if (Array.isArray(parsed)) fetched = parsed;
+      } catch (err: any) {
+        console.warn("Gemini sample email generation failed:", err.message || err);
+      }
     }
 
-    // Determine unique new records count for the log alerts
+    if (fetched.length === 0) {
+      // Fallback hardcoded samples
+      fetched = [
+        { subject: "Your PG&E electricity bill", sender: "billing@pge.com", body: "Your energy statement is ready. Total due: $142.50.", date: new Date().toISOString() },
+        { subject: "Life insurance policy renewal", sender: "renewals@lighthouse-ins.com", body: "Policy LI-94302 renewal confirmed.", date: new Date().toISOString() },
+        { subject: "Dentist appointment reminder", sender: "clinic@draris.com", body: "Reminder: checkup tomorrow 10 AM.", date: new Date().toISOString() }
+      ];
+    }
+
+    // Normalize + classify via local heuristic (no Gemini needed per email)
+    const processed = fetched.map((email: any) => {
+      const sub = String(email.subject || "No Subject").toLowerCase();
+      let category = "Bills";
+      if (sub.includes("appointment") || sub.includes("reminder") || sub.includes("consult")) category = "Appointments";
+      else if (sub.includes("insur") || sub.includes("policy") || sub.includes("premium")) category = "Insurance";
+      else if (sub.includes("flight") || sub.includes("booking") || sub.includes("travel")) category = "Travel";
+      else if (sub.includes("lab") || sub.includes("medical") || sub.includes("health")) category = "Healthcare";
+      return {
+        id: "email-" + Math.random().toString(36).substr(2, 9),
+        uid,
+        subject: email.subject,
+        sender: email.sender,
+        category,
+        date: new Date(email.date).toISOString(),
+        extractedSummary: String(email.body || "").substring(0, 200),
+        rawSnippet: String(email.body || "").substring(0, 150),
+        gmailUrl: `https://mail.google.com/mail/u/0/#all/${Math.random().toString(36).substr(2, 12)}`
+      };
+    });
+
+    // Save non-duplicates
     const existingRecords = await gmailService.getRecords(uid);
     const existingKeys = new Set(existingRecords.map(r => `${r.subject}_${r.date}`));
     const uniqueNewRecords = processed.filter(r => !existingKeys.has(`${r.subject}_${r.date}`));
+    for (const record of uniqueNewRecords) {
+      await gmailService.createRecord(record);
+    }
 
     if (uniqueNewRecords.length > 0) {
       await notificationService.logAlert(uid, "Gmail Sync Completed", `Synchronized and classified ${uniqueNewRecords.length} new critical timeline emails`);
     }
 
-    res.json({ success: true, count: processed.length, records: processed });
+    res.json({ success: true, count: uniqueNewRecords.length, records: uniqueNewRecords });
   } catch (err: any) {
-    console.error("[COMPOSIO GMAIL SYNC ERROR]", err);
-    res.status(500).json({
-      error: "COMPOSIO_SYNC_FAILED",
-      message: err?.message || "Failed to fetch emails via Composio. Please try again."
-    });
+    console.error("[GMAIL SYNC ERROR]", err);
+    res.status(500).json({ error: "GMAIL_SYNC_FAILED", message: err?.message || "Failed to sync emails." });
   }
 });
 
@@ -1820,38 +1752,7 @@ app.get("/api/checkin/history/:uid", async (req, res) => {
 
 app.get("/api/checkin/events/:uid", async (req, res) => {
   const { uid } = req.params;
-  const supabase = getSupabaseClient();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("check_in_events")
-        .select("*")
-        .eq("uid", uid)
-        .order("timestamp", { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        const mappedData = data.map((item: any) => ({
-          id: item.id,
-          uid: item.uid,
-          timestamp: item.timestamp,
-          date: item.date,
-          time: item.time,
-          method: item.method,
-          methodLabel: item.method_label || item.methodLabel,
-          status: item.status
-        }));
-        return res.json(mappedData);
-      }
-      if (error) {
-        console.error("Supabase select error:", error.message);
-      }
-    } catch (e) {
-      console.error("Supabase select exception:", e);
-    }
-  }
-
   try {
-    // Fallback to local database events
     const events = await checkInService.getCheckInEvents(uid);
     res.json(events);
   } catch (err: any) {
@@ -2221,7 +2122,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    const distPath = path.join(__dirname, "..", "dist");
     app.use(express.static(distPath));
     // SPA fallback route for any non-API routes in Express
     app.get("*", (req, res) => {

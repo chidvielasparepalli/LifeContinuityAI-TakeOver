@@ -1,42 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import { ISettingsRepository } from "../repositories/SettingsRepository";
 import { IAlertRepository } from "../repositories/AlertRepository";
-
-function getSupabaseClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  try {
-    return createClient(url, key);
-  } catch (e) {
-    console.error("Failed to initialize Supabase client in CheckInService:", e);
-    return null;
-  }
-}
-
-async function saveEventToSupabase(event: any) {
-  const supabase = getSupabaseClient();
-  if (!supabase) return;
-  try {
-    const { error } = await supabase.from("check_in_events").insert([
-      {
-        id: event.id,
-        uid: event.uid,
-        timestamp: event.timestamp,
-        date: event.date,
-        time: event.time,
-        method: event.method,
-        method_label: event.methodLabel,
-        status: event.status
-      }
-    ]);
-    if (error) {
-      console.error("Supabase insert error:", error.message);
-    }
-  } catch (e) {
-    console.error("Failed to insert event into Supabase:", e);
-  }
-}
 
 export class CheckInService {
   constructor(
@@ -94,11 +57,6 @@ export class CheckInService {
     };
 
     await this.settingsRepository.addCheckInEvent(event);
-
-    // Async sync to Supabase
-    saveEventToSupabase(event).catch(err => {
-      console.error("Supabase async storage sync failed:", err);
-    });
 
     return event;
   }
