@@ -64,7 +64,7 @@ PORT=3000
 GEMINI_API_KEY=your_gemini_api_key
 COMPOSIO_API_KEY=your_composio_api_key
 COMPOSIO_GMAIL_AUTH_CONFIG_ID=your_gmail_auth_config_id
-VITE_API_BASE_URL=https://your-production-backend.up.railway.app
+VITE_API_BASE_URL=https://lifecontinuityai-takeover.onrender.com
 ```
 
 ### 2. Install and Run
@@ -81,10 +81,10 @@ Open `http://localhost:3000` in your web browser.
 
 ## 🌐 Production Deployment
 
-### Backend (Railway)
-This project is configured with a node packaging server ready for Railway deployment.
-1. Run `railway login` and `railway link` inside the project folder.
-2. Deploy code using `railway up`.
+### Backend (render)
+This project is configured with a node packaging server ready for render deployment.
+1. Run `render login` and `render link` inside the project folder.
+2. Deploy code using `render up`.
 3. Set your production environment variables (CORS automatically adapts to reflect request origins).
 
 ### Frontend (Vercel)

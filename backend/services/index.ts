@@ -14,6 +14,7 @@ import { CheckInService } from "./checkin.service";
 import { MonitoringService } from "./monitoring.service";
 import { NotificationService } from "./notification.service";
 import { SettingsService } from "./settings.service";
+import { composioService } from "./composio.service";
 
 export const userService = new UserService(userRepository);
 export const nomineeService = new NomineeService(nomineeRepository);
@@ -33,3 +34,4 @@ export * from "./monitoring.service";
 export * from "./notification.service";
 export * from "./settings.service";
 export * from "./emergency.service";
+export * from "./composio.service";

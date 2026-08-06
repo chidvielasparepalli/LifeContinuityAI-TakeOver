@@ -20,7 +20,8 @@ import {
   sendNomineeAlertEmail,
   sendConfirmationEmailToUser,
   startGraceMonitor,
-  settingsService
+  settingsService,
+  composioService
 } from "./services";
 import {
   deliveryRepository,
@@ -82,6 +83,17 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: "50mb" }));
+
+// Express error handler — always return JSON for API routes, never HTML.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: any, req: any, res: any, next: any) => {
+  const isApi = (req.path || "").startsWith("/api/");
+  if (isApi) {
+    console.error(`[API ERROR] ${req.method} ${req.path}:`, err?.message || err);
+    return res.status(err?.status || 500).json({ success: false, error: err?.message || "Internal server error" });
+  }
+  return next(err);
+});
 
 // Middleware log after JSON parser
 app.use((req, res, next) => {
@@ -1245,6 +1257,33 @@ app.put("/api/documents/:id/extraction", async (req, res) => {
   }
 });
 
+// Tab 4: Composio Connect (Gmail via Composio-managed OAuth)
+app.post("/api/composio/link", async (req, res) => {
+  const { uid, callbackUrl } = req.body || {};
+  try {
+    if (!uid) return res.status(400).json({ success: false, error: "uid required" });
+    const result = await composioService.generateLink({
+      userId: uid,
+      alias: `gmail-${uid}`,
+      callbackUrl
+    });
+    res.json({ success: true, redirectUrl: result.redirectUrl, connectionId: result.connectionId });
+  } catch (e: any) {
+    console.error("[COMPOSIO] link failed:", e?.message || e);
+    res.status(500).json({ success: false, error: e?.message || "Failed to generate Composio authorization link" });
+  }
+});
+
+app.get("/api/composio/status/:uid", async (req, res) => {
+  try {
+    const status = await composioService.getStatus(req.params.uid);
+    res.json({ success: true, ...status });
+  } catch (e: any) {
+    console.error("[COMPOSIO] status failed:", e?.message || e);
+    res.status(500).json({ success: false, error: e?.message || "Failed to check Composio status" });
+  }
+});
+
 // Tab 4: Gmail Sync settings & execution
 app.get("/api/gmail/settings/:uid", async (req, res) => {
   try {
@@ -2175,8 +2214,32 @@ Please answer the user's question, which is spoken in the audio file. Be concise
   }
 });
 
+// Convert an Express route path (/api/users/:id) to a RegExp for matching.
+function pToRegex(p: string): RegExp {
+  const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp("^" + escaped.replace(/\\:[A-Za-z]+/g, "[^/]+") + "/?$");
+}
+
 // Vite frontend serving & routing setup
 async function startServer() {
+  // Unknown API routes → JSON 404 in every mode (Vite's SPA fallback would
+  // otherwise serve index.html as `<!DOCTYPE html>`, which frontends can't parse).
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      const method = (req.method || "GET").toLowerCase();
+      const stack = (app as any)._router?.stack || [];
+      const handled = stack
+        .filter((layer: any) => layer.route)
+        .some((layer: any) => {
+          const route = layer.route;
+          const pathMatch = req.path.match(pToRegex(String(route.path)));
+          return pathMatch && (route.methods[method] || route.methods["all"]);
+        });
+      if (!handled) return res.status(404).json({ success: false, error: "Not found" });
+    }
+    next();
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
@@ -2187,7 +2250,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    // SPA fallback route for any non-API routes in Express
+    // SPA fallback route for any non-API routes in Express (API 404 handled above)
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });

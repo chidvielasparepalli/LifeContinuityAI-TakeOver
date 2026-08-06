@@ -809,7 +809,7 @@ export async function sendEmergencyEmails(
 //   any state + user activity -> Safe (handled in userService.recordActivity)
 // One confirmation email + one nominee alert per inactive period: the first
 // fires when the state flips (no re-sending while already in the state).
-// ponytail: single-instance assumption — Railway runs one web process. On
+// ponytail: single-instance assumption — render runs one web process. On
 // multi-replica deploys two instances may both fire; the per-uid processed flag
 // in the shared JSON file serializes the sends (second sees processed and skips).
 export function startGraceMonitor(
