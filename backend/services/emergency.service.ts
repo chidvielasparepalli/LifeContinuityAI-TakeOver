@@ -4,9 +4,10 @@ import { ISettingsRepository } from "../repositories/SettingsRepository";
 import { IEmailRepository } from "../repositories/EmailRepository";
 import { IDocumentRepository } from "../repositories/DocumentRepository";
 import { IAlertRepository } from "../repositories/AlertRepository";
+import { EmergencyProfile } from "../repositories/db";
 
 // Environment-driven mail transport. "console" = dev/log fallback (default).
-// Production: set SENDGRID_API_KEY + EMAIL_MODE=sendgrid.
+// Production: set RESEND_API_KEY + EMAIL_MODE=resend (no SDK — native fetch).
 // Read at call time so tests can switch modes; config is static in prod.
 const EMAIL_MODE = () => (process.env.EMAIL_MODE || "console").toLowerCase();
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "no-reply@life-continuity-ai.app";
@@ -16,7 +17,10 @@ const MAX_ATTEMPTS = Number(process.env.EMERGENCY_EMAIL_MAX_ATTEMPTS || 3);
 // Overridable via env for tests; production defaults are 30s/2m/10m backoff.
 const RETRY_BACKOFF_MS = (process.env.EMERGENCY_RETRY_DELAY_MS || "30000,120000,600000").split(",").map(Number);
 
-export type EmergencyTrigger = "manual" | "missed-checkin";
+// This will be used to construct the URL for the "I'm Safe" button in the email.
+const APP_BASE_URL = process.env.APP_BASE_URL || "http://localhost:3000";
+
+export type EmergencyTrigger = "manual" | "missed-checkin" | "confirmation-needed" | "nominee-notified";
 
 interface Contact { name?: string; relation?: string; email?: string; phone?: string; }
 
@@ -54,6 +58,173 @@ function daysUntil(dateStr: string | undefined | null): number | null {
   if (isNaN(d.getTime())) return null;
   return Math.ceil((d.getTime() - Date.now()) / 86_400_000);
 }
+
+// ---- CONFIRMATION EMAIL TO USER ------------------------------------------------
+export async function sendConfirmationEmailToUser(
+  uid: string,
+  userEmail: string,
+  userName: string,
+  deliveryRepo: IDeliveryRepository,
+  alertRepo: IAlertRepository
+): Promise<any> {
+  const subject = `LifeContinuity Check-In Required`;
+  const confirmationLink = `${APP_BASE_URL}/api/safety/confirm/${uid}`; // This endpoint will be created later
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f6f8fb;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1c2b45">
+  <div style="max-width:640px;margin:0 auto;padding:24px 16px">
+    <div style="background:#1c2b45;border-radius:10px 10px 0 0;padding:20px 24px">
+      <h1 style="color:#ffffff;margin:0;font-size:20px;line-height:1.3">LifeContinuity Check-In Required</h1>
+    </div>
+    <div style="background:#ffffff;border-radius:0 0 10px 10px;padding:24px;box-shadow:0 1px 3px rgba(16,24,40,.1)">
+      <p>Hi ${escapeHtml(userName)},</p>
+      <p>We noticed that your inactivity period has exceeded the limit you configured.</p>
+      <p>If you are safe, please click the button below within the next 12 hours.</p>
+      <p style="text-align:center;margin:20px 0;">
+        <a href="${confirmationLink}" style="display:inline-block;padding:12px 24px;background-color:#4CAF50;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:bold;">I'm Safe</a>
+      </p>
+      <p>If no confirmation is received, your emergency nominee will be notified according to your emergency plan.</p>
+      <p style="font-size:11px;color:#8a93a6;margin-top:16px">This is an automated message. Please do not reply.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const text = `Hi ${userName},
+We noticed that your inactivity period has exceeded the limit you configured.
+If you are safe, please click this link within the next 12 hours: ${confirmationLink}
+If no confirmation is received, your emergency nominee will be notified according to your emergency plan.`;
+
+  try {
+    // Implement actual email sending using `transportSend` or similar
+    await transportSend(userEmail, subject, html, text);
+    await alertRepo.createAlert({
+      id: "alert-" + Math.random().toString(36).substr(2, 9),
+      uid,
+      timestamp: new Date().toISOString(),
+      event: "Confirmation Email Sent",
+      details: `Sent check-in confirmation email to ${userEmail}.`
+    });
+    return { success: true };
+  } catch (e: any) {
+    console.error(`[EMERGENCY] Failed to send confirmation email to ${userEmail}:`, e.message || e);
+    await alertRepo.createAlert({
+      id: "alert-" + Math.random().toString(36).substr(2, 9),
+      uid,
+      timestamp: new Date().toISOString(),
+      event: "Confirmation Email Failed",
+      details: `Failed to send check-in confirmation email to ${userEmail}: ${e.message}.`
+    });
+    return { success: false, error: e.message };
+  }
+}
+
+// ---- NOMINEE ALERT EMAIL -----------------------------------------------------
+// Sent only after the user ignored the check-in confirmation email. Matches the
+// Life Streak Monitoring spec: subject "Potential Emergency Alert for <Name>",
+// button opens the nominee portal. Idempotent via the delivery ledger so one
+// emergency alert fires per inactive period (until the user becomes active again).
+export async function sendNomineeAlertEmail(
+  uid: string,
+  services: {
+    users: IUserRepository;
+    alerts: IAlertRepository;
+  },
+  deliveryRepo: IDeliveryRepository,
+): Promise<any> {
+  const existing = await deliveryRepo.getDelivery(uid, "nominee-alert");
+  if (existing && existing.processed) {
+    return { success: false, skipped: true, reason: "already-notified", delivery: existing };
+  }
+
+  const user = await services.users.getById(uid);
+  const profile = await services.users.getEmergencyProfile(uid);
+  const email = (profile?.emergencyNomineeEmail || "").trim();
+  if (!email) {
+    await services.alerts.createAlert({
+      id: "alert-" + Math.random().toString(36).substr(2, 9),
+      uid,
+      timestamp: new Date().toISOString(),
+      event: "Nominee Alert Skipped — No Email",
+      details: `Emergency suspected for ${user?.name || uid} but no emergencyNomineeEmail configured.`
+    });
+    return { success: false, reason: "no-nominee-email" };
+  }
+
+  const userName = user?.name || profile?.name || "User";
+  const nomineeName = profile?.emergencyNomineeName || profile?.nomineeName || "Nominee";
+  const subject = `Potential Emergency Alert for ${userName}`;
+  const dashboardUrl = `${APP_BASE_URL}?nominee=1`;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f6f8fb;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1c2b45">
+  <div style="max-width:640px;margin:0 auto;padding:24px 16px">
+    <div style="background:#c0392b;border-radius:10px 10px 0 0;padding:20px 24px">
+      <h1 style="color:#ffffff;margin:0;font-size:20px;line-height:1.3">Potential Emergency Alert for ${escapeHtml(userName)}</h1>
+    </div>
+    <div style="background:#ffffff;border-radius:0 0 10px 10px;padding:24px;box-shadow:0 1px 3px rgba(16,24,40,.1)">
+      <p>Hello ${escapeHtml(nomineeName)},</p>
+      <p>LifeContinuity has detected that <b>${escapeHtml(userName)}</b> has not checked in within their configured safety window.</p>
+      <p>They also did not respond to our confirmation request.</p>
+      <p>This does not confirm that an emergency has occurred, but we recommend checking on them as soon as possible.</p>
+      <p>Please log in to the nominee portal for more information.</p>
+      <p style="text-align:center;margin:20px 0;">
+        <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#c0392b;color:#ffffff;text-decoration:none;border-radius:5px;font-weight:bold;">View Emergency Dashboard</a>
+      </p>
+      <p style="font-size:11px;color:#8a93a6;margin-top:16px">This is an automated message from LifeContinuity. Please do not reply.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const text = `Hello ${nomineeName},
+LifeContinuity has detected that ${userName} has not checked in within their configured safety window.
+They also did not respond to our confirmation request.
+This does not confirm that an emergency has occurred, but we recommend checking on them as soon as possible.
+Please log in to the nominee portal for more information: ${dashboardUrl}`;
+
+  const delivery = await deliveryRepo.createDelivery({
+    id: "nd-" + Math.random().toString(36).substr(2, 9),
+    uid,
+    trigger: "nominee-alert",
+    reportId: "",
+    processed: true,
+    createdAt: new Date().toISOString(),
+    processedAt: new Date().toISOString(),
+    contactRecords: [],
+    logs: []
+  });
+
+  await deliveryRepo.addLog(delivery.id, `Nominee alert email to ${email} for ${userName}.`);
+  try {
+    await transportSend(email, subject, html, text);
+    await deliveryRepo.addContactRecord(delivery.id, {
+      contact: nomineeName,
+      email,
+      status: "sent",
+      attempts: 0,
+      lastError: null,
+      timestamp: new Date().toISOString()
+    });
+    await services.alerts.createAlert({
+      id: "alert-" + Math.random().toString(36).substr(2, 9),
+      uid,
+      timestamp: new Date().toISOString(),
+      event: "Nominee Alert Sent",
+      details: `Potential emergency alert for ${userName} sent to ${email} (${nomineeName}).`
+    });
+    return { success: true, delivery };
+  } catch (e: any) {
+    await deliveryRepo.addLog(delivery.id, `Nominee alert send failed: ${e.message || e}`);
+    return { success: false, error: e.message };
+  }
+}
+
+
 
 // ---- REPORT ASSEMBLY -------------------------------------------------------
 export async function buildLifeContinuityReport(
@@ -422,23 +593,29 @@ export function buildHtmlEmail(report: any): string {
 
 // ---- EMAIL TRANSPORT -------------------------------------------------------
 async function transportSend(to: string, subject: string, html: string, text: string): Promise<any> {
-  if (EMAIL_MODE() === "sendgrid") {
+  if (EMAIL_MODE() === "resend") {
     try {
-      const sgMail = await import("@sendgrid/mail");
-      const sg = sgMail.default;
-      sg.setApiKey(process.env.SENDGRID_API_KEY || "");
-      const msg = {
-        to,
-        from: { email: FROM_EMAIL, name: FROM_NAME },
-        subject,
-        html,
-        text
-      };
-      await sg.send(msg);
-      return { provider: "sendgrid" };
+      const key = process.env.RESEND_API_KEY;
+      if (!key) throw new Error("RESEND_API_KEY missing");
+      const resp = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
+          to: [to],
+          subject,
+          html,
+          text
+        })
+      });
+      if (!resp.ok) throw new Error(`resend HTTP ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+      return { provider: "resend" };
     } catch (e: any) {
-      // sendgrid package or key missing — never crash the pipeline, fall back to log.
-      console.warn(`[EMAIL] sendgrid unavailable (${e.message || e}), falling back to console.`);
+      // key or network issue — never crash the pipeline, fall back to log.
+      console.warn(`[EMAIL] resend unavailable (${e.message || e}), falling back to console.`);
     }
   }
   // console fallback: log for audit, never crash the pipeline.
@@ -626,9 +803,15 @@ export async function sendEmergencyEmails(
 
 // ---- GRACE PERIOD MONITOR ---------------------------------------------------
 // setInterval-based; restart-safe because every tick re-reads state from disk.
-// ponytail: single-instance assumption — Railway runs one web process. On multi-replica
-// deploys two instances may both fire; the per-uid processed flag in the shared
-// JSON file serializes the send (second sees processed=true and skips).
+// Life Streak Monitoring state machine:
+//   Safe -> (streak + grace expired) -> Awaiting Confirmation (email to user)
+//        -> (confirmation window expired) -> Emergency Suspected (email to nominee)
+//   any state + user activity -> Safe (handled in userService.recordActivity)
+// One confirmation email + one nominee alert per inactive period: the first
+// fires when the state flips (no re-sending while already in the state).
+// ponytail: single-instance assumption — Railway runs one web process. On
+// multi-replica deploys two instances may both fire; the per-uid processed flag
+// in the shared JSON file serializes the sends (second sees processed and skips).
 export function startGraceMonitor(
   services: {
     users: IUserRepository;
@@ -637,41 +820,78 @@ export function startGraceMonitor(
     docs: IDocumentRepository;
     alerts: IAlertRepository;
   },
-  repo: IDeliveryRepository,
+  deliveryRepo: IDeliveryRepository,
   ai: any,
+  userRepo: Pick<IUserRepository, "getAll" | "getEmergencyProfile" | "updateEmergencyProfile">,
 ): NodeJS.Timeout {
-  const intervalMs = Number(process.env.EMERGENCY_CHECK_INTERVAL_MS || 60_000);
+  const intervalMs = Number(process.env.EMERGENCY_CHECK_INTERVAL_MS || 3_600_000); // hourly by default
+  const CONFIRMATION_WINDOW_MS = Number(process.env.EMERGENCY_CONFIRMATION_WINDOW_MS || (12 * 60 * 60 * 1000)); // 12 hours
+
   const tick = async () => {
     try {
-      const users = await services.users.getAll();
+      const users = await userRepo.getAll();
       for (const user of users) {
         const uid = user.uid;
-        const settings = await services.settings.getCheckInSettings(uid);
-        if (!settings) continue; // not an active monitor user
-        const graceMinutes = Number(settings.gracePeriodMinutes || 120);
-        const stats = await services.settings.getCheckInStats(uid);
-        const lastCheckIn = stats?.lastCheckInTimestamp;
-        if (!lastCheckIn) continue;
+        const profile = await userRepo.getEmergencyProfile(uid);
 
-        // Timezone-aware check-in window: only act inside the user's configured
-        // window (default 08:00–20:00 local). Uses server-local time as proxy —
-        // see ponytail note below.
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, "0");
-        const mm = String(now.getMinutes()).padStart(2, "0");
-        const t = `${hh}:${mm}`;
-        const winStart = settings.checkInWindowStart || "08:00";
-        const winEnd = settings.checkInWindowEnd || "20:00";
-        const inWindow = t >= winStart && t <= winEnd;
-        if (!inWindow) continue;
+        if (!profile || !profile.streakDuration || !profile.gracePeriod || !profile.lastActiveTimestamp) {
+          continue; // Skip users without a fully configured emergency profile
+        }
 
-        const lastCheckInMs = new Date(lastCheckIn).getTime();
-        if (isNaN(lastCheckInMs)) continue;
-        const graceExpired = Date.now() - lastCheckInMs > graceMinutes * 60_000;
-        if (!graceExpired) continue;
+        const now = Date.now();
+        const lastActiveTime = profile.lastActiveTimestamp;
+        const streakDurationMs = profile.streakDuration * 24 * 60 * 60 * 1000; // days to ms
+        const gracePeriodMs = profile.gracePeriod * 60 * 60 * 1000; // hours to ms
 
-        // Idempotency check + send.
-        await sendEmergencyEmails(uid, "missed-checkin", services, repo, ai);
+        const streakExpiryTime = lastActiveTime + streakDurationMs;
+        const graceExpiryTime = streakExpiryTime + gracePeriodMs;
+
+        const setStatus = async (status: typeof profile.currentStreakStatus) => {
+          profile.currentStreakStatus = status;
+          profile.statusChangedAt = now;
+          await userRepo.updateEmergencyProfile(uid, profile);
+        };
+
+        if (profile.currentStreakStatus === 'Safe') {
+          if (now > graceExpiryTime) {
+            // Streak + grace expired: send the check-in confirmation email once.
+            await setStatus('Awaiting Confirmation');
+            profile.confirmationSentTimestamp = now;
+            await userRepo.updateEmergencyProfile(uid, profile);
+            await services.alerts.createAlert({
+              id: "alert-" + Math.random().toString(36).substr(2, 9),
+              uid,
+              timestamp: new Date().toISOString(),
+              event: "Life Streak Expired",
+              details: `User's inactivity period exceeded ${profile.streakDuration} days + ${profile.gracePeriod}h grace. Confirmation email sent.`
+            });
+            if (user.email && user.name) {
+              await sendConfirmationEmailToUser(uid, user.email, user.name, deliveryRepo, services.alerts);
+              console.log(`[GRACE MONITOR] User ${user.email} status -> 'Awaiting Confirmation'. Confirmation email sent.`);
+            } else {
+              console.warn(`[GRACE MONITOR] User ${uid} has no email or name for confirmation email.`);
+            }
+          }
+          // else: still within streak+grace, nothing to do.
+        } else if (profile.currentStreakStatus === 'Awaiting Confirmation') {
+          if (now > (profile.confirmationSentTimestamp || 0) + CONFIRMATION_WINDOW_MS) {
+            // User never confirmed within the window: alert the nominee once.
+            await setStatus('Emergency Suspected');
+            await services.alerts.createAlert({
+              id: "alert-" + Math.random().toString(36).substr(2, 9),
+              uid,
+              timestamp: new Date().toISOString(),
+              event: "Emergency Suspected",
+              details: `User did not respond to confirmation within ${CONFIRMATION_WINDOW_MS / 3_600_000}h. Notifying nominee.`
+            });
+            await sendNomineeAlertEmail(uid, services, deliveryRepo);
+            console.log(`[GRACE MONITOR] User ${user.email} status -> 'Emergency Suspected'. Nominee notified.`);
+          }
+          // else: still inside the confirmation window, waiting.
+        } else if (profile.currentStreakStatus === 'Emergency Suspected') {
+          // Nominee notified; no further action until the user becomes active again.
+          console.log(`[GRACE MONITOR] User ${user.email} is 'Emergency Suspected'. Monitoring continues.`);
+        }
       }
     } catch (e: any) {
       console.error("[GRACE MONITOR] tick error:", e.message || e);
@@ -679,7 +899,6 @@ export function startGraceMonitor(
   };
   tick(); // run once at startup to catch anything missed while offline
   const timer = setInterval(tick, intervalMs);
-  // Keep the process alive on Railway even if no request traffic.
   if (typeof (timer as any).unref === "function") (timer as any).unref();
   console.log(`[GRACE MONITOR] started, interval=${intervalMs}ms, mode=${EMAIL_MODE()}`);
   return timer;

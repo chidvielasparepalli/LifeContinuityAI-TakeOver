@@ -1,10 +1,12 @@
 import { ISettingsRepository } from "../repositories/SettingsRepository";
 import { IAlertRepository } from "../repositories/AlertRepository";
+import { UserService } from "./user.service";
 
 export class CheckInService {
   constructor(
     private settingsRepository: ISettingsRepository,
-    private alertRepository: IAlertRepository
+    private alertRepository: IAlertRepository,
+    private userService: UserService
   ) {}
 
   async getSettings(uid: string) {
@@ -62,6 +64,9 @@ export class CheckInService {
   }
 
   async recordCheckIn(uid: string, method: string) {
+    // Record activity (updates lastActiveTimestamp and currentStreakStatus to 'Safe')
+    await this.userService.recordActivity(uid);
+
     const todayStr = new Date().toISOString().split("T")[0];
     const checkIns = await this.settingsRepository.getCheckIns(uid);
 
@@ -113,19 +118,7 @@ export class CheckInService {
       stats.longestStreak = Math.max(stats.longestStreak, newStreak);
       stats.lastCheckInDate = todayStr;
       stats.lastCheckInTimestamp = new Date().toISOString();
-
-      const wasEmergency = stats.status === "EmergencyVerificationActive" || stats.status === "Unverified";
-      stats.status = "Verified";
-
-      if (wasEmergency) {
-        await this.alertRepository.createAlert({
-          id: "alert-" + Math.random().toString(36).substr(2, 9),
-          uid,
-          timestamp: new Date().toISOString(),
-          event: "Emergency Verification Cancelled",
-          details: "Check-in received from user. Standing down active emergency state."
-        });
-      }
+      stats.status = "Verified"; // Ensured by recordActivity, but redundant safety
     }
 
     // Populate telemetry
@@ -155,9 +148,21 @@ export class CheckInService {
     };
 
     const updatedStats = await this.settingsRepository.updateCheckInStats(uid, stats);
-    
+
     // Log detailed check-in activity event
     await this.logCheckInEvent(uid, method, "Success");
+
+    // Alert if an emergency was just resolved by this activity
+    const userProfile = await this.userService.getProfile(uid);
+    if (userProfile?.currentStreakStatus === 'Safe' && userProfile.confirmationSentTimestamp) {
+        await this.alertRepository.createAlert({
+            id: "alert-" + Math.random().toString(36).substr(2, 9),
+            uid,
+            timestamp: new Date().toISOString(),
+            event: "Emergency Verification Cancelled",
+            details: "Check-in received from user. Standing down active emergency state."
+        });
+    }
 
     return updatedStats;
   }

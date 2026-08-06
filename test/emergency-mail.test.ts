@@ -14,7 +14,7 @@ process.env.EMAIL_MODE = "console";
 
 const { userRepository, settingsRepository, emailRepository, documentRepository, alertRepository, deliveryRepository } =
   await import("../backend/repositories/index.ts");
-const { buildLifeContinuityReport, buildHtmlEmail, sendEmergencyEmails } =
+const { buildLifeContinuityReport, buildHtmlEmail, sendEmergencyEmails, sendNomineeAlertEmail } =
   await import("../backend/services/emergency.service.ts");
 
 const repos = {
@@ -34,7 +34,9 @@ await userRepository.updateEmergencyProfile(UID, {
   trustedContacts: [
     { name: "Sarah Mercer", relation: "Spouse", email: "sarah@example.com", phone: "+1 555 0100" },
     { name: "Test Contact", relation: "Friend", email: "contact@example.com", phone: "+1 555 0200" }
-  ]
+  ],
+  emergencyNomineeName: "Sarah Mercer",
+  emergencyNomineeEmail: "sarah@example.com"
 });
 
 // --- 1. Report uses REAL data, never fabricates -----------------------------
@@ -79,7 +81,7 @@ const sentRecords = delivery.contactRecords.filter((c: any) => c.status === "sen
 assert.strictEqual(sentRecords.length, 2, "both records marked sent in console mode");
 
 // --- 5. Retry logic present in source (compile-time check) ------------------
-const svcSrc = fs.readFileSync(path.join(process.cwd(), "services/emergency.service.ts"), "utf8");
+const svcSrc = fs.readFileSync(path.join(process.cwd(), "backend/services/emergency.service.ts"), "utf8");
 assert.ok(svcSrc.includes("MAX_ATTEMPTS"), "retry max-attempts constant present");
 assert.ok(svcSrc.includes("RETRY_BACKOFF_MS"), "retry backoff array present");
 assert.ok(svcSrc.includes("attemptDelivery"), "retry loop function present");
@@ -91,6 +93,12 @@ await sendEmergencyEmails(UID, "missed-checkin", repos, deliveryRepository, null
 // Second missed-checkin call should be blocked
 const third = await sendEmergencyEmails(UID, "missed-checkin", repos, deliveryRepository, null);
 assert.ok(third.skipped === true, "monitor second pass blocked by processed flag");
+
+// --- 7. Nominee alert email: sends once, duplicate blocked --------------------
+const nomineeAlert = await sendNomineeAlertEmail(UID, { users: userRepository, alerts: alertRepository }, deliveryRepository);
+assert.strictEqual(nomineeAlert.success, true, "nominee alert sent (console mode)");
+const nomineeAlertAgain = await sendNomineeAlertEmail(UID, { users: userRepository, alerts: alertRepository }, deliveryRepository);
+assert.ok(nomineeAlertAgain.skipped === true, "duplicate nominee alert blocked");
 
 console.log("PASS: emergency-mail tests ok");
 fs.rmSync(tmpDir, { recursive: true, force: true });

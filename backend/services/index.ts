@@ -20,7 +20,7 @@ export const nomineeService = new NomineeService(nomineeRepository);
 export const gmailService = new GmailService(emailRepository);
 export const documentsService = new DocumentsService(documentRepository);
 export const notificationService = new NotificationService(alertRepository);
-export const checkInService = new CheckInService(settingsRepository, alertRepository);
+export const checkInService = new CheckInService(settingsRepository, alertRepository, userService);
 export const monitoringService = new MonitoringService(settingsRepository);
 export const settingsService = new SettingsService(settingsRepository);
 

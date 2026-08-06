@@ -17,9 +17,11 @@ import {
   checkInService,
   monitoringService,
   notificationService,
-  settingsService,
   sendEmergencyEmails,
-  startGraceMonitor
+  sendNomineeAlertEmail,
+  sendConfirmationEmailToUser,
+  startGraceMonitor,
+  settingsService
 } from "./services";
 import {
   deliveryRepository,
@@ -130,9 +132,27 @@ function initDb() {
       nomineePhone: "+1 (555) 012-3456",
       nomineeName: "Sarah Mercer",
       trustedContacts: [],
-      lastNomineeActive: new Date(Date.now() - 3.5 * 3600000).toISOString()
+      lastNomineeActive: new Date(Date.now() - 3.5 * 3600000).toISOString(),
+      emergencyNomineeName: "Sarah Mercer",
+      emergencyNomineeEmail: "sarah@example.com",
+      streakDuration: 7,
+      gracePeriod: 24,
+      lastActiveTimestamp: Date.now(),
+      currentStreakStatus: "Safe"
     };
     modified = true;
+  } else {
+    // Backfill Life Streak Monitoring defaults onto existing demo profile.
+    const demo = db.emergencyProfiles["sandbox-demo"];
+    if (demo && !demo.emergencyNomineeEmail) {
+      demo.emergencyNomineeName = demo.emergencyNomineeName || "Sarah Mercer";
+      demo.emergencyNomineeEmail = "sarah@example.com";
+      demo.streakDuration = demo.streakDuration ?? 7;
+      demo.gracePeriod = demo.gracePeriod ?? 24;
+      if (!demo.lastActiveTimestamp) demo.lastActiveTimestamp = Date.now();
+      if (!demo.currentStreakStatus) demo.currentStreakStatus = "Safe";
+      modified = true;
+    }
   }
 
   // Initial checkInStats
@@ -829,7 +849,7 @@ app.post("/api/auth/nominee-login", async (req, res) => {
 // Tab 2: Get and Update Emergency Profile
 app.get("/api/profile/:uid", async (req, res) => {
   try {
-    const profile = await userService.getProfile(req.params.uid) || {};
+    const profile = await userService.getProfile(req.params.uid) || ({} as any);
     res.json(profile);
   } catch (err: any) {
     console.error("Get profile failed", err);
@@ -839,7 +859,7 @@ app.get("/api/profile/:uid", async (req, res) => {
 
 app.put("/api/profile/:uid", async (req, res) => {
   const uid = req.params.uid;
-  const { name, age, bloodGroup, emergencyContactName, emergencyContactPhone, medicalInfo, nomineePin, nomineePhone, nomineeName, trustedContacts } = req.body;
+  const { name, age, bloodGroup, emergencyContactName, emergencyContactPhone, medicalInfo, nomineePin, nomineePhone, nomineeName, trustedContacts, streakDuration, gracePeriod, emergencyNomineeName, emergencyNomineeEmail } = req.body;
 
   try {
     const profile = await userService.updateProfile(uid, {
@@ -852,7 +872,11 @@ app.put("/api/profile/:uid", async (req, res) => {
       nomineePin,
       nomineePhone,
       nomineeName: nomineeName || "",
-      trustedContacts: trustedContacts || []
+      trustedContacts: trustedContacts || [],
+      streakDuration: streakDuration !== undefined ? Number(streakDuration) : undefined,
+      gracePeriod: gracePeriod !== undefined ? Number(gracePeriod) : undefined,
+      emergencyNomineeName: emergencyNomineeName || "",
+      emergencyNomineeEmail: emergencyNomineeEmail || ""
     });
 
     await notificationService.logAlert(uid, "Profile Updated", "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved.");
@@ -861,6 +885,46 @@ app.put("/api/profile/:uid", async (req, res) => {
   } catch (err: any) {
     console.error("Update profile failed", err);
     res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// Safety Monitoring "I'm Safe" confirmation (from the check-in confirmation email).
+// The email's button opens this URL: verifies the user, records activity, resets
+// the streak timer, cancels any pending emergency notification, and redirects to
+// the app so the user can see the confirmed state.
+app.get("/api/safety/confirm/:uid", async (req, res) => {
+  const uid = req.params.uid;
+  try {
+    const user = await userService.getUser(uid);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    await checkInService.recordCheckIn(uid, "emailConfirm");
+
+    await notificationService.logAlert(uid, "Emergency Confirmation Received", "User clicked the 'I'm Safe' button from the check-in confirmation email. Streak timer reset, pending emergency notifications cancelled.");
+
+    res.redirect(`${process.env.APP_BASE_URL || "http://localhost:3000"}/?confirmed=1`);
+  } catch (err: any) {
+    console.error("Safety confirmation failed", err);
+    res.status(500).send("Safety confirmation failed. Please log in to confirm you are safe.");
+  }
+});
+
+// Safety Monitoring: test email (development only). Sends the exact check-in
+// confirmation email to the user's address using the current transport.
+app.post("/api/safety/test-email", async (req, res) => {
+  const { uid } = req.body;
+  if (!uid) return res.status(400).json({ error: "uid required" });
+  try {
+    const user = await userService.getUser(uid);
+    if (!user || !user.email) return res.status(400).json({ error: "User has no email" });
+    const profile = await userService.getProfile(uid);
+    await sendConfirmationEmailToUser(uid, user.email, user.name || "User", deliveryRepository, alertRepository);
+    res.json({ success: true, to: user.email, currentStatus: profile?.currentStreakStatus || "Safe" });
+  } catch (err: any) {
+    console.error("Test safety email failed", err);
+    res.status(500).json({ error: "Failed to send test email" });
   }
 });
 
@@ -1500,7 +1564,7 @@ app.post("/api/emergency/activate", async (req, res) => {
 
     if (ai) {
       try {
-        const profile = await userService.getProfile(uid) || {};
+        const profile = await userService.getProfile(uid) || ({} as any);
         const prompt = `You are a compassionate Emergency Assistance intelligence coordinator. 
 Generate a comprehensive emergency overview narrative to help the primary family coordinator or nominee.
 Refer to the designated user as ${profile.name || "User"}.
@@ -1525,7 +1589,7 @@ Provide a concise, extremely reassuring but urgent 2-3 paragraph brief. Emphasiz
         }
       } catch (e: any) {
         console.log("Emergency overview seamlessly compiled via fallback description.");
-        const profile = await userService.getProfile(uid) || {};
+        const profile = await userService.getProfile(uid) || ({} as any);
         const triggerDesc = plan.triggeredBy === "missedCheckIn"
           ? "Automated system trigger due to missed proof-of-life daily check-in"
           : "Manual trigger by account holder";
@@ -1611,7 +1675,7 @@ app.post("/api/emergency/deactivate", async (req, res) => {
 app.post("/api/emergency/draft", async (req, res) => {
   const { uid, sendTo, tone } = req.body;
   try {
-    const profile = await userService.getProfile(uid) || {};
+    const profile = await userService.getProfile(uid) || ({} as any);
     const plan = await settingsService.getPlaybook(uid) || {};
 
     const ai = getAI();
@@ -1939,7 +2003,7 @@ app.post("/api/chat", async (req, res) => {
   }
 
   try {
-    const profile = await userService.getProfile(activeUid) || {};
+    const profile = await userService.getProfile(activeUid) || ({} as any);
     const stats = await checkInService.getStats(activeUid) || {};
     const activePlan = await settingsService.getPlaybook(activeUid) || null;
     const bills = await settingsService.getBills(activeUid);
@@ -1992,7 +2056,7 @@ If any conflict exists, proactively surface it. Be concise, warm, helpful, and p
     console.warn("Gemini API Chat call failed, falling back to local processing:", err.message || err);
 
     const stats = await checkInService.getStats(activeUid) || {};
-    const profile = await userService.getProfile(activeUid) || {};
+    const profile = await userService.getProfile(activeUid) || ({} as any);
     const activePlan = await settingsService.getPlaybook(activeUid) || null;
     const bills = await settingsService.getBills(activeUid);
     const appts = await settingsService.getAppointments(activeUid);
@@ -2050,7 +2114,7 @@ app.post("/api/chat/voice", async (req, res) => {
   }
 
   try {
-    const profile = await userService.getProfile(activeUid) || {};
+    const profile = await userService.getProfile(activeUid) || ({} as any);
     const stats = await checkInService.getStats(activeUid) || {};
     const activePlan = await settingsService.getPlaybook(activeUid) || null;
     const bills = await settingsService.getBills(activeUid);
@@ -2132,7 +2196,7 @@ async function startServer() {
 
   // Emergency scheduled mail: backend grace-period monitor. Runs continuously,
   // survives restarts (state re-read from db each tick), and is idempotent.
-  startGraceMonitor(emergencyRepos, deliveryRepository, getAI());
+  startGraceMonitor(emergencyRepos, deliveryRepository, getAI(), userRepository);
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);

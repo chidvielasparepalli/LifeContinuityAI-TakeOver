@@ -1,4 +1,5 @@
 import { IUserRepository } from "../repositories/UserRepository";
+import { EmergencyProfile } from "../repositories/db";
 
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
@@ -34,19 +35,32 @@ export class UserService {
   }
 
   // Emergency Profile Methods
-  async getProfile(uid: string) {
+  async getProfile(uid: string): Promise<EmergencyProfile | null> {
     return this.userRepository.getEmergencyProfile(uid);
   }
 
-  async createProfile(uid: string, profile: any) {
+  async createProfile(uid: string, profile: Partial<EmergencyProfile>): Promise<EmergencyProfile> {
     return this.userRepository.createEmergencyProfile(uid, profile);
   }
 
-  async updateProfile(uid: string, profileDetails: any) {
+  async updateProfile(uid: string, profileDetails: Partial<EmergencyProfile>): Promise<EmergencyProfile> {
     return this.userRepository.updateEmergencyProfile(uid, profileDetails);
   }
 
   async deleteProfile(uid: string) {
     return this.userRepository.deleteEmergencyProfile(uid);
+  }
+
+  async recordActivity(uid: string) {
+    const profile = await this.userRepository.getEmergencyProfile(uid);
+    if (profile) {
+      profile.lastActiveTimestamp = Date.now();
+      profile.currentStreakStatus = 'Safe';
+      // Reset confirmationSentTimestamp if it exists
+      if (profile.confirmationSentTimestamp) {
+        delete profile.confirmationSentTimestamp;
+      }
+      await this.userRepository.updateEmergencyProfile(uid, profile);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { DatabaseSchema, loadDb, saveDb } from "./db";
+import { DatabaseSchema, loadDb, saveDb, EmergencyProfile } from "./db";
 
 export interface IUserRepository {
   create(user: any): Promise<any>;
@@ -9,10 +9,10 @@ export interface IUserRepository {
   delete(uid: string): Promise<boolean>;
   exists(uid: string): Promise<boolean>;
 
-  createEmergencyProfile(uid: string, profile: any): Promise<any>;
+  createEmergencyProfile(uid: string, profile: Partial<EmergencyProfile>): Promise<EmergencyProfile>;
   getEmergencyProfile(uid: string): Promise<any | null>;
   getEmergencyProfileByNomineePhone(phone: string): Promise<any | null>;
-  updateEmergencyProfile(uid: string, profile: any): Promise<any>;
+  updateEmergencyProfile(uid: string, profile: Partial<EmergencyProfile>): Promise<EmergencyProfile>;
   deleteEmergencyProfile(uid: string): Promise<boolean>;
 }
 
@@ -67,27 +67,36 @@ export class JSONUserRepository implements IUserRepository {
     return !!db.users[uid];
   }
 
-  async createEmergencyProfile(uid: string, profile: any): Promise<any> {
+  async createEmergencyProfile(uid: string, profile: Partial<EmergencyProfile>): Promise<EmergencyProfile> {
     const db = loadDb();
-    db.emergencyProfiles[uid] = { ...profile, uid };
+    const newProfile: EmergencyProfile = {
+      ...profile,
+      streakDuration: profile.streakDuration ?? 7, // days
+      gracePeriod: profile.gracePeriod ?? 24, // hours
+      emergencyNomineeName: profile.emergencyNomineeName ?? "",
+      emergencyNomineeEmail: profile.emergencyNomineeEmail ?? "",
+      lastActiveTimestamp: Date.now(),
+      currentStreakStatus: 'Safe',
+    };
+    db.emergencyProfiles[uid] = { ...db.emergencyProfiles[uid], ...newProfile, uid };
     saveDb(db);
     return db.emergencyProfiles[uid];
   }
 
-  async getEmergencyProfile(uid: string): Promise<any | null> {
+  async getEmergencyProfile(uid: string): Promise<EmergencyProfile | null> {
     const db = loadDb();
     return db.emergencyProfiles[uid] || null;
   }
 
-  async getEmergencyProfileByNomineePhone(phone: string): Promise<any | null> {
+  async getEmergencyProfileByNomineePhone(phone: string): Promise<EmergencyProfile | null> {
     const db = loadDb();
     const profile = Object.values(db.emergencyProfiles).find(
-      (p: any) => p.nomineePhone === phone
+      (p: EmergencyProfile) => p.nomineePhone === phone
     );
     return profile || null;
   }
 
-  async updateEmergencyProfile(uid: string, profile: any): Promise<any> {
+  async updateEmergencyProfile(uid: string, profile: Partial<EmergencyProfile>): Promise<EmergencyProfile> {
     const db = loadDb();
     db.emergencyProfiles[uid] = { ...db.emergencyProfiles[uid], ...profile, uid };
     saveDb(db);

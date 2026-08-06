@@ -327,6 +327,39 @@ export default function NomineeDashboard({
         </div>
       )}
 
+      {/* Emergency Status: user name, last active time, current status */}
+      <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+        <h3 className="font-black text-white text-sm flex items-center gap-1.5">
+          <HeartPulse className="h-4.5 w-4.5 text-indigo-300" />
+          Emergency Status
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15">
+            <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">User Name</p>
+            <p className="text-sm font-bold text-white mt-1">{ownerName}</p>
+          </div>
+          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15">
+            <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Last Active Time</p>
+            <p className="text-sm font-bold text-white mt-1">
+              {profile?.lastActiveTimestamp
+                ? new Date(profile.lastActiveTimestamp).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                : "—"}
+            </p>
+          </div>
+          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15">
+            <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Current Status</p>
+            <p className={`text-sm font-black mt-1 ${profile?.currentStreakStatus === "Safe" ? "text-green-400" : profile?.currentStreakStatus === "Awaiting Confirmation" ? "text-amber-400" : "text-red-400"}`}>
+              {profile?.currentStreakStatus || "Safe"}
+            </p>
+            {profile?.statusChangedAt && (
+              <p className="text-[9px] text-[#5d6fa3] mt-1">
+                changed {new Date(profile.statusChangedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Gemini AI Priority Timeline Overview */}
       <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-3">
         <h3 className="font-black text-white text-sm flex items-center gap-1.5">

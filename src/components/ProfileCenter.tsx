@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, RefreshCw, KeyRound, AlertTriangle, Save, Smartphone, MapPin, Clock, Plus } from "lucide-react";
+import { ShieldCheck, RefreshCw, KeyRound, AlertTriangle, Save, Smartphone, MapPin, Clock, Plus, Activity, Send } from "lucide-react";
 import { apiFetch } from "../lib/api";
 
 interface ProfileCenterProps {
@@ -19,6 +19,16 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
   const [nomineeName, setNomineeName] = useState("");
   const [trustedContacts, setTrustedContacts] = useState<any[]>([]);
   const [lastNomineeActive, setLastNomineeActive] = useState<string | null>(null);
+
+  // Safety Monitoring fields
+  const [streakDuration, setStreakDuration] = useState<number>(7);
+  const [gracePeriod, setGracePeriod] = useState<number>(24);
+  const [emergencyNomineeName, setEmergencyNomineeName] = useState("");
+  const [emergencyNomineeEmail, setEmergencyNomineeEmail] = useState("");
+  const [lastActiveTimestamp, setLastActiveTimestamp] = useState<number | null>(null);
+  const [currentStreakStatus, setCurrentStreakStatus] = useState("Safe");
+  const [testEmailSending, setTestEmailSending] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<string | null>(null);
 
   // States for registering a new trusted contact
   const [newContactName, setNewContactName] = useState("");
@@ -49,6 +59,12 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
         setNomineeName(data.nomineeName || "");
         setTrustedContacts(data.trustedContacts || []);
         setLastNomineeActive(data.lastNomineeActive || null);
+        setStreakDuration(data.streakDuration || 7);
+        setGracePeriod(data.gracePeriod || 24);
+        setEmergencyNomineeName(data.emergencyNomineeName || "");
+        setEmergencyNomineeEmail(data.emergencyNomineeEmail || "");
+        setLastActiveTimestamp(data.lastActiveTimestamp ?? null);
+        setCurrentStreakStatus(data.currentStreakStatus || "Safe");
       }
     } catch (e) {
       console.error("Failed to load profile", e);
@@ -93,7 +109,11 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
           nomineePin,
           nomineePhone,
           nomineeName,
-          trustedContacts
+          trustedContacts,
+          streakDuration,
+          gracePeriod,
+          emergencyNomineeName,
+          emergencyNomineeEmail
         })
       });
 
@@ -107,6 +127,28 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setTestEmailSending(true);
+    setTestEmailResult(null);
+    try {
+      const res = await apiFetch(`/api/safety/test-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTestEmailResult(`Test email sent to ${data.to} (status: ${data.currentStatus}).`);
+      } else {
+        setTestEmailResult(`Failed: ${data.error || "unknown error"}`);
+      }
+    } catch (err: any) {
+      setTestEmailResult(`Failed: ${err?.message || err}`);
+    } finally {
+      setTestEmailSending(false);
     }
   };
 
@@ -481,6 +523,97 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
               <p className="leading-relaxed">
                 Log out and access the **Nominee Access** tab with nominee phone number <span className="font-mono font-bold text-white">{nomineePhone || "+1 (555) 012-3456"}</span> and your custom PIN <span className="font-mono font-bold text-white">{nomineePin || "1234"}</span>. You will receive a mock OTP <span className="font-bold text-white">7777</span> dynamically sent on screen!
               </p>
+            </div>
+          </div>
+
+          {/* SAFETY MONITORING (Life Streak) */}
+          <div className="border-t border-[#5d6fa3]/25 pt-4 space-y-4">
+            <h3 className="text-xs font-extrabold uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+              <Activity className="h-4 w-4" />
+              SAFETY MONITORING (LIFE STREAK)
+            </h3>
+            <p className="text-[11px] text-[#5d6fa3] leading-relaxed">
+              If you do not check in for the streak duration plus the grace period, we email you a check-in confirmation. If you do not confirm within 12 hours, your emergency nominee is notified. Never alarmed immediately — you are always asked first.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Name</label>
+                <input
+                  type="text"
+                  value={emergencyNomineeName}
+                  onChange={(e) => setEmergencyNomineeName(e.target.value)}
+                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  placeholder="Sarah Mercer"
+                  id="profile-input-nominee-email-name"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Email</label>
+                <input
+                  type="email"
+                  value={emergencyNomineeEmail}
+                  onChange={(e) => setEmergencyNomineeEmail(e.target.value)}
+                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  placeholder="nominee@example.com"
+                  id="profile-input-nominee-email"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Streak Duration (days)</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={streakDuration}
+                  onChange={(e) => setStreakDuration(Number(e.target.value))}
+                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  placeholder="7"
+                  id="profile-input-streak-duration"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Grace Period (hours)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={gracePeriod}
+                  onChange={(e) => setGracePeriod(Number(e.target.value))}
+                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  placeholder="24"
+                  id="profile-input-grace-period"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-3.5">
+                <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Last Active</p>
+                <p className="text-xs font-bold text-white mt-1">
+                  {lastActiveTimestamp
+                    ? new Date(lastActiveTimestamp).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                    : "No activity recorded yet"}
+                </p>
+              </div>
+              <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-3.5">
+                <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Current Status</p>
+                <p className={`text-xs font-black mt-1 ${currentStreakStatus === "Safe" ? "text-green-400" : currentStreakStatus === "Awaiting Confirmation" ? "text-amber-400" : "text-red-400"}`}>
+                  {currentStreakStatus}
+                </p>
+              </div>
+              <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-3.5 flex flex-col justify-between">
+                <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Test (dev only)</p>
+                <button
+                  type="button"
+                  onClick={handleTestEmail}
+                  disabled={testEmailSending}
+                  className="mt-1 inline-flex items-center gap-1.5 bg-indigo-950/40 border border-indigo-800/50 text-indigo-300 hover:bg-indigo-900/40 hover:text-indigo-200 text-[10px] font-bold py-1.5 px-3 rounded-lg transition-all self-start cursor-pointer"
+                  id="btn-test-emergency-email"
+                >
+                  <Send className="h-3 w-3" />
+                  {testEmailSending ? "Sending..." : "Test Emergency Email"}
+                </button>
+                {testEmailResult && <p className="text-[9px] text-[#5d6fa3] mt-1">{testEmailResult}</p>}
+              </div>
             </div>
           </div>
 
