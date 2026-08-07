@@ -42,6 +42,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
   const [sessions, setSessions] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const fetchProfile = async () => {
     try {
@@ -92,8 +93,19 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setSaveSuccess(false);
+    setSaveError(null);
+
+    if (!emergencyNomineeName.trim()) {
+      setSaveError("Emergency Nominee Name is mandatory!");
+      return;
+    }
+    if (!emergencyNomineeEmail.trim()) {
+      setSaveError("Emergency Nominee Email is mandatory!");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await apiFetch(`/api/profile/${uid}`, {
@@ -203,6 +215,12 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
         {saveSuccess && (
           <div className="mb-4 bg-green-950/40 border border-green-900/50 text-green-400 p-3.5 rounded-xl text-xs font-semibold animate-fade-in" id="profile-save-success">
             ✓ Your vital resilience metadata and Nominee configurations have been persisted and secured.
+          </div>
+        )}
+
+        {saveError && (
+          <div className="mb-4 bg-red-950/40 border border-red-950/50 text-red-400 p-3.5 rounded-xl text-xs font-semibold animate-fade-in" id="profile-save-error">
+            ✗ {saveError}
           </div>
         )}
 

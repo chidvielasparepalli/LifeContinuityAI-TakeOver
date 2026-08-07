@@ -29,6 +29,18 @@
       "email": "chidvielasparepalli@gmail.com",
       "name": "CHIDVIELAS PAREPALLI",
       "createdAt": "2026-07-18T04:51:26.806Z"
+    },
+    "user_3GeEA85elag3gW3twuGN3mLiS4W": {
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "email": "ruthvikaniathyderabad@gmail.com",
+      "name": "Ruthvika NIAT Hyderabad",
+      "createdAt": "2026-08-07T08:30:48.416Z"
+    },
+    "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "email": "mohankmadhan59@gmail.com",
+      "name": "Madan Mohan Kanagarla",
+      "createdAt": "2026-08-07T09:15:56.197Z"
     }
   },
   "emergencyProfiles": {
@@ -76,7 +88,9 @@
       "nomineePin": "1111",
       "nomineePhone": "",
       "nomineeName": "",
-      "trustedContacts": []
+      "trustedContacts": [],
+      "lastActiveTimestamp": 1786094129395,
+      "currentStreakStatus": "Safe"
     },
     "user_3Gd6gh3imANxBppCOVcfM9XpTVP": {
       "uid": "user_3Gd6gh3imANxBppCOVcfM9XpTVP",
@@ -102,10 +116,253 @@
       "nomineePin": "1111",
       "nomineePhone": "",
       "nomineeName": "",
-      "trustedContacts": []
+      "trustedContacts": [],
+      "lastActiveTimestamp": 1786093455916,
+      "currentStreakStatus": "Safe"
+    },
+    "user_3GeEA85elag3gW3twuGN3mLiS4W": {
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "Ruthvika NIAT Hyderabad",
+      "age": 30,
+      "bloodGroup": "O+",
+      "emergencyContactName": "sarah",
+      "emergencyContactPhone": "8010862353",
+      "medicalInfo": "allergies",
+      "nomineePin": "1111",
+      "nomineePhone": "+919290703352",
+      "nomineeName": "Madan Mohan Kanagarla",
+      "trustedContacts": [],
+      "streakDuration": 7,
+      "gracePeriod": 24,
+      "emergencyNomineeName": "mohankmadhan",
+      "emergencyNomineeEmail": "mohankmadhan59@gmail.com",
+      "lastActiveTimestamp": 1786095884496,
+      "currentStreakStatus": "Safe"
+    },
+    "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "Madan Mohan Kanagarla",
+      "age": 30,
+      "bloodGroup": "O+",
+      "emergencyContactName": "",
+      "emergencyContactPhone": "",
+      "medicalInfo": "",
+      "nomineePin": "1111",
+      "nomineePhone": "",
+      "nomineeName": "",
+      "trustedContacts": [],
+      "streakDuration": 7,
+      "gracePeriod": 24,
+      "emergencyNomineeName": "",
+      "emergencyNomineeEmail": "",
+      "lastActiveTimestamp": 1786094322135,
+      "currentStreakStatus": "Safe"
     }
   },
   "securityAlerts": [
+    {
+      "id": "alert-u3ed9gsxm",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:14.999Z",
+      "event": "Confirmation Email Sent",
+      "details": "Sent check-in confirmation email to ruthvikaniathyderabad@gmail.com."
+    },
+    {
+      "id": "alert-8r3gwf8sp",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:05.161Z",
+      "event": "Profile Updated",
+      "details": "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved."
+    },
+    {
+      "id": "alert-sl62j12hl",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:04.272Z",
+      "event": "Profile Updated",
+      "details": "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved."
+    },
+    {
+      "id": "alert-egn0c60s1",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:03.839Z",
+      "event": "Profile Updated",
+      "details": "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved."
+    },
+    {
+      "id": "alert-hkirub4yb",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:02.500Z",
+      "event": "Profile Updated",
+      "details": "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved."
+    },
+    {
+      "id": "alert-lzz9tzwew",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:01.743Z",
+      "event": "Profile Updated",
+      "details": "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved."
+    },
+    {
+      "id": "alert-popcuaewy",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:46:00.180Z",
+      "event": "Profile Updated",
+      "details": "Emergency contact info, Trusted Nominee configurations, and trusted contacts CRUD saved."
+    },
+    {
+      "id": "alert-adxez17s7",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T09:44:44.502Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-4ezz58v66",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-08-07T09:18:42.142Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-tgpjscwfw",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-08-07T09:16:34.894Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-f1i9x4oq8",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-08-07T09:15:56.240Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-c5gwsa9xy",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-08-07T09:15:56.213Z",
+      "event": "Account Created",
+      "details": "User signed up/registered via Clerk."
+    },
+    {
+      "id": "alert-10ua176r2",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T09:15:29.400Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-t5bh1rtls",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T09:15:27.188Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-53x3g0nw7",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T09:04:19.339Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-613f4w8lc",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "timestamp": "2026-08-07T09:04:15.942Z",
+      "event": "Emergency Confirmation Received",
+      "details": "User clicked the 'I'm Safe' button from the check-in confirmation email. Streak timer reset, pending emergency notifications cancelled."
+    },
+    {
+      "id": "alert-myz2y3glt",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T09:02:16.805Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-9nc7gz4pe",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:52:37.580Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-fm7yv8yfu",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:52:20.578Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-x87qs57cr",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:52:10.615Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-r3sd5fjzh",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:52:08.554Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-4fhfencob",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:43:39.052Z",
+      "event": "Nominee Alert Skipped — No Email",
+      "details": "Emergency suspected for Dhoola Pro but no emergencyNomineeEmail configured."
+    },
+    {
+      "id": "alert-t39dm7rce",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:43:33.983Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-hb53xgxmp",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:43:07.887Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-ojndktgdx",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:43:05.216Z",
+      "event": "Nominee Alert Skipped — No Email",
+      "details": "Emergency suspected for Ruthvika NIAT Hyderabad but no emergencyNomineeEmail configured."
+    },
+    {
+      "id": "alert-ivx42borz",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:43:00.001Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-2e2q5q4rk",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:38:31.598Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-afledd1lk",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:30:48.493Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-uevk4gufc",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:30:48.435Z",
+      "event": "Account Created",
+      "details": "User signed up/registered via Clerk."
+    },
     {
       "id": "alert-gto8ffvix",
       "uid": "sandbox-demo",
@@ -2319,6 +2576,94 @@
       "category": "School Fees",
       "priority": "Medium",
       "notes": "Quarterly tuition fee payment."
+    },
+    {
+      "id": "bill-1-user_3GeEA85elag3gW3twuGN3mLiS4W-okat4",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "PG&E Electricity & Gas",
+      "dueDate": "2026-08-10",
+      "amount": 142.5,
+      "status": "Pending",
+      "category": "Upcoming Bills",
+      "priority": "Medium",
+      "notes": "Monthly utilities for electricity and gas heating."
+    },
+    {
+      "id": "bill-2-user_3GeEA85elag3gW3twuGN3mLiS4W-3yn2h",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "Comcast Xfinity Internet",
+      "dueDate": "2026-08-13",
+      "amount": 85,
+      "status": "Pending",
+      "category": "Upcoming Bills",
+      "priority": "Low",
+      "notes": "High-speed broadband internet subscription fee."
+    },
+    {
+      "id": "bill-3-user_3GeEA85elag3gW3twuGN3mLiS4W-0uai0",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "Chase Auto Loan Amortization",
+      "dueDate": "2026-08-12",
+      "amount": 350,
+      "status": "Pending",
+      "category": "Loans/EMIs",
+      "priority": "High",
+      "notes": "Auto-debit loan payment for household vehicle."
+    },
+    {
+      "id": "bill-4-user_3GeEA85elag3gW3twuGN3mLiS4W-whrcv",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "Trinity School Fees",
+      "dueDate": "2026-08-15",
+      "amount": 400,
+      "status": "Pending",
+      "category": "School Fees",
+      "priority": "Medium",
+      "notes": "Quarterly tuition fee payment."
+    },
+    {
+      "id": "bill-1-user_3Ha77CDZHup5UFilbM05ew4oaEU-plq9s",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "PG&E Electricity & Gas",
+      "dueDate": "2026-08-10",
+      "amount": 142.5,
+      "status": "Pending",
+      "category": "Upcoming Bills",
+      "priority": "Medium",
+      "notes": "Monthly utilities for electricity and gas heating."
+    },
+    {
+      "id": "bill-2-user_3Ha77CDZHup5UFilbM05ew4oaEU-xjs6a",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "Comcast Xfinity Internet",
+      "dueDate": "2026-08-13",
+      "amount": 85,
+      "status": "Pending",
+      "category": "Upcoming Bills",
+      "priority": "Low",
+      "notes": "High-speed broadband internet subscription fee."
+    },
+    {
+      "id": "bill-3-user_3Ha77CDZHup5UFilbM05ew4oaEU-2xf0c",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "Chase Auto Loan Amortization",
+      "dueDate": "2026-08-12",
+      "amount": 350,
+      "status": "Pending",
+      "category": "Loans/EMIs",
+      "priority": "High",
+      "notes": "Auto-debit loan payment for household vehicle."
+    },
+    {
+      "id": "bill-4-user_3Ha77CDZHup5UFilbM05ew4oaEU-z0dfx",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "Trinity School Fees",
+      "dueDate": "2026-08-15",
+      "amount": 400,
+      "status": "Pending",
+      "category": "School Fees",
+      "priority": "Medium",
+      "notes": "Quarterly tuition fee payment."
     }
   ],
   "appointments": [
@@ -2469,6 +2814,54 @@
       "priority": "High",
       "category": "Medical Consults",
       "notes": "Routine vaccination and physical growth checkup."
+    },
+    {
+      "id": "appt-1-user_3GeEA85elag3gW3twuGN3mLiS4W-j3we7",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "Routine Dental Care & Cleaning",
+      "date": "2026-08-09",
+      "time": "10:00 AM",
+      "status": "Upcoming",
+      "location": "Apex Dentistry Suite 2B",
+      "priority": "Medium",
+      "category": "Medical Consults",
+      "notes": "Bi-annual teeth cleaning and visual dental exam."
+    },
+    {
+      "id": "appt-2-user_3GeEA85elag3gW3twuGN3mLiS4W-538ip",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "name": "Kaiser Pediatrician Consult (Emma)",
+      "date": "2026-08-14",
+      "time": "02:30 PM",
+      "status": "Upcoming",
+      "location": "Pediatrics Desk A, Kaiser Permanente",
+      "priority": "High",
+      "category": "Medical Consults",
+      "notes": "Routine vaccination and physical growth checkup."
+    },
+    {
+      "id": "appt-1-user_3Ha77CDZHup5UFilbM05ew4oaEU-acvuz",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "Routine Dental Care & Cleaning",
+      "date": "2026-08-09",
+      "time": "10:00 AM",
+      "status": "Upcoming",
+      "location": "Apex Dentistry Suite 2B",
+      "priority": "Medium",
+      "category": "Medical Consults",
+      "notes": "Bi-annual teeth cleaning and visual dental exam."
+    },
+    {
+      "id": "appt-2-user_3Ha77CDZHup5UFilbM05ew4oaEU-216oi",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "name": "Kaiser Pediatrician Consult (Emma)",
+      "date": "2026-08-14",
+      "time": "02:30 PM",
+      "status": "Upcoming",
+      "location": "Pediatrics Desk A, Kaiser Permanente",
+      "priority": "High",
+      "category": "Medical Consults",
+      "notes": "Routine vaccination and physical growth checkup."
     }
   ],
   "checkIns": {
@@ -2489,6 +2882,11 @@
         "date": "2026-07-17",
         "timestamp": "2026-07-17T09:39:39.502Z",
         "method": "login"
+      },
+      "2026-08-07": {
+        "date": "2026-08-07",
+        "timestamp": "2026-08-07T08:43:33.932Z",
+        "method": "login"
       }
     },
     "user_3Gd6gh3imANxBppCOVcfM9XpTVP": {
@@ -2503,6 +2901,11 @@
         "date": "2026-07-18",
         "timestamp": "2026-07-18T04:51:26.837Z",
         "method": "login"
+      },
+      "2026-08-07": {
+        "date": "2026-08-07",
+        "timestamp": "2026-08-07T09:04:15.923Z",
+        "method": "emailConfirm"
       }
     },
     "sandbox-demo": {
@@ -2510,6 +2913,20 @@
         "date": "2026-08-06",
         "timestamp": "2026-08-06T12:13:25.421Z",
         "method": "emailConfirm"
+      }
+    },
+    "user_3GeEA85elag3gW3twuGN3mLiS4W": {
+      "2026-08-07": {
+        "date": "2026-08-07",
+        "timestamp": "2026-08-07T08:30:48.450Z",
+        "method": "login"
+      }
+    },
+    "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
+      "2026-08-07": {
+        "date": "2026-08-07",
+        "timestamp": "2026-08-07T09:15:56.227Z",
+        "method": "login"
       }
     }
   },
@@ -2548,15 +2965,13 @@
       "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
       "currentStreak": 1,
       "longestStreak": 1,
-      "lastCheckInDate": "2026-07-17",
-      "lastCheckInTimestamp": "2026-07-17T09:39:39.502Z",
+      "lastCheckInDate": "2026-08-07",
+      "lastCheckInTimestamp": "2026-08-07T08:43:33.945Z",
       "status": "Verified",
       "lastKnownLocation": {
-        "latitude": 37.77009216121586,
-        "longitude": -122.42844601882003,
-        "timestamp": "2026-07-17T09:39:39.503Z",
-        "batteryLevel": 94,
-        "isCharging": true
+        "latitude": 17.47456591401534,
+        "longitude": 78.48317288563204,
+        "timestamp": "2026-08-07T09:15:29.585Z"
       }
     },
     "user_3Gd6gh3imANxBppCOVcfM9XpTVP": {
@@ -2578,15 +2993,41 @@
       "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
       "currentStreak": 1,
       "longestStreak": 1,
-      "lastCheckInDate": "2026-07-18",
-      "lastCheckInTimestamp": "2026-07-18T04:51:26.843Z",
+      "lastCheckInDate": "2026-08-07",
+      "lastCheckInTimestamp": "2026-08-07T09:04:15.931Z",
       "status": "Verified",
       "lastKnownLocation": {
         "latitude": 37.76587533713844,
         "longitude": -122.41709021749676,
-        "timestamp": "2026-07-18T04:51:26.843Z",
-        "batteryLevel": 94,
-        "isCharging": true
+        "timestamp": "2026-08-07T09:04:15.931Z",
+        "batteryLevel": 82,
+        "isCharging": false
+      }
+    },
+    "user_3GeEA85elag3gW3twuGN3mLiS4W": {
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "currentStreak": 1,
+      "longestStreak": 1,
+      "lastCheckInDate": "2026-08-07",
+      "lastCheckInTimestamp": "2026-08-07T08:30:48.458Z",
+      "status": "Verified",
+      "lastKnownLocation": {
+        "latitude": 17.474556917344643,
+        "longitude": 78.48314679110669,
+        "timestamp": "2026-08-07T09:44:48.283Z"
+      }
+    },
+    "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "currentStreak": 1,
+      "longestStreak": 1,
+      "lastCheckInDate": "2026-08-07",
+      "lastCheckInTimestamp": "2026-08-07T09:15:56.232Z",
+      "status": "Verified",
+      "lastKnownLocation": {
+        "latitude": 17.474583272563592,
+        "longitude": 78.48309173096077,
+        "timestamp": "2026-08-07T09:16:38.639Z"
       }
     }
   },
@@ -2652,6 +3093,28 @@
       ],
       "gracePeriodMinutes": 120,
       "targetKeywords": ""
+    },
+    "user_3GeEA85elag3gW3twuGN3mLiS4W": {
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "checkInWindowStart": "08:00",
+      "checkInWindowEnd": "20:00",
+      "reminderIntervals": [
+        120,
+        60,
+        15
+      ],
+      "gracePeriodMinutes": 120
+    },
+    "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "checkInWindowStart": "08:00",
+      "checkInWindowEnd": "20:00",
+      "reminderIntervals": [
+        120,
+        60,
+        15
+      ],
+      "gracePeriodMinutes": 120
     }
   },
   "continuityPlans": {},
@@ -2830,6 +3293,46 @@
       "time": "5:43:25 PM",
       "method": "emailConfirm",
       "methodLabel": "Check-In",
+      "status": "Success"
+    },
+    {
+      "id": "evt-fwz17l0xg",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-08-07T08:30:48.461Z",
+      "date": "2026-08-07",
+      "time": "2:00:48 PM",
+      "method": "login",
+      "methodLabel": "App Login",
+      "status": "Success"
+    },
+    {
+      "id": "evt-qm7tqh74p",
+      "uid": "user_3GcqPLi4XNH5hXNkQF479COiUhX",
+      "timestamp": "2026-08-07T08:43:33.950Z",
+      "date": "2026-08-07",
+      "time": "2:13:33 PM",
+      "method": "login",
+      "methodLabel": "App Login",
+      "status": "Success"
+    },
+    {
+      "id": "evt-172h3v2v4",
+      "uid": "user_3Gf6T6vJDCoF2uhIvvE7G0pBRTL",
+      "timestamp": "2026-08-07T09:04:15.935Z",
+      "date": "2026-08-07",
+      "time": "2:34:15 PM",
+      "method": "emailConfirm",
+      "methodLabel": "Check-In",
+      "status": "Success"
+    },
+    {
+      "id": "evt-q3p8z5gf4",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-08-07T09:15:56.236Z",
+      "date": "2026-08-07",
+      "time": "2:45:56 PM",
+      "method": "login",
+      "methodLabel": "App Login",
       "status": "Success"
     }
   ],
