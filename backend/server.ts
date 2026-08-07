@@ -35,6 +35,9 @@ import {
 } from "./repositories";
 import { checkInactivityAndAlert } from "./inactivity-checker";
 import "./scheduler";
+import multer from 'multer';
+import Tesseract from 'tesseract.js';
+import { extractTextFromFile, extractKeyFields } from './ocr-service';
 
 // Shared repository bundle for the emergency mail pipeline (report + delivery).
 const emergencyRepos = {
@@ -1285,19 +1288,99 @@ app.post("/api/documents/:id/extract", async (req, res) => {
     const doc = await documentsService.getDocument(id);
     if (!doc) return res.status(404).json({ error: "Document not found" });
 
-    const ai = getAI();
-    const result = await documentsService.extractDocumentPolicy(id, doc.fileUrl, doc.documentType, ai);
-    res.json({ extraction: result });
+    const fileName = doc.fileUrl.replace("/api/uploads/", "");
+    const filePath = path.join(UPLOADS_DIR, fileName);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "Document file not found on disk" });
+    }
+    const buffer = fs.readFileSync(filePath);
+
+    const ext = path.extname(fileName).toLowerCase();
+    let mimeType = "application/octet-stream";
+    if (ext === ".pdf") mimeType = "application/pdf";
+    else if (ext === ".png") mimeType = "image/png";
+    else if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+    else if (ext === ".webp") mimeType = "image/webp";
+    else if (ext === ".tiff" || ext === ".tif") mimeType = "image/tiff";
+
+    // 60-second execution timeout check
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Reading is taking longer than expected. Try a smaller or clearer image.")), 60000)
+    );
+
+    const result = await Promise.race([
+      extractTextFromFile(buffer, mimeType),
+      timeoutPromise
+    ]);
+
+    if (!result.extractedText || !result.extractedText.trim()) {
+      return res.status(400).json({
+        error: "Could not read text from this document. Please ensure the image is clear and not blurry. You can still save the document manually."
+      });
+    }
+
+    const keyFields = extractKeyFields(result.extractedText);
+
+    // Save full extractions payload to PostgreSQL policy_extractions table
+    const insertQuery = `
+      INSERT INTO policy_extractions (user_id, extracted_data, created_at)
+      VALUES ($1, $2::jsonb, NOW())
+    `;
+    await pgPool.query(insertQuery, [doc.uid, JSON.stringify({
+      documentId: id,
+      extractedText: result.extractedText,
+      confidence: result.confidence,
+      method: result.method,
+      documentType: keyFields.documentType,
+      category: keyFields.category,
+      priority: keyFields.priority,
+      keyFields,
+      summary: keyFields.summary,
+      tags: keyFields.tags
+    })]);
+
+    console.log('OCR complete:', {
+      userId: doc.uid,
+      documentType: keyFields.documentType,
+      confidence: result.confidence,
+      method: result.method,
+      fieldsFound: Object.keys(keyFields).length
+    });
+
+    // Save short extraction fields for general display in details view
+    const updatedExt = await documentsService.saveExtraction(id, {
+      policyNumber: keyFields.policyNumber || keyFields.accountNumber || "",
+      expiryDate: keyFields.dates?.[0] || "",
+      coverage: keyFields.summary || "",
+      nominee: keyFields.emails?.[0] || "",
+      hospitalName: keyFields.phones?.[0] || ""
+    });
+
+    res.json({ extraction: updatedExt, fullOcr: { ...result, keyFields } });
   } catch (err: any) {
     console.error("Document extraction failed", err);
-    res.status(500).json({ error: "Failed to extract document details" });
+    res.status(500).json({ error: err.message || "Failed to extract document details" });
   }
 });
 
 app.get("/api/documents/:id/extraction", async (req, res) => {
+  const id = req.params.id;
   try {
-    const ext = await documentsService.getExtraction(req.params.id) || null;
-    res.json(ext);
+    const ext = await documentsService.getExtraction(id) || null;
+    
+    // Also try to get the full OCR extraction data
+    const query = `
+      SELECT extracted_data FROM policy_extractions 
+      WHERE (extracted_data->>'documentId') = $1
+      ORDER BY created_at DESC LIMIT 1
+    `;
+    const fullRes = await pgPool.query(query, [id]);
+    const fullOcr = fullRes.rows[0]?.extracted_data || null;
+
+    res.json({
+      ...ext,
+      fullOcr
+    });
   } catch (err: any) {
     console.error("Get extraction failed", err);
     res.status(500).json({ error: "Failed to get extraction details" });
@@ -2284,6 +2367,119 @@ Please answer the user's question, which is spoken in the audio file. Be concise
   }
 });
 
+const ocrUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/tiff",
+      "application/pdf"
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF, PNG, JPEG, and WEBP files are supported."));
+    }
+  }
+});
+
+app.post("/api/vault/extract-document", (req, res, next) => {
+  const uploadSingle = ocrUpload.single("file");
+  uploadSingle(req, res, (err: any) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ error: "File too large. Please upload under 10MB." });
+      }
+      return res.status(400).json({ error: err.message || "Upload failed" });
+    }
+    next();
+  });
+}, async (req: any, res) => {
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({ error: "No file uploaded." });
+  }
+
+  const userId = req.body.userId || req.body.uid || "sandbox-demo";
+
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Reading is taking longer than expected. Try a smaller or clearer image.")), 60000)
+    );
+
+    const result = await Promise.race([
+      extractTextFromFile(file.buffer, file.mimetype),
+      timeoutPromise
+    ]);
+
+    if (!result.extractedText || !result.extractedText.trim()) {
+      return res.status(400).json({
+        error: "Could not read text from this document. Please ensure the image is clear and not blurry. You can still save the document manually."
+      });
+    }
+
+    const keyFields = extractKeyFields(result.extractedText);
+
+    let qualityLabel = "Low Accuracy — image may be unclear";
+    let qualityColor = "red";
+    if (result.confidence >= 85) {
+      qualityLabel = "High Accuracy";
+      qualityColor = "green";
+    } else if (result.confidence >= 65) {
+      qualityLabel = "Medium Accuracy — review extracted text";
+      qualityColor = "yellow";
+    }
+
+    const responseObj = {
+      extractedText: result.extractedText,
+      confidence: result.confidence,
+      method: result.method,
+      documentType: keyFields.documentType,
+      category: keyFields.category,
+      priority: keyFields.priority,
+      qualityLabel,
+      qualityColor,
+      keyFields: {
+        policyNumber: keyFields.policyNumber,
+        accountNumber: keyFields.accountNumber,
+        dates: keyFields.dates,
+        amounts: keyFields.amounts,
+        emails: keyFields.emails,
+        phones: keyFields.phones,
+        panNumber: keyFields.panNumber,
+        aadhaarNumber: keyFields.aadhaarNumber
+      },
+      summary: keyFields.summary,
+      tags: keyFields.tags
+    };
+
+    // Save to PostgreSQL policy_extractions table
+    const insertQuery = `
+      INSERT INTO policy_extractions (user_id, extracted_data, created_at)
+      VALUES ($1, $2::jsonb, NOW())
+    `;
+    await pgPool.query(insertQuery, [userId, JSON.stringify(responseObj)]);
+
+    console.log('OCR complete:', {
+      userId,
+      documentType: keyFields.documentType,
+      confidence: result.confidence,
+      method: result.method,
+      fieldsFound: Object.keys(keyFields).length
+    });
+
+    return res.json(responseObj);
+  } catch (err: any) {
+    console.error("[OCR API ERROR]:", err.message || err);
+    return res.status(500).json({ error: err.message || "Failed to process document OCR." });
+  }
+});
+
 // Convert an Express route path (/api/users/:id) to a RegExp for matching.
 function pToRegex(p: string): RegExp {
   const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -2329,6 +2525,16 @@ async function startServer() {
   // Emergency scheduled mail: backend grace-period monitor. Runs continuously,
   // survives restarts (state re-read from db each tick), and is idempotent.
   startGraceMonitor(emergencyRepos, deliveryRepository, getAI(), userRepository);
+
+  // Warm up and cache Tesseract language data
+  const tinyPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
+  Tesseract.recognize(
+    tinyPng, 'eng'
+  ).then(() => {
+    console.log('Tesseract language data cached successfully');
+  }).catch((err) => {
+    console.log('Tesseract language data caching check done:', err.message || err);
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
