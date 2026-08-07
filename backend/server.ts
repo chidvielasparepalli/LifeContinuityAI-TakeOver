@@ -33,6 +33,8 @@ import {
   documentRepository,
   alertRepository
 } from "./repositories";
+import { checkInactivityAndAlert } from "./inactivity-checker";
+import "./scheduler";
 
 // Shared repository bundle for the emergency mail pipeline (report + delivery).
 const emergencyRepos = {
@@ -837,109 +839,10 @@ app.post("/api/auth/clerk-sync", async (req, res) => {
   }
 });
 
-async function checkInactivityAndAlert(userId: string) {
-  try {
-    const userRes = await pgPool.query('SELECT * FROM users WHERE id = $1', [userId]);
-    const user = userRes.rows[0];
 
-    const profileRes = await pgPool.query('SELECT * FROM emergency_profiles WHERE user_id = $1', [userId]);
-    const profile = profileRes.rows[0];
-
-    if (!user || !profile || !profile.streak_duration || !profile.grace_period || !profile.last_active_timestamp) {
-      console.log(`[checkInactivityAndAlert] Skipping user ${userId} due to incomplete profile.`);
-      return;
-    }
-
-    const now = Date.now();
-    const lastActiveTime = new Date(profile.last_active_timestamp).getTime();
-    const streakDurationMs = profile.streak_duration * 24 * 60 * 60 * 1000;
-    const gracePeriodMs = profile.grace_period * 60 * 60 * 1000;
-
-    const streakExpiryTime = lastActiveTime + streakDurationMs;
-    const graceExpiryTime = streakExpiryTime + gracePeriodMs;
-
-    const CONFIRMATION_WINDOW_MS = Number(process.env.EMERGENCY_CONFIRMATION_WINDOW_MS || (12 * 60 * 60 * 1000));
-
-    // Reset status to 'Safe' if user is active but profile is flagged as inactive
-    if (profile.current_streak_status !== 'Safe' && now <= graceExpiryTime) {
-      await pgPool.query(`
-        UPDATE emergency_profiles 
-        SET current_streak_status = 'Safe'
-        WHERE user_id = $1
-      `, [userId]);
-
-      await pgPool.query(`
-        INSERT INTO security_alerts (id, user_id, timestamp, event, details)
-        VALUES ($1, $2, NOW(), $3, $4)
-      `, [
-        "alert-" + Math.random().toString(36).substr(2, 9),
-        userId,
-        "Life Streak Restored",
-        `User activity detected. Resetting streak status to 'Safe'.`
-      ]);
-      console.log(`[checkInactivityAndAlert] User ${user.email} status restored -> 'Safe'.`);
-    } else if (profile.current_streak_status === 'Safe' || !profile.current_streak_status) {
-      if (now > graceExpiryTime) {
-        await pgPool.query(`
-          UPDATE emergency_profiles 
-          SET current_streak_status = 'Awaiting Confirmation'
-          WHERE user_id = $1
-        `, [userId]);
-
-        await pgPool.query(`
-          INSERT INTO security_alerts (id, user_id, timestamp, event, details)
-          VALUES ($1, $2, NOW(), $3, $4)
-        `, [
-          "alert-" + Math.random().toString(36).substr(2, 9),
-          userId,
-          "Life Streak Expired",
-          `User's inactivity period exceeded ${profile.streak_duration} days + ${profile.grace_period}h grace. Confirmation email sent.`
-        ]);
-
-        if (user.email && user.name) {
-          await sendConfirmationEmailToUser(userId, user.email, user.name, deliveryRepository, alertRepository);
-          console.log(`[checkInactivityAndAlert] User ${user.email} status -> 'Awaiting Confirmation'. Confirmation email sent.`);
-        }
-      }
-    } else if (profile.current_streak_status === 'Awaiting Confirmation') {
-      let confirmationSentTimestamp = 0;
-      const alertRes = await pgPool.query(
-        `SELECT timestamp FROM security_alerts 
-         WHERE user_id = $1 AND event = 'Life Streak Expired' 
-         ORDER BY timestamp DESC LIMIT 1`, 
-        [userId]
-      );
-      if (alertRes.rows.length > 0) {
-        confirmationSentTimestamp = new Date(alertRes.rows[0].timestamp).getTime();
-      }
-
-      if (now > confirmationSentTimestamp + CONFIRMATION_WINDOW_MS) {
-        await pgPool.query(`
-          UPDATE emergency_profiles 
-          SET current_streak_status = 'Emergency Suspected'
-          WHERE user_id = $1
-        `, [userId]);
-
-        await pgPool.query(`
-          INSERT INTO security_alerts (id, user_id, timestamp, event, details)
-          VALUES ($1, $2, NOW(), $3, $4)
-        `, [
-          "alert-" + Math.random().toString(36).substr(2, 9),
-          userId,
-          "Emergency Suspected",
-          `User did not respond to confirmation within ${CONFIRMATION_WINDOW_MS / 3_600_000}h. Notifying nominee.`
-        ]);
-
-        await sendNomineeAlertEmail(userId, emergencyRepos, deliveryRepository);
-        console.log(`[checkInactivityAndAlert] User ${user.email} status -> 'Emergency Suspected'. Nominee notified.`);
-      }
-    }
-  } catch (err: any) {
-    console.error(`[checkInactivityAndAlert] Error:`, err.message || err);
-  }
-}
 
 app.post("/api/track-login", async (req, res) => {
+  console.log(`[TRACK-LOGIN ROUTE HIT] Body:`, req.body);
   const { userId } = req.body;
   if (!userId) {
     return res.status(400).json({ error: "Missing userId in request body" });
@@ -965,12 +868,16 @@ app.post("/api/track-login", async (req, res) => {
 
     if (profileCheck.rows.length > 0) {
       await pgPool.query(
-        'UPDATE emergency_profiles SET last_active_timestamp = NOW() WHERE user_id = $1',
+        `UPDATE emergency_profiles 
+         SET last_active_timestamp = NOW(), 
+             current_streak_status = 'Safe' 
+         WHERE user_id = $1`,
         [userId]
       );
     } else {
       await pgPool.query(
-        'INSERT INTO emergency_profiles (user_id, last_active_timestamp) VALUES ($1, NOW())',
+        `INSERT INTO emergency_profiles (user_id, last_active_timestamp, current_streak_status) 
+         VALUES ($1, NOW(), 'Safe')`,
         [userId]
       );
     }
@@ -1027,6 +934,13 @@ app.get("/api/profile/:uid", async (req, res) => {
 app.put("/api/profile/:uid", async (req, res) => {
   const uid = req.params.uid;
   const { name, age, bloodGroup, emergencyContactName, emergencyContactPhone, medicalInfo, nomineePin, nomineePhone, nomineeName, trustedContacts, streakDuration, gracePeriod, emergencyNomineeName, emergencyNomineeEmail } = req.body;
+
+  if (!emergencyNomineeName || !emergencyNomineeName.trim()) {
+    return res.status(400).json({ error: "Emergency Nominee Name is mandatory" });
+  }
+  if (!emergencyNomineeEmail || !emergencyNomineeEmail.trim()) {
+    return res.status(400).json({ error: "Emergency Nominee Email is mandatory" });
+  }
 
   try {
     const profile = await userService.updateProfile(uid, {
