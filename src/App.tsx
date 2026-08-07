@@ -98,6 +98,11 @@ export default function App() {
           .then((data) => {
             setUser(data.user);
             setRole("user");
+            apiFetch("/api/track-login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: uid })
+            }).catch((err) => console.error("Postgres track-login error:", err));
           })
           .catch((err) => {
             console.error("Clerk sync error, bypassing and logging in locally:", err);
@@ -108,6 +113,11 @@ export default function App() {
               createdAt: new Date().toISOString()
             });
             setRole("user");
+            apiFetch("/api/track-login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: uid })
+            }).catch((e) => console.error("Postgres track-login error:", e));
           });
       }
     } else if (isClerkLoaded && !isSignedIn && role === "user" && user && (user.uid?.startsWith("user_") || user.uid?.startsWith("user-clerk"))) {
@@ -142,6 +152,11 @@ export default function App() {
         createdAt: new Date().toISOString()
       });
       setRole("user");
+      apiFetch("/api/track-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: uid })
+      }).catch((e) => console.error("Postgres track-login error:", e));
     }
   }, [isSignedIn, role, syncTimeoutReached, clerkUser]);
 

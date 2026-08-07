@@ -313,7 +313,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                   
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1.5">
                     {[
-                      { mins: 30, label: "30 Minutes", desc: "Ultra-high alert" },
+                      { mins: 2, label: "2 Minutes", desc: "Ultra-high alert" },
                       { mins: 60, label: "1 Hour", desc: "High alert" },
                       { mins: 120, label: "2 Hours", desc: "Standard buffer" },
                       { mins: 240, label: "4 Hours", desc: "Relaxed buffer" }
