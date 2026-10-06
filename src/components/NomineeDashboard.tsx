@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import NomineeLockedDashboard from "./NomineeLockedDashboard";
+import LoadingState from "./LoadingState";
 import { apiFetch } from "../lib/api";
 import { 
   AlertTriangle, 
@@ -123,9 +124,8 @@ export default function NomineeDashboard({
 
   if (loading) {
     return (
-      <div className="min-h-[400px] flex flex-col justify-center items-center text-xs text-[#5d6fa3] font-medium p-8">
-        <Sparkles className="h-8 w-8 text-[#e0dafc] animate-spin mb-3" />
-        Decrypting secure handover vaults...
+      <div className="p-4 sm:p-6">
+        <LoadingState label="Decrypting secure handover vaults" />
       </div>
     );
   }
@@ -188,7 +188,7 @@ export default function NomineeDashboard({
 
   if (!isActive) {
     return (
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc]">
+       <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc]">
         {renderSimulatorToolbar()}
         <NomineeLockedDashboard
           ownerUid={ownerUid}
@@ -214,13 +214,13 @@ export default function NomineeDashboard({
   const isLowBattery = batteryLevel <= 20;
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc] space-y-6">
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc] space-y-6">
       
       {renderSimulatorToolbar()}
 
       {/* Header bar */}
       {!isOwnerPreview && (
-        <header className="bg-[#2c3353] text-white py-4 px-6 rounded-2xl shadow-md flex items-center justify-between border border-[#5d6fa3]/20">
+        <header className="lc-panel text-white py-4 px-6 shadow-md flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-[#e0dafc]" />
             <div>
@@ -328,7 +328,7 @@ export default function NomineeDashboard({
       )}
 
       {/* Emergency Status: user name, last active time, current status */}
-      <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+       <div className="lc-panel shadow-lg p-6 space-y-4">
         <h3 className="font-black text-white text-sm flex items-center gap-1.5">
           <HeartPulse className="h-4.5 w-4.5 text-indigo-300" />
           Emergency Status
@@ -361,7 +361,7 @@ export default function NomineeDashboard({
       </div>
 
       {/* Gemini AI Priority Timeline Overview */}
-      <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-3">
+       <div className="lc-panel shadow-lg p-6 space-y-3">
         <h3 className="font-black text-white text-sm flex items-center gap-1.5">
           <Sparkles className="h-4.5 w-4.5 text-indigo-300" />
           Priority Action Briefing Narrative
@@ -373,7 +373,7 @@ export default function NomineeDashboard({
 
       {/* Real-time Device Telemetry & Location tracking Panel */}
       {plan?.lastKnownLocation && (
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4 animate-fade-in">
+         <div className="lc-panel shadow-lg p-6 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
             <h3 className="font-black text-white text-sm flex items-center gap-1.5">
               <Smartphone className="h-4.5 w-4.5 text-indigo-300" />
@@ -461,7 +461,7 @@ export default function NomineeDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Panel 1: Critical bills & pending EMIs */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+         <div className="lc-panel shadow-lg p-6 space-y-4">
           <div className="flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-3">
             <Calendar className="h-4.5 w-4.5 text-red-400" />
             <h3 className="font-bold text-white text-sm">
@@ -489,7 +489,7 @@ export default function NomineeDashboard({
         </div>
 
         {/* Panel 2: Secure released documents */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+         <div className="lc-panel shadow-lg p-6 space-y-4">
           <div className="flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-3">
             <FileText className="h-4.5 w-4.5 text-indigo-400" />
             <h3 className="font-bold text-white text-sm">

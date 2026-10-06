@@ -3,6 +3,7 @@ import { Clock, Sliders, Calendar, AlertTriangle, CheckCircle, Smartphone, Flame
 import { CheckInMethod } from "../types";
 import { triggerCheckIn } from "../lib/checkinService";
 import { apiFetch } from "../lib/api";
+import LoadingState from "./LoadingState";
 
 interface CheckInSystemProps {
   uid: string;
@@ -36,6 +37,7 @@ export default function CheckInSystem({
   const [loading, setLoading] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [simStatus, setSimStatus] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const loadCheckInData = async () => {
     try {
@@ -67,6 +69,8 @@ export default function CheckInSystem({
       setEvents(Array.isArray(evtsData) ? evtsData : []);
     } catch (e) {
       console.error(e);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -249,12 +253,20 @@ export default function CheckInSystem({
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
+        <LoadingState label="Loading your proof-of-life monitor" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8" id="proof-of-life-system">
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 space-y-8" id="proof-of-life-system">
       
       {/* Celebration Banner */}
       {justCheckedIn && (
-        <div className="bg-emerald-950/40 border-2 border-emerald-500/50 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-emerald-950/20 animate-bounce">
+        <div className="lc-alert-success p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-emerald-950/20 animate-fade-in" role="status" aria-live="polite">
           <div className="flex items-center gap-4 text-center sm:text-left">
             <div className="h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-400/40">
               <ShieldCheck className="h-6 w-6 text-emerald-400 animate-pulse" />
@@ -265,6 +277,7 @@ export default function CheckInSystem({
             </div>
           </div>
           <button
+            type="button"
             onClick={() => { if (setJustCheckedIn) setJustCheckedIn(false); }}
             className="text-xs font-bold text-emerald-400 hover:text-white bg-emerald-900/40 border border-emerald-500/20 py-2 px-4 rounded-xl transition-all cursor-pointer"
           >
@@ -276,7 +289,7 @@ export default function CheckInSystem({
       {/* Modern High-Impact Stats Cards Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Safety Status */}
-        <div className="bg-[#2c3353] p-5 rounded-2xl border border-[#5d6fa3]/30 shadow-md flex items-start justify-between gap-4 text-white">
+        <div className="lc-panel-raised p-5 shadow-md flex items-start justify-between gap-4 text-white">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-[#e0dafc]/50">Safety Status</span>
             <p className={`text-xl font-extrabold mt-1.5 flex items-center gap-2 ${
@@ -296,7 +309,7 @@ export default function CheckInSystem({
         </div>
 
         {/* Card 2: Streak */}
-        <div className="bg-[#2c3353] p-5 rounded-2xl border border-[#5d6fa3]/30 shadow-md flex items-start justify-between gap-4 text-white">
+        <div className="lc-panel-raised p-5 shadow-md flex items-start justify-between gap-4 text-white">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-[#e0dafc]/50">Consecutive Days</span>
             <p className="text-2xl font-black text-white mt-1.5">{stats?.currentStreak || 0} Days</p>
@@ -310,7 +323,7 @@ export default function CheckInSystem({
         </div>
 
         {/* Card 3: Reliability Ratio */}
-        <div className="bg-[#2c3353] p-5 rounded-2xl border border-[#5d6fa3]/30 shadow-md flex items-start justify-between gap-4 text-white">
+        <div className="lc-panel-raised p-5 shadow-md flex items-start justify-between gap-4 text-white">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-[#e0dafc]/50">Check-In Ratio</span>
             <p className="text-2xl font-black text-white mt-1.5">
@@ -330,7 +343,7 @@ export default function CheckInSystem({
         </div>
 
         {/* Card 4: Daily Deadline */}
-        <div className="bg-[#2c3353] p-5 rounded-2xl border border-[#5d6fa3]/30 shadow-md flex items-start justify-between gap-4 text-white">
+        <div className="lc-panel-raised p-5 shadow-md flex items-start justify-between gap-4 text-white">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-[#e0dafc]/50">Daily Deadline</span>
             <p className="text-xl font-extrabold text-white mt-1.5 font-mono">{winEnd}</p>
@@ -350,7 +363,7 @@ export default function CheckInSystem({
         <div className="space-y-6">
           
           {/* Settings Box */}
-          <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4 text-[#e0dafc]">
+          <div className="lc-panel shadow-lg p-6 space-y-4 text-[#e0dafc]">
             <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
               <Settings className="h-5 w-5 text-[#e0dafc]" />
               <h3 className="font-bold text-white text-sm">Escalation Window Settings</h3>
@@ -359,8 +372,9 @@ export default function CheckInSystem({
             <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-[#5d6fa3] uppercase tracking-widest">Window Open</label>
-                  <input
+                   <label htmlFor="checkin-window-start" className="block text-[10px] font-bold text-[#5d6fa3] uppercase tracking-widest">Window Open</label>
+                   <input
+                     id="checkin-window-start"
                     type="text"
                     value={winStart}
                     onChange={(e) => setWinStart(e.target.value)}
@@ -369,8 +383,9 @@ export default function CheckInSystem({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-[#5d6fa3] uppercase tracking-widest">Window Close</label>
-                  <input
+                   <label htmlFor="checkin-window-end" className="block text-[10px] font-bold text-[#5d6fa3] uppercase tracking-widest">Window Close</label>
+                   <input
+                     id="checkin-window-end"
                     type="text"
                     value={winEnd}
                     onChange={(e) => setWinEnd(e.target.value)}
@@ -381,8 +396,9 @@ export default function CheckInSystem({
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-[#5d6fa3] uppercase tracking-widest">Grace Period (Minutes)</label>
-                <input
+                 <label htmlFor="checkin-grace-period" className="block text-[10px] font-bold text-[#5d6fa3] uppercase tracking-widest">Grace Period (Minutes)</label>
+                 <input
+                   id="checkin-grace-period"
                   type="number"
                   value={grace}
                   onChange={(e) => setGrace(Number(e.target.value))}
@@ -405,7 +421,7 @@ export default function CheckInSystem({
           </div>
 
           {/* Real-time Webhook Simulation Panel */}
-          <div className="bg-[#2c3353] rounded-2xl border border-red-900/50 shadow-lg p-6 space-y-4">
+          <div className="lc-panel shadow-lg p-6 space-y-4">
             <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
               <Sliders className="h-5 w-5 text-red-400" />
               <h3 className="font-bold text-white text-sm">Escalation Simulation Engine</h3>
@@ -424,6 +440,7 @@ export default function CheckInSystem({
             <div className="space-y-2.5 text-xs">
               {/* One-tap Webhook simulated loops */}
               <button
+                type="button"
                 onClick={() => handleSimulateWebhook(CheckInMethod.SmsReply)}
                 className="w-full bg-[#1e233a] hover:bg-[#1e233a]/80 text-[#e0dafc] border border-[#5d6fa3]/30 font-bold py-2.5 px-4 rounded-xl flex items-center justify-between transition-colors"
               >
@@ -435,6 +452,7 @@ export default function CheckInSystem({
               </button>
 
               <button
+                type="button"
                 onClick={() => handleSimulateWebhook(CheckInMethod.PushAction)}
                 className="w-full bg-[#1e233a] hover:bg-[#1e233a]/80 text-[#e0dafc] border border-[#5d6fa3]/30 font-bold py-2.5 px-4 rounded-xl flex items-center justify-between transition-colors"
               >
@@ -447,6 +465,7 @@ export default function CheckInSystem({
 
               {/* Missed check-in grace trigger */}
               <button
+                type="button"
                 onClick={handleSimulateMissedCheckIn}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md mt-2"
               >
@@ -460,7 +479,7 @@ export default function CheckInSystem({
 
         {/* Check-in Calendar Timeline Panel */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6">
+          <div className="lc-panel shadow-lg p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">

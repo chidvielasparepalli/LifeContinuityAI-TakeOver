@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 interface AddCustomEventModalProps {
   customTitle: string;
@@ -41,15 +41,28 @@ export default function AddCustomEventModal({
   onClose,
   onSubmit,
 }: AddCustomEventModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#1e233a]/80 backdrop-blur-sm flex items-center justify-center p-4" id="modal-add-custom-event">
-      <div className="bg-[#2c3353] rounded-2xl max-w-md w-full p-6 border border-[#5d6fa3]/30 shadow-2xl space-y-4 text-[#e0dafc] max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-[#1e233a]/80 backdrop-blur-sm flex items-center justify-center p-4" id="modal-add-custom-event" role="dialog" aria-modal="true" aria-labelledby="add-event-modal-title">
+      <div className="lc-panel max-w-md w-full p-6 shadow-2xl space-y-4 text-[#e0dafc] max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
-          <h4 className="font-bold text-white text-base">Add Custom Life Obligation</h4>
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="text-[#5d6fa3] hover:text-white transition-colors cursor-pointer text-sm font-bold"
+          <h4 className="font-bold text-white text-base" id="add-event-modal-title">Add Custom Life Obligation</h4>
+          <button
+            type="button"
+            ref={closeButtonRef}
+            onClick={onClose}
+              className="lc-btn-secondary min-h-0 px-3 py-1.5 text-xs"
+              aria-label="Close add obligation dialog"
           >
             Close
           </button>
@@ -57,8 +70,9 @@ export default function AddCustomEventModal({
         
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Event / Obligation Title</label>
-            <input
+             <label htmlFor="add-event-title" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Event / Obligation Title</label>
+             <input
+               id="add-event-title"
               type="text"
               required
               value={customTitle}
@@ -70,8 +84,9 @@ export default function AddCustomEventModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Event Category</label>
-              <select
+               <label htmlFor="add-event-category" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Event Category</label>
+               <select
+                 id="add-event-category"
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value as any)}
                 className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
@@ -83,8 +98,9 @@ export default function AddCustomEventModal({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Priority Level</label>
-              <select
+               <label htmlFor="add-event-priority" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Priority Level</label>
+               <select
+                 id="add-event-priority"
                 value={customPriority}
                 onChange={(e) => setCustomPriority(e.target.value as any)}
                 className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
@@ -98,8 +114,9 @@ export default function AddCustomEventModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Target Date</label>
-              <input
+               <label htmlFor="add-event-date" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Target Date</label>
+               <input
+                 id="add-event-date"
                 type="date"
                 required
                 value={customDate}
@@ -108,8 +125,9 @@ export default function AddCustomEventModal({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Time</label>
-              <input
+               <label htmlFor="add-event-time" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Time</label>
+               <input
+                 id="add-event-time"
                 type="text"
                 value={customTime}
                 onChange={(e) => setCustomTime(e.target.value)}
@@ -121,8 +139,9 @@ export default function AddCustomEventModal({
 
           {customCategory === "Financial / EMI" ? (
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Ledger Amount ($)</label>
-              <input
+               <label htmlFor="add-event-amount" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Ledger Amount ($)</label>
+               <input
+                 id="add-event-amount"
                 type="number"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
@@ -132,8 +151,9 @@ export default function AddCustomEventModal({
             </div>
           ) : (
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Clinical / Meeting Location</label>
-              <input
+               <label htmlFor="add-event-location" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Clinical / Meeting Location</label>
+               <input
+                 id="add-event-location"
                 type="text"
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
@@ -144,8 +164,9 @@ export default function AddCustomEventModal({
           )}
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Detailed Description & Guidance notes</label>
-            <textarea
+             <label htmlFor="add-event-notes" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Detailed Description & Guidance notes</label>
+             <textarea
+               id="add-event-notes"
               value={customNotes}
               onChange={(e) => setCustomNotes(e.target.value)}
               rows={3}

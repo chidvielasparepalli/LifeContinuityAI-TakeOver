@@ -50,7 +50,7 @@ export default function DashboardStatsGrid({
       {cards.map((item, index) => {
         const ItemIcon = item.icon;
         return (
-          <div key={index} className={`p-4 rounded-2xl border flex items-start justify-between gap-4 shadow-md ${item.color}`}>
+          <div key={index} className={`lc-panel-raised p-4 rounded-2xl flex items-start justify-between gap-4 shadow-md transition-transform hover:-translate-y-0.5 ${item.color}`}>
             <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-[#e0dafc]/50">{item.title}</span>
               <p className="text-2xl font-black text-white mt-1.5">{item.count}</p>

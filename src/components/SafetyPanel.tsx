@@ -26,6 +26,7 @@ import {
   Eye
 } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import LoadingState from "./LoadingState";
 
 interface SafetyPanelProps {
   uid: string;
@@ -33,6 +34,7 @@ interface SafetyPanelProps {
 
 export default function SafetyPanel({ uid }: SafetyPanelProps) {
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Settings states corresponding to database
@@ -88,6 +90,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
         console.error("Error loading safety settings:", e);
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
     fetchSettings();
@@ -179,11 +182,19 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
+        <LoadingState label="Loading your safety playbook" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc] space-y-8 animate-fade-in">
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc] space-y-8 animate-fade-in">
       
       {/* Description Info Header */}
-      <div className="bg-[#2c3353]/60 border border-[#5d6fa3]/25 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="lc-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h3 className="text-base font-bold text-white flex items-center gap-2">
             <Shield className="h-5 w-5 text-indigo-400" />
@@ -206,7 +217,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
           <form onSubmit={handleSave} className="space-y-6">
             
             {/* Box 1: Checking intervals & active window */}
-            <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6">
+            <div className="lc-panel shadow-lg p-6 space-y-6">
               <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
                 <div className="h-9 w-9 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
                   <Clock className="h-4.5 w-4.5" />
@@ -259,8 +270,9 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                     
                     <div className="grid grid-cols-2 gap-3.5 pt-1.5">
                       <div className="space-y-1">
-                        <span className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Opens</span>
-                        <input
+                         <label htmlFor="safety-window-start" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Opens</label>
+                         <input
+                           id="safety-window-start"
                           type="text"
                           value={winStart}
                           onChange={(e) => setWinStart(e.target.value)}
@@ -269,8 +281,9 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                         />
                       </div>
                       <div className="space-y-1">
-                        <span className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Closes</span>
-                        <input
+                         <label htmlFor="safety-window-end" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Closes</label>
+                         <input
+                           id="safety-window-end"
                           type="text"
                           value={winEnd}
                           onChange={(e) => setWinEnd(e.target.value)}
@@ -290,7 +303,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
             </div>
 
             {/* Box 2: Grace period & Reminder triggers */}
-            <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6">
+            <div className="lc-panel shadow-lg p-6 space-y-6">
               <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
                 <div className="h-9 w-9 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
                   <Sliders className="h-4.5 w-4.5 text-indigo-400" />
@@ -378,7 +391,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
             </div>
 
             {/* Box 3: Verification Channels & Escalation Validator */}
-            <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6">
+            <div className="lc-panel shadow-lg p-6 space-y-6">
               <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
                 <div className="h-9 w-9 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
                   <Smartphone className="h-4.5 w-4.5 text-indigo-400" />
@@ -405,9 +418,11 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                       const isChecked = activeChannels.includes(chan.id);
                       const Icon = chan.icon;
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={chan.id}
                           onClick={() => toggleChannel(chan.id)}
+                          aria-pressed={isChecked}
                           className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                             isChecked
                               ? "bg-indigo-950/30 border-indigo-500/40 text-white"
@@ -426,7 +441,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                           }`}>
                             <span className="h-4 w-4 rounded-full bg-white shadow-md block" />
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -445,8 +460,9 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
 
                   <div className="space-y-3 text-xs">
                     <div className="space-y-1">
-                      <span className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Validator Name</span>
-                      <input
+                       <label htmlFor="safety-validator-name" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Validator Name</label>
+                       <input
+                         id="safety-validator-name"
                         type="text"
                         value={secondaryValidatorName}
                         onChange={(e) => setSecondaryValidatorName(e.target.value)}
@@ -455,8 +471,9 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <span className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Validator Phone Number</span>
-                      <input
+                       <label htmlFor="safety-validator-phone" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Validator Phone Number</label>
+                       <input
+                         id="safety-validator-phone"
                         type="text"
                         value={secondaryValidatorPhone}
                         onChange={(e) => setSecondaryValidatorPhone(e.target.value)}
@@ -471,7 +488,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
             </div>
 
             {/* Form Save Button and success trigger */}
-            <div className="flex items-center justify-between bg-[#1e233a] p-4 rounded-2xl border border-[#5d6fa3]/20 gap-4">
+            <div className="lc-panel-raised p-4 rounded-2xl gap-4 flex items-center justify-between">
               <div className="text-xs">
                 {saveSuccess ? (
                   <p className="text-green-400 font-bold flex items-center gap-1.5">
@@ -488,7 +505,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-[#e0dafc] hover:brightness-110 text-[#2c3353] font-black text-xs py-3 px-6 rounded-xl flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer"
+                className="lc-btn-primary font-black text-xs py-3 px-6 flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer"
                 id="btn-safety-save-settings"
               >
                 <Save className="h-4 w-4 text-[#2c3353]" />

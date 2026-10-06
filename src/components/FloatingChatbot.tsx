@@ -582,10 +582,10 @@ export default function FloatingChatbot({
       
       {/* Floating Panel Box */}
       {activeOpen && (
-        <div className="bg-[#2c3353] sm:rounded-2xl shadow-2xl border-none sm:border sm:border-[#5d6fa3]/30 w-full sm:w-full h-full sm:h-[calc(100%-60px)] flex flex-col overflow-hidden sm:mb-4 animate-fade-in relative">
+        <div className="lc-chat-panel sm:rounded-2xl shadow-2xl border-none sm:border w-full sm:w-full h-full sm:h-[calc(100%-60px)] flex flex-col overflow-hidden sm:mb-4 animate-fade-in relative">
           
           {/* Header Bar */}
-          <div className="bg-[#1e233a] text-white p-4 flex items-center justify-between border-b border-[#5d6fa3]/20 shrink-0">
+          <div className="lc-chat-header text-white p-4 flex items-center justify-between border-b shrink-0">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 bg-[#e0dafc] rounded-lg flex items-center justify-center text-[#2c3353] border border-[#5d6fa3]/20">
                 <Sparkles className="h-4.5 w-4.5" />
@@ -601,6 +601,7 @@ export default function FloatingChatbot({
             
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={handleClearChat}
                 className="text-[#5d6fa3] hover:text-[#e0dafc] p-1.5 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 title="Clear Chat History"
@@ -608,11 +609,13 @@ export default function FloatingChatbot({
                 <Trash2 className="h-4 w-4" />
               </button>
               <button
+                type="button"
                 onClick={() => {
                   if (onToggle) onToggle(false);
                   else setIsOpen(false);
                 }}
                 className="text-[#5d6fa3] hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                aria-label="Close AI assistant"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1079,9 +1082,11 @@ export default function FloatingChatbot({
       {/* Launcher Icon Button */}
       {!activeOpen && (
         <button
+          type="button"
           onClick={toggleOpen}
           className="h-12 w-12 rounded-full bg-[#2c3353] hover:bg-[#2c3353]/90 text-[#e0dafc] flex items-center justify-center shadow-2xl hover:scale-105 transition-all relative border border-[#5d6fa3]/30 cursor-pointer"
           id="btn-global-floating-chatbot"
+          aria-label="Open LifeContinuity AI assistant"
         >
           <MessageSquare className="h-5 w-5" />
           <span className="absolute top-0 right-0 h-3.5 w-3.5 bg-red-600 rounded-full text-[8px] font-bold flex items-center justify-center text-white border-2 border-[#2c3353]">

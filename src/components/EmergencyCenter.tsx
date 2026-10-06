@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AlertOctagon, Sparkles, Volume2, HelpCircle, FileText, Send, XOctagon, Check, Copy, RefreshCw } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import LoadingState from "./LoadingState";
 
 interface EmergencyCenterProps {
   uid: string;
@@ -12,6 +13,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
   const [isActive, setIsActive] = useState(false);
   const [plan, setPlan] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(true);
 
   // Drafting options
   const [sendTo, setSendTo] = useState("Family Group");
@@ -19,11 +21,14 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
   const [draftText, setDraftText] = useState("");
   const [drafting, setDrafting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // TTS speaking state
   const [speaking, setSpeaking] = useState(false);
 
   const checkStatus = async () => {
+    setStatusLoading(true);
     try {
       const res = await apiFetch(`/api/emergency/status/${uid}`);
       const data = await res.json();
@@ -31,6 +36,8 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
       setPlan(data.plan || null);
     } catch (e) {
       console.error(e);
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -40,6 +47,8 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
 
   const handleActivate = async () => {
     setLoading(true);
+    setActionError(null);
+    setActionMessage(null);
     try {
       const res = await apiFetch("/api/emergency/activate", {
         method: "POST",
@@ -47,11 +56,15 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
         body: JSON.stringify({ uid, triggeredBy: "manual" })
       });
       if (res.ok) {
+        setActionMessage("Continuity plan compiled. Emergency handover is now active.");
         await checkStatus();
         if (onEmergencyStatusChanged) onEmergencyStatusChanged();
+      } else {
+        throw new Error("The emergency plan could not be activated. Please try again.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setActionError(e.message || "The emergency plan could not be activated.");
     } finally {
       setLoading(false);
     }
@@ -59,6 +72,8 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
 
   const handleDeactivate = async () => {
     setLoading(true);
+    setActionError(null);
+    setActionMessage(null);
     try {
       const res = await apiFetch("/api/emergency/deactivate", {
         method: "POST",
@@ -77,9 +92,13 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
         setSpeaking(false);
         await checkStatus();
         if (onEmergencyStatusChanged) onEmergencyStatusChanged();
+        setActionMessage("Emergency mode stood down. Your continuity workspace is back in standby.");
+      } else {
+        throw new Error("Emergency mode could not be stood down. Please try again.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setActionError(e.message || "Emergency mode could not be stood down.");
     } finally {
       setLoading(false);
     }
@@ -88,6 +107,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
   const handleGenerateDraft = async () => {
     setDrafting(true);
     setCopied(false);
+    setActionError(null);
     try {
       const res = await apiFetch("/api/emergency/draft", {
         method: "POST",
@@ -97,9 +117,12 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
       const data = await res.json();
       if (res.ok) {
         setDraftText(data.draft);
+      } else {
+        throw new Error(data.error || "The update draft could not be generated.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setActionError(e.message || "The update draft could not be generated.");
     } finally {
       setDrafting(false);
     }
@@ -159,10 +182,29 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
-      {!isActive ? (
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
+      {(actionError || actionMessage) && (
+        <div
+          className={actionError ? "lc-alert-danger p-4 flex items-start justify-between gap-3 text-sm" : "lc-alert-success p-4 flex items-start justify-between gap-3 text-sm"}
+          role={actionError ? "alert" : "status"}
+          aria-live="polite"
+        >
+          <span className="font-semibold">{actionError || actionMessage}</span>
+          <button
+            type="button"
+            onClick={() => { setActionError(null); setActionMessage(null); }}
+            className="lc-touch-target -my-2 -mr-2 px-2 text-xs font-bold opacity-70 hover:opacity-100"
+            aria-label="Dismiss message"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+      {statusLoading ? (
+        <LoadingState label="Checking emergency handover status" />
+      ) : !isActive ? (
         // INACTIVE PREPARATION SCREEN
-        <div className="bg-[#2c3353] rounded-3xl border border-dashed border-red-900/50 p-8 text-center max-w-2xl mx-auto space-y-6 shadow-xl text-[#e0dafc]">
+        <div className="lc-panel max-w-2xl mx-auto space-y-6 shadow-xl text-[#e0dafc] p-8 text-center">
           <div className="h-16 w-16 bg-[#1e233a] rounded-full flex items-center justify-center text-red-400 mx-auto border border-[#5d6fa3]/30">
             <AlertOctagon className="h-8 w-8" />
           </div>
@@ -188,7 +230,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
           <button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm py-3 px-8 rounded-xl shadow-lg transition-all"
+            className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm py-3 px-8 rounded-xl shadow-lg transition-all"
             id="btn-activate-emergency-manual"
           >
             {loading ? "Compiling Continuity Plan..." : "Manual Emergency Activation"}
@@ -202,7 +244,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
           <div className="lg:col-span-2 space-y-6">
             
             {/* AI Summary Card */}
-            <div className="bg-[#2c3353] rounded-2xl border-2 border-red-600 shadow-xl p-6 space-y-6 relative overflow-hidden">
+            <div className="lc-panel rounded-2xl border-2 border-rose-500 shadow-xl p-6 space-y-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 h-2 bg-red-600 w-full" />
               
               <div className="flex items-start justify-between gap-4">
@@ -257,7 +299,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
             </div>
 
             {/* Compiled Continuity Plan details */}
-            <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6 text-[#e0dafc]">
+            <div className="lc-panel shadow-lg p-6 space-y-6 text-[#e0dafc]">
               <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-3">
                 <FileText className="h-5 w-5 text-[#e0dafc]" />
                 Compiled Nominee Continuity Ledger
@@ -307,7 +349,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
           </div>
 
           {/* Smart Update Update Drafter panel */}
-          <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-5 text-[#e0dafc]">
+          <div className="lc-panel shadow-lg p-6 space-y-5 text-[#e0dafc]">
             <div className="flex items-center gap-2 pb-1 border-b border-[#5d6fa3]/20">
               <Sparkles className="h-5 w-5 text-[#e0dafc]" />
               <h3 className="font-bold text-white text-base">Smart Update Drafter</h3>
@@ -315,8 +357,9 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
 
             <div className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="block text-[10px] font-semibold text-[#5d6fa3] uppercase tracking-wider">Target Recipient</label>
-                <select
+                 <label htmlFor="emergency-draft-recipient" className="block text-[10px] font-semibold text-[#5d6fa3] uppercase tracking-wider">Target Recipient</label>
+                 <select
+                   id="emergency-draft-recipient"
                   value={sendTo}
                   onChange={(e) => setSendTo(e.target.value)}
                   className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
@@ -328,8 +371,9 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-semibold text-[#5d6fa3] uppercase tracking-wider">Communication Tone</label>
-                <select
+                 <label htmlFor="emergency-draft-tone" className="block text-[10px] font-semibold text-[#5d6fa3] uppercase tracking-wider">Communication Tone</label>
+                 <select
+                   id="emergency-draft-tone"
                   value={tone}
                   onChange={(e) => setTone(e.target.value)}
                   className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
@@ -341,6 +385,7 @@ export default function EmergencyCenter({ uid, onEmergencyStatusChanged, trigger
               </div>
 
               <button
+                type="button"
                 onClick={handleGenerateDraft}
                 disabled={drafting}
                 className="w-full bg-[#e0dafc] hover:brightness-110 text-[#2c3353] font-black py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"

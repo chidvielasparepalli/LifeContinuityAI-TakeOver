@@ -19,7 +19,7 @@ export default function DashboardFilters({
   setPriorityFilter,
 }: DashboardFiltersProps) {
   return (
-    <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4" id="dashboard-search-filters">
+    <div className="lc-panel p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4" id="dashboard-search-filters">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5d6fa3]" />
         <input
@@ -27,7 +27,7 @@ export default function DashboardFilters({
           placeholder="Search events, notes, locations or partners..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-indigo-400 placeholder-[#5d6fa3]"
+          className="lc-field w-full pl-9 pr-4 py-2.5 text-xs"
         />
       </div>
       

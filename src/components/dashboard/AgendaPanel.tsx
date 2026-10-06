@@ -18,7 +18,7 @@ export default function AgendaPanel({
   getDayFormattedTitle,
 }: AgendaPanelProps) {
   return (
-    <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6 flex flex-col justify-between" id="agenda-panel-container">
+    <div className="lc-panel shadow-lg p-6 space-y-6 flex flex-col justify-between" id="agenda-panel-container">
       <div className="space-y-6">
         <div>
           <span className="text-[10px] font-black uppercase text-[#e0dafc]/50 tracking-widest block">SELECTED DAY AGENDA</span>
@@ -52,10 +52,11 @@ export default function AgendaPanel({
               }
 
               return (
-                <div
+                <button
                   key={event.id}
+                  type="button"
                   onClick={() => onSelectEvent(event)}
-                  className={`p-4 rounded-xl border transition-all flex items-start justify-between gap-4 cursor-pointer hover:brightness-110 ${
+                  className={`w-full text-left p-4 rounded-xl border transition-all flex items-start justify-between gap-4 cursor-pointer hover:brightness-110 ${
                     isSelected 
                       ? "bg-[#1e233a] border-indigo-500 shadow-md ring-1 ring-indigo-500/30" 
                       : "bg-[#1e233a]/60 border-[#5d6fa3]/15 hover:border-[#5d6fa3]/30"
@@ -91,7 +92,7 @@ export default function AgendaPanel({
                       {tagText}
                     </span>
                   </div>
-                </div>
+                </button>
               );
             })
           )}

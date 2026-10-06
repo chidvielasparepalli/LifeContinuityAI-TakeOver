@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Calendar, RefreshCw, ShieldAlert, Plus, ShieldCheck } from "lucide-react";
 
 interface GoogleCalendarSyncModalProps {
@@ -18,14 +18,28 @@ export default function GoogleCalendarSyncModal({
   onSync,
   onClose,
 }: GoogleCalendarSyncModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#1e233a]/80 backdrop-blur-sm flex items-center justify-center p-4 text-[#e0dafc]" id="modal-calendar-sync">
-      <div className="bg-[#2c3353] rounded-2xl max-w-md w-full p-6 border border-[#5d6fa3]/30 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-[#1e233a]/80 backdrop-blur-sm flex items-center justify-center p-4 text-[#e0dafc]" id="modal-calendar-sync" role="dialog" aria-modal="true" aria-labelledby="calendar-sync-modal-title">
+      <div className="lc-panel max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
-          <h4 className="font-bold text-white text-base">Google Calendar Synchronization</h4>
-          <button 
-            onClick={onClose} 
-            className="text-[#5d6fa3] hover:text-white transition-colors cursor-pointer text-sm font-bold"
+          <h4 className="font-bold text-white text-base" id="calendar-sync-modal-title">Google Calendar Synchronization</h4>
+          <button
+            type="button"
+            ref={closeButtonRef}
+            onClick={onClose}
+            className="lc-btn-secondary min-h-0 px-3 py-1.5 text-xs"
+            aria-label="Close calendar synchronization dialog"
           >
             Close
           </button>

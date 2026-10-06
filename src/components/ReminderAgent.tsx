@@ -8,6 +8,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import LoadingState from "./LoadingState";
 
 interface ReminderAgentProps {
   uid: string;
@@ -20,6 +21,7 @@ export default function ReminderAgent({ uid }: ReminderAgentProps) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastDetails, setToastDetails] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Initial mock logs that match the reference design layout
   const [logs, setLogs] = useState<any[]>([
@@ -50,6 +52,8 @@ export default function ReminderAgent({ uid }: ReminderAgentProps) {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -129,8 +133,16 @@ export default function ReminderAgent({ uid }: ReminderAgentProps) {
     }
   }, [showToast]);
 
+  if (initialLoading) {
+    return (
+      <div className="lc-page-wrap max-w-6xl mx-auto p-4 sm:p-6">
+        <LoadingState label="Loading your reminder agent" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 text-slate-700 dark:text-[#e0dafc] transition-colors duration-300">
+    <div className="lc-page-wrap max-w-6xl mx-auto p-4 sm:p-6 space-y-6 text-slate-700 dark:text-[#e0dafc] transition-colors duration-300">
       
       {/* Toast Notification */}
       {showToast && (
@@ -153,7 +165,7 @@ export default function ReminderAgent({ uid }: ReminderAgentProps) {
       )}
 
       {/* Outer Header Block */}
-      <div className="bg-white dark:bg-[#2c3353] rounded-2xl border border-slate-200 dark:border-[#5d6fa3]/30 shadow-sm dark:shadow-lg p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
+      <div className="lc-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-300">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-[#1e233a] flex items-center justify-center text-indigo-600 dark:text-[#e0dafc] border border-indigo-100 dark:border-[#5d6fa3]/25">
             <Bell className="h-6 w-6" />
@@ -171,7 +183,7 @@ export default function ReminderAgent({ uid }: ReminderAgentProps) {
       </div>
 
       {/* Main Agent Scheduler Panel */}
-      <div className="bg-white dark:bg-[#2c3353] rounded-2xl border border-slate-200 dark:border-[#5d6fa3]/30 shadow-sm dark:shadow-lg p-6 space-y-6 transition-colors duration-300">
+      <div className="lc-panel p-6 space-y-6 transition-colors duration-300">
         
         {/* Module Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#5d6fa3]/20 pb-4">

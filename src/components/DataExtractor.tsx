@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Mail, RefreshCw, Sliders, Sparkles, FolderSync, ExternalLink, ShieldCheck, Trash2 } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import LoadingState from "./LoadingState";
 
 interface DataExtractorProps {
   uid: string;
@@ -14,7 +15,9 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
   const [isLinkingComposio, setIsLinkingComposio] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
   const [needsComposioAuth, setNeedsComposioAuth] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const checkComposioStatus = async () => {
     try {
@@ -31,6 +34,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
   const handleConnectComposio = async () => {
     setIsLinkingComposio(true);
     setSyncError(null);
+    setSyncNotice(null);
     try {
       const res = await apiFetch("/api/composio/link", {
         method: "POST",
@@ -43,7 +47,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
       }
       if (data.redirectUrl) {
         window.open(data.redirectUrl, "_blank", "noopener,noreferrer");
-        alert("A window has been opened to connect your Gmail via Composio. Once authorized, click 'Check connection status' or 'Verify' to update status.");
+        setSyncNotice("Authorization opened in a new window. Finish connecting Gmail, then verify the connection here.");
       }
     } catch (err: any) {
       console.error(err);
@@ -66,6 +70,8 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
       setEmailRecords(Array.isArray(rData) ? rData : []);
     } catch (e) {
       console.error(e);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -93,6 +99,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
   const handleSyncNow = async () => {
     setIsSyncing(true);
     setSyncError(null);
+    setSyncNotice(null);
     setNeedsComposioAuth(false);
     // Persist active settings first
     await handleSaveSettings();
@@ -175,22 +182,30 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
         fetchSettingsAndRecords();
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(data.error || "Failed to delete email record.");
+        setSyncError(data.error || "Failed to delete email record.");
       }
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Failed to delete email record.");
+      setSyncError(err.message || "Failed to delete email record.");
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
+        <LoadingState label="Loading your Gmail timeline" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 text-[#e0dafc]">
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 text-[#e0dafc]">
       
       {/* OAuth & Sync Configuration */}
       <div className="space-y-6">
         
         {/* Workspace Auth Box */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+        <div className="lc-panel shadow-lg p-6 space-y-4">
           <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
             <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
               <FolderSync className="h-5 w-5" />
@@ -212,6 +227,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
               <h4 className="text-[10px] font-bold text-white uppercase tracking-wider">Gmail Connection</h4>
               {composioAuthorized && (
                 <button
+                  type="button"
                   onClick={checkComposioStatus}
                   className="text-[10px] text-[#e0dafc] hover:underline flex items-center gap-1 font-bold cursor-pointer"
                   title="Verify connection status"
@@ -228,12 +244,13 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
             ) : (
               <div className="flex flex-col gap-2">
                 {needsComposioAuth && (
-                  <div className="text-xs bg-amber-950/60 border border-amber-700/60 text-amber-300 p-3 rounded-xl leading-relaxed">
+                  <div className="text-xs bg-amber-950/60 border border-amber-700/60 text-amber-300 p-3 rounded-xl leading-relaxed" role="alert">
                     <span className="font-extrabold text-[10px] uppercase tracking-widest block mb-1 text-amber-400">⚡ Action Required</span>
                     Click <strong>"Connect Gmail via Composio"</strong> below to authorize Gmail access, then click <strong>"Check connection status"</strong> and retry syncing.
                   </div>
                 )}
                 <button
+                  type="button"
                   onClick={handleConnectComposio}
                   disabled={isLinkingComposio}
                   className={`w-full font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
@@ -247,6 +264,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
                   <ExternalLink className="h-3 w-3" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => { setNeedsComposioAuth(false); checkComposioStatus(); }}
                   className="w-full bg-transparent hover:bg-[#3b426b] text-[#e0dafc] font-bold text-xs py-1.5 px-3 rounded-xl border border-[#5d6fa3]/25 transition-all cursor-pointer"
                 >
@@ -258,7 +276,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
         </div>
 
         {/* Sync Filters Setting */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+        <div className="lc-panel shadow-lg p-6 space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-2">
             <Sliders className="h-4 w-4 text-[#e0dafc]" />
             Synchronization Filters
@@ -268,7 +286,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
 
 
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-wider">Target Subject Keywords</label>
+               <label htmlFor="input-sync-keywords" className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-wider">Target Subject Keywords</label>
               <input
                 type="text"
                 value={keywords}
@@ -282,13 +300,20 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
             </div>
 
             {syncError && (
-              <div className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl border border-red-900/50 text-left leading-relaxed">
+              <div className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl border border-red-900/50 text-left leading-relaxed" role="alert">
                 <span className="font-extrabold text-[10px] uppercase text-red-300 block tracking-widest mb-0.5">Authorization Sync Error</span>
                 {syncError}
               </div>
             )}
 
+            {syncNotice && (
+              <div className="lc-alert-success p-3 text-xs text-left leading-relaxed" role="status" aria-live="polite">
+                <span className="font-bold">Connection update:</span> {syncNotice}
+              </div>
+            )}
+
             <button
+              type="button"
               onClick={handleSyncNow}
               disabled={isSyncing || !uid}
               className={`w-full font-black text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all ${
@@ -307,7 +332,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
 
       {/* Sync Timeline Results Panel */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 text-[#e0dafc]">
+        <div className="lc-panel shadow-lg p-6 text-[#e0dafc]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#5d6fa3]/20 pb-3">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
@@ -323,6 +348,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
             <div className="flex flex-wrap gap-1 bg-[#1e233a] p-1 rounded-xl self-start border border-[#5d6fa3]/20" id="gmail-category-filters">
               {["All", "Bills", "Insurance", "Healthcare", "Appointments"].map(cat => (
                 <button
+                  type="button"
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-all ${
@@ -349,7 +375,16 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
                 <div
                   key={rec.id}
                   onClick={(e) => handleCardClick(e, rec)}
-                  className="p-4 border border-[#5d6fa3]/20 rounded-xl hover:border-indigo-400/60 hover:bg-[#1e233a]/80 bg-[#1e233a] space-y-2.5 transition-all cursor-pointer relative group"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      window.open(getGmailUrl(rec), "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Open email: ${rec.subject}`}
+                  className="lc-hover-lift p-4 border border-[#5d6fa3]/20 rounded-xl hover:border-indigo-400/60 hover:bg-[#1e233a]/80 bg-[#1e233a] space-y-2.5 transition-all cursor-pointer relative group"
                   title="Click to view original email in Gmail"
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -370,6 +405,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
                         {rec.category}
                       </span>
                       <button
+                        type="button"
                         onClick={(e) => handleDeleteEmail(e, rec.id)}
                         className="p-1.5 text-[#5d6fa3] hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-all cursor-pointer"
                         title="Delete extracted email record"

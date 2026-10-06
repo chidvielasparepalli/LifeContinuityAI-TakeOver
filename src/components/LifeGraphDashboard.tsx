@@ -20,6 +20,7 @@ import AgendaPanel from "./dashboard/AgendaPanel";
 import DrillDownPanel from "./dashboard/DrillDownPanel";
 import AddCustomEventModal from "./dashboard/AddCustomEventModal";
 import GoogleCalendarSyncModal from "./dashboard/GoogleCalendarSyncModal";
+import LoadingState from "./LoadingState";
 
 interface LifeGraphDashboardProps {
   uid: string;
@@ -706,8 +707,22 @@ export default function LifeGraphDashboard({
     }
   };
 
+  if (loading) {
+    return (
+      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+        <LoadingState label="Building your life graph" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-hidden="true">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="lc-panel-raised h-28 lc-skeleton" />
+          ))}
+        </div>
+        <div className="lc-panel h-80 lc-skeleton" aria-hidden="true" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8" id="life-graph-root">
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 space-y-8" id="life-graph-root">
       
       {/* Top Banner: Safety Status Widget (Modularized) */}
       <DashboardHeader 
@@ -718,7 +733,7 @@ export default function LifeGraphDashboard({
       />
 
       {/* Redesigned Life Graph Agenda Header */}
-      <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
+       <div className="lc-panel shadow-lg p-6 space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#5d6fa3]/10 pb-4">
           <div>
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -733,7 +748,7 @@ export default function LifeGraphDashboard({
                 setCustomDate(selectedDayStr);
                 setShowAddCustomEvent(true);
               }}
-              className="flex-1 sm:flex-none bg-gradient-to-tr from-indigo-500 to-purple-600 hover:brightness-110 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+               className="lc-btn-primary flex-1 sm:flex-none text-xs py-2.5 px-4 shadow-md transition-all gap-1.5 cursor-pointer"
               id="btn-add-custom-event"
             >
               <Plus className="h-4 w-4" />
@@ -741,7 +756,7 @@ export default function LifeGraphDashboard({
             </button>
             <button
               onClick={() => setShowCalendarSyncModal(true)}
-              className="flex-1 sm:flex-none bg-[#1e233a] border border-[#5d6fa3]/30 text-[#e0dafc] hover:bg-[#1e233a]/80 font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+               className="lc-btn-secondary flex-1 sm:flex-none text-xs py-2.5 px-4 shadow-md transition-all gap-1.5 cursor-pointer"
               id="btn-open-calendar-sync"
             >
               <Calendar className="h-4 w-4 text-indigo-400" />
@@ -749,7 +764,7 @@ export default function LifeGraphDashboard({
             </button>
             <button
               onClick={handleExportData}
-              className="flex-1 sm:flex-none bg-[#1e233a] border border-[#5d6fa3]/30 text-[#e0dafc] hover:bg-[#1e233a]/80 font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+               className="lc-btn-secondary flex-1 sm:flex-none text-xs py-2.5 px-4 transition-all gap-1.5 cursor-pointer"
               title="Export report"
             >
               <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
@@ -763,13 +778,13 @@ export default function LifeGraphDashboard({
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-black uppercase text-[#e0dafc]/80 tracking-widest">Care & Obligation Heatmap</h4>
             <div className="flex items-center gap-2 bg-[#1e233a] border border-[#5d6fa3]/25 px-2.5 py-1 rounded-xl">
-              <button onClick={handlePrevMonth} className="p-1 hover:text-white transition-colors cursor-pointer">
+               <button type="button" onClick={handlePrevMonth} aria-label="Previous month" className="lc-touch-target p-1 hover:text-white transition-colors cursor-pointer">
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="text-xs font-bold text-white min-w-28 text-center select-none">
                 {months[calendarMonth]} {calendarYear}
               </span>
-              <button onClick={handleNextMonth} className="p-1 hover:text-white transition-colors cursor-pointer">
+               <button type="button" onClick={handleNextMonth} aria-label="Next month" className="lc-touch-target p-1 hover:text-white transition-colors cursor-pointer">
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

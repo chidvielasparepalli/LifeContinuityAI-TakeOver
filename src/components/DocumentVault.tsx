@@ -3,6 +3,7 @@ import { Folder, Upload, Shield, ShieldAlert, Sparkles, FileText, Trash2, CheckC
 import { DocumentType } from "../types";
 import { apiFetch } from "../lib/api";
 import { runBrowserOcr, OcrProgressInfo } from "../lib/ocr-utils";
+import LoadingState from "./LoadingState";
 
 interface DocumentVaultProps {
   uid: string;
@@ -44,6 +45,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
   const [ocrProgress, setOcrProgress] = useState<OcrProgressInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showTips, setShowTips] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchDocuments = async () => {
     try {
@@ -52,6 +54,8 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
       setDocuments(data || []);
     } catch (e) {
       console.error(e);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -498,18 +502,26 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
     return matchesType && matchesSearch;
   });
 
+  if (initialLoading) {
+    return (
+      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
+        <LoadingState label="Opening your secure document vault" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 text-[#e0dafc]">
+    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 text-[#e0dafc]">
       
       {errorFeedback && (
-        <div className="lg:col-span-3 bg-red-950/50 border border-red-500/30 text-red-300 p-4 rounded-xl flex items-center justify-between text-xs animate-fade-in shadow-md">
+        <div className="lg:col-span-3 bg-red-950/50 border border-red-500/30 text-red-300 p-4 rounded-xl flex items-center justify-between text-xs animate-fade-in shadow-md" role="alert">
           <span className="font-semibold">{errorFeedback}</span>
           <button onClick={() => setErrorFeedback(null)} className="text-red-400 hover:text-red-300 font-black cursor-pointer px-2 py-1">Dismiss</button>
         </div>
       )}
       
       {successFeedback && (
-        <div className="lg:col-span-3 bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 p-4 rounded-xl flex items-center justify-between text-xs animate-fade-in shadow-md">
+        <div className="lg:col-span-3 bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 p-4 rounded-xl flex items-center justify-between text-xs animate-fade-in shadow-md" role="status" aria-live="polite">
           <span className="font-semibold">{successFeedback}</span>
           <button onClick={() => setSuccessFeedback(null)} className="text-emerald-400 hover:text-emerald-300 font-black cursor-pointer px-2 py-1">Dismiss</button>
         </div>
@@ -518,7 +530,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
       {/* Left Column Stack */}
       <div className="space-y-6 lg:col-span-1">
         {/* File Upload & Config Panel */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6">
+        <div className="lc-panel shadow-lg p-6 space-y-6">
         <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
           <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
             <Upload className="h-5 w-5" />
@@ -614,17 +626,25 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
             </label>
           </div>
 
-          {uploading && (
-            <div className="flex items-center gap-2 text-xs text-amber-400 animate-pulse">
-              <RefreshCcw className="h-4 w-4 animate-spin" />
-              Writing file to secure sandbox directory...
+          {(uploading || ocrRunning) && (
+            <div className="lc-panel-raised p-3 space-y-2 text-xs text-amber-400" role="status" aria-live="polite">
+              <div className="flex items-center gap-2 font-semibold">
+                <RefreshCcw className="h-4 w-4 animate-spin" />
+                {ocrProgress?.status || "Writing file to secure sandbox directory..."}
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--lc-surface)]" aria-hidden="true">
+                <div
+                  className="h-full rounded-full bg-[var(--lc-accent)] transition-all duration-300"
+                  style={{ width: `${Math.max(8, ocrProgress?.progress || (uploading ? 92 : 8))}%` }}
+                />
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* OCR Presets Card */}
-      <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4" id="ocr-presets-card">
+      <div className="lc-panel shadow-lg p-6 space-y-4" id="ocr-presets-card">
         <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
           <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
             <Sparkles className="h-5 w-5 text-indigo-400" />
@@ -671,7 +691,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
                   disabled={!!loadingPreset}
                   type="button"
                   onClick={() => handleLoadPreset(preset.key)}
-                  className={`w-full text-left p-3 rounded-xl border transition-all flex flex-col justify-between items-stretch gap-1 cursor-pointer group ${
+                   className={`lc-hover-lift w-full text-left p-3 rounded-xl border transition-all flex flex-col justify-between items-stretch gap-1 cursor-pointer group ${
                     isSelected
                       ? "bg-[#1e233a] border-indigo-400/80 shadow-md"
                       : "bg-[#1e233a]/60 hover:bg-[#1e233a] border-[#5d6fa3]/20 hover:border-[#5d6fa3]/40"
@@ -818,7 +838,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
 
     {/* Vault List Panel */}
     <div className="lg:col-span-2 space-y-6">
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6">
+        <div className="lc-panel shadow-lg p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#5d6fa3]/20 pb-3">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
@@ -871,7 +891,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
                 return (
                   <div
                     key={doc.id}
-                    className={`p-4 border rounded-xl transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                     className={`lc-hover-lift p-4 border rounded-xl transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                       selectedDoc?.id === doc.id
                         ? "border-[#e0dafc] bg-[#1e233a]"
                         : "border-[#5d6fa3]/20 bg-[#1e233a] hover:border-[#5d6fa3]/40"
@@ -953,7 +973,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
 
         {/* Selected Document AI Extractions Detail Card */}
         {selectedDoc && (
-          <div className="bg-[#2c3353] rounded-2xl border border-[#e0dafc]/30 shadow-xl p-6 space-y-4 animate-fade-in text-[#e0dafc]">
+          <div className="lc-panel shadow-xl p-6 space-y-4 animate-fade-in text-[#e0dafc]">
             <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-2">
               <div>
                 <h4 className="font-bold text-white text-sm flex items-center gap-2">
@@ -1190,7 +1210,7 @@ export default function DocumentVault({ uid }: DocumentVaultProps) {
                                 onClick={() => {
                                   if (extraction.fullOcr?.extractedText) {
                                     navigator.clipboard.writeText(extraction.fullOcr.extractedText);
-                                    alert("Copied full text to clipboard!");
+                                     setSuccessFeedback("Copied full extracted text to your clipboard.");
                                   }
                                 }}
                                 className="absolute top-2 right-2 px-2 py-1 bg-[#2c3353] hover:bg-[#e0dafc]/15 text-[9px] font-bold text-[#e0dafc] rounded border border-[#5d6fa3]/30 transition-colors"

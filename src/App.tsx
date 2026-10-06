@@ -78,6 +78,17 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
+  useEffect(() => {
+    if (!isMobileDrawerOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileDrawerOpen(false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileDrawerOpen]);
+
   // Sync Clerk session with backend mock DB
   useEffect(() => {
     if (isClerkLoaded && isSignedIn && clerkUser) {
@@ -238,8 +249,8 @@ export default function App() {
 
   if (!isClerkLoaded) {
     return (
-      <div className="min-h-screen bg-[#2c3353] text-[#e0dafc] flex flex-col justify-center items-center gap-4">
-        <div className="h-12 w-12 bg-[#e0dafc] rounded-xl flex items-center justify-center text-[#2c3353] shadow-md border border-indigo-300/30 animate-pulse">
+      <div className="lc-shell theme-dark-container min-h-screen flex flex-col justify-center items-center gap-4">
+        <div className="lc-brand-mark h-12 w-12 rounded-xl shadow-md animate-pulse">
           <Shield className="h-6 w-6 text-indigo-700 animate-spin" />
         </div>
         <p className="text-xs uppercase tracking-widest font-bold text-[#5d6fa3]">Connecting Secure Session...</p>
@@ -251,8 +262,8 @@ export default function App() {
   if (isSignedIn && !role) {
 
     return (
-      <div className="min-h-screen bg-[#2c3353] text-[#e0dafc] flex flex-col justify-center items-center gap-4">
-        <div className="h-12 w-12 bg-[#e0dafc] rounded-xl flex items-center justify-center text-[#2c3353] shadow-md border border-indigo-300/30 animate-pulse">
+      <div className="lc-shell theme-dark-container min-h-screen flex flex-col justify-center items-center gap-4">
+        <div className="lc-brand-mark h-12 w-12 rounded-xl shadow-md animate-pulse">
           <Shield className="h-6 w-6 text-indigo-700 animate-spin" />
         </div>
         <p className="text-xs uppercase tracking-widest font-bold text-[#5d6fa3]">Syncing Secure Vault...</p>
@@ -279,18 +290,18 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${theme === "light" ? "bg-[#e0dafc] text-black theme-light-container" : "bg-[#2c3353] text-[#e0dafc] theme-dark-container"} flex flex-col lg:flex-row relative transition-colors duration-300`}>
+    <div className={`lc-shell min-h-screen ${theme === "light" ? "theme-light-container" : "theme-dark-container"} flex flex-col lg:flex-row relative transition-colors duration-300`}>
 
       {/* -------------------------------------------------------------
           1. PERSISTENT SIDEBAR (Desktop & Tablet Landscape >= 1024px)
           ------------------------------------------------------------- */}
-      <aside className={`h-screen sticky top-0 lg:flex hidden flex-col justify-between shrink-0 select-none border-r transition-all duration-300 z-30 ${theme === "light" ? "bg-white border-indigo-100 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/20 text-[#e0dafc]"
+      <aside className={`lc-sidebar h-screen sticky top-0 lg:flex hidden flex-col justify-between shrink-0 select-none border-r transition-all duration-300 z-30 ${theme === "light" ? "bg-white border-indigo-100 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/20 text-[#e0dafc]"
         } ${isSidebarCollapsed ? "w-20" : "w-64"}`}>
 
         {/* Top Branding / Logo & Collapse button */}
         <div className="p-4 flex items-center justify-between border-b border-[#5d6fa3]/10 shrink-0">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="h-10 w-10 bg-[#e0dafc] rounded-xl flex items-center justify-center text-[#2c3353] shadow-md border border-indigo-300/30 shrink-0">
+            <div className="lc-brand-mark h-10 w-10 rounded-xl shadow-md shrink-0">
               <Shield className="h-5.5 w-5.5 text-indigo-700" />
             </div>
             {!isSidebarCollapsed && (
@@ -305,7 +316,10 @@ export default function App() {
           </div>
 
           <button
+            type="button"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            aria-expanded={!isSidebarCollapsed}
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
@@ -332,9 +346,11 @@ export default function App() {
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => setCurrentTab(item.id as Tab)}
+                  aria-current={isSelected ? "page" : undefined}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected
-                    ? "bg-indigo-600 text-white font-bold shadow-md"
+                    ? "lc-active-nav font-bold"
                     : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
                     } ${isSidebarCollapsed ? "justify-center" : "justify-start"}`}
                   title={item.label}
@@ -362,9 +378,11 @@ export default function App() {
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => setCurrentTab(item.id as Tab)}
+                  aria-current={isSelected ? "page" : undefined}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected
-                    ? "bg-indigo-600 text-white font-bold shadow-md"
+                    ? "lc-active-nav font-bold"
                     : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
                     } ${isSidebarCollapsed ? "justify-center" : "justify-start"}`}
                   title={item.label}
@@ -384,6 +402,7 @@ export default function App() {
           {!isSidebarCollapsed ? (
             <div className="flex items-center justify-between gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
               <button
+                type="button"
                 onClick={toggleTheme}
                 className="flex-1 py-1.5 flex items-center justify-center rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-inherit cursor-pointer transition-colors"
                 title={t("themeSelector")}
@@ -412,6 +431,7 @@ export default function App() {
           ) : (
             <div className="flex flex-col gap-2 items-center">
               <button
+                type="button"
                 onClick={toggleTheme}
                 className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
                 title={t("themeSelector")}
@@ -429,6 +449,7 @@ export default function App() {
                 <p className="text-[9px] text-[#5d6fa3] truncate font-mono">{user.email}</p>
               </div>
               <button
+                type="button"
                 onClick={handleLogout}
                 className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-lg shrink-0 cursor-pointer transition-all"
                 title={t("logout")}
@@ -438,6 +459,7 @@ export default function App() {
             </div>
           ) : (
             <button
+              type="button"
               onClick={handleLogout}
               className="w-full flex items-center justify-center p-2 text-red-500 hover:bg-red-500/10 rounded-xl cursor-pointer"
               title={t("logout")}
@@ -451,17 +473,18 @@ export default function App() {
       {/* -------------------------------------------------------------
           2. STICKY MOBILE & TABLET HEADER (< 1024px)
           ------------------------------------------------------------- */}
-      <header className={`lg:hidden flex items-center justify-between sticky top-0 z-30 h-16 px-4 sm:px-6 shadow-md border-b shrink-0 transition-colors duration-300 ${theme === "light" ? "bg-white border-indigo-200 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/30 text-[#e0dafc]"
+      <header className={`lc-topbar lg:hidden flex items-center justify-between sticky top-0 z-30 h-16 px-4 sm:px-6 shadow-md border-b shrink-0 transition-colors duration-300 ${theme === "light" ? "bg-white border-indigo-200 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/30 text-[#e0dafc]"
         }`}>
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setIsMobileDrawerOpen(true)}
             className="p-2 -ml-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
             aria-label="Open menu"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <div className="h-8 w-8 bg-[#e0dafc] rounded-lg flex items-center justify-center text-[#2c3353] border border-indigo-300/30">
+          <div className="lc-brand-mark h-8 w-8 rounded-lg">
             <Shield className="h-4.5 w-4.5 text-indigo-700" />
           </div>
           <span className="font-black text-sm tracking-tight uppercase text-inherit">
@@ -471,9 +494,9 @@ export default function App() {
 
         <div className="flex items-center gap-2">
           {/* Mobile Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 bg-white/5 hover:bg-white/10 dark:bg-white/5 rounded-xl text-inherit cursor-pointer"
+           <button
+             onClick={toggleTheme}
+             className="lc-touch-target p-2 bg-white/5 hover:bg-white/10 dark:bg-white/5 rounded-xl text-inherit cursor-pointer"
             title={t("themeSelector")}
           >
             {theme === "light" ? <Moon className="h-4 w-4 text-indigo-700" /> : <Sun className="h-4 w-4 text-amber-400" />}
@@ -512,7 +535,7 @@ export default function App() {
               {/* Drawer Top Branding & Close Button */}
               <div className="p-4 flex items-center justify-between border-b border-[#5d6fa3]/10 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 bg-[#e0dafc] rounded-lg flex items-center justify-center text-[#2c3353] border border-indigo-300/30">
+                  <div className="lc-brand-mark h-8 w-8 rounded-lg">
                     <Shield className="h-4 w-4 text-indigo-700" />
                   </div>
                   <div>
@@ -521,6 +544,7 @@ export default function App() {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsMobileDrawerOpen(false)}
                   className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
                   aria-label="Close menu"
@@ -545,13 +569,15 @@ export default function App() {
                     const IconComp = item.icon;
                     const isSelected = currentTab === item.id;
                     return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          setCurrentTab(item.id as Tab);
-                          setIsMobileDrawerOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected ? "bg-indigo-600 text-white font-bold" : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
+                       <button
+                         key={item.id}
+                         type="button"
+                         onClick={() => {
+                           setCurrentTab(item.id as Tab);
+                           setIsMobileDrawerOpen(false);
+                         }}
+                         aria-current={isSelected ? "page" : undefined}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected ? "lc-active-nav font-bold" : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
                           }`}
                       >
                         <IconComp className="h-5 w-5 shrink-0" />
@@ -573,13 +599,15 @@ export default function App() {
                     const IconComp = item.icon;
                     const isSelected = currentTab === item.id;
                     return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          setCurrentTab(item.id as Tab);
-                          setIsMobileDrawerOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected ? "bg-indigo-600 text-white font-bold" : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
+                       <button
+                         key={item.id}
+                         type="button"
+                         onClick={() => {
+                           setCurrentTab(item.id as Tab);
+                           setIsMobileDrawerOpen(false);
+                         }}
+                         aria-current={isSelected ? "page" : undefined}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected ? "lc-active-nav font-bold" : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
                           }`}
                       >
                         <IconComp className="h-5 w-5 shrink-0" />
@@ -618,6 +646,7 @@ export default function App() {
                     <p className="text-[10px] text-[#5d6fa3] truncate font-mono mt-0.5">{user.email}</p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       setIsMobileDrawerOpen(false);
                       handleLogout();
@@ -640,8 +669,8 @@ export default function App() {
       <div className="flex-1 flex flex-col min-h-screen min-w-0 relative">
 
         {/* Tab Context Sub-Header */}
-        <div className={`${theme === "light" ? "bg-white/60 border-b border-indigo-100 text-indigo-950" : "bg-[#2c3353]/45 border-b border-[#5d6fa3]/10 text-[#e0dafc]"} py-3 px-4 sm:px-6 flex items-center justify-between shrink-0 text-xs transition-colors duration-300`}>
-          <h2 className="font-black uppercase tracking-wider" id="header-tab-title">
+        <div className={`lc-topbar py-3 px-4 sm:px-6 flex items-center justify-between shrink-0 text-xs transition-colors duration-300`}>
+          <h2 className="lc-topbar-title" id="header-tab-title">
             {currentTab === "Dashboard" && (t("titleDashboard") || "Resilience Timeline")}
             {currentTab === "Profile" && (t("titleProfile") || "Nominee Access Settings")}
             {currentTab === "Vault" && (t("titleVault") || "Zero-Knowledge Documents")}
@@ -659,7 +688,7 @@ export default function App() {
         </div>
 
         {/* Core Component Window */}
-        <main className="flex-1 p-3 sm:p-5 md:p-6 w-full max-w-7xl mx-auto relative overflow-hidden pb-24 lg:pb-6">
+        <main className="flex-1 p-3 sm:p-5 md:p-6 w-full max-w-7xl mx-auto relative overflow-x-hidden pb-24 lg:pb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentTab}
@@ -713,14 +742,15 @@ export default function App() {
       {/* -------------------------------------------------------------
           5. MOBILE & TABLET COMPACT THUMB-DOCK (< 1024px Only)
           ------------------------------------------------------------- */}
-      <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] sm:w-[380px] bg-[#2c3353]/95 backdrop-blur-md rounded-2xl border border-[#5d6fa3]/30 shadow-2xl px-4 py-2 z-40 flex items-center justify-between gap-2 animate-fade-in">
+      <div className="lc-mobile-dock lc-safe-bottom lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] sm:w-[380px] backdrop-blur-md rounded-2xl border shadow-2xl px-4 py-2 z-40 flex items-center justify-between gap-2 animate-fade-in">
         {/* Mobile Dashboard thumb link */}
         <button
+          type="button"
           onClick={() => {
             setCurrentTab("Dashboard");
             setShowQuickAccess(false);
           }}
-          className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${currentTab === "Dashboard"
+           className={`lc-touch-target flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${currentTab === "Dashboard"
             ? "bg-[#e0dafc] text-[#2c3353] shadow-md font-extrabold"
             : "text-indigo-200/80 hover:bg-white/5"
             }`}
@@ -731,8 +761,8 @@ export default function App() {
 
         {/* Central Plus safety quick actions button */}
         <div className="relative flex items-center justify-center px-1">
-          {showQuickAccess && (
-            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-72 bg-[#1e233a] border border-[#5d6fa3]/40 rounded-xl p-3 shadow-2xl z-50 animate-fade-in space-y-2">
+           {showQuickAccess && (
+             <div id="mobile-quick-safety-controls" className="absolute bottom-16 left-1/2 -translate-x-1/2 w-72 bg-[#1e233a] border border-[#5d6fa3]/40 rounded-xl p-3 shadow-2xl z-50 animate-fade-in space-y-2">
               <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-1.5">
                 <h4 className="text-[10px] font-black text-[#e0dafc] uppercase tracking-wider">Quick Safety Controls</h4>
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
@@ -747,6 +777,7 @@ export default function App() {
                   return (
                     <button
                       key={index}
+                      type="button"
                       onClick={() => {
                         setCurrentTab(act.tab as Tab);
                         setShowQuickAccess(false);
@@ -766,7 +797,10 @@ export default function App() {
           )}
 
           <button
+            type="button"
             onClick={() => setShowQuickAccess(!showQuickAccess)}
+            aria-expanded={showQuickAccess}
+            aria-controls="mobile-quick-safety-controls"
             className={`w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 hover:scale-105 active:scale-95 transition-all text-white flex items-center justify-center shadow-lg border border-indigo-400/40 relative z-50 cursor-pointer ${showQuickAccess ? "rotate-45" : ""}`}
             title="Quick Controls"
           >
@@ -776,8 +810,10 @@ export default function App() {
 
         {/* Mobile AI Chat toggle button */}
         <button
+          type="button"
           onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-          className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${isChatbotOpen
+          aria-pressed={isChatbotOpen}
+           className={`lc-touch-target flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${isChatbotOpen
             ? "bg-[#e0dafc] text-[#2c3353] shadow-md font-extrabold"
             : "text-indigo-200/80 hover:bg-white/5"
             }`}
@@ -816,8 +852,10 @@ export default function App() {
               )}
             </div>
             <button
+              type="button"
               onClick={() => setToast({ message: "", type: null })}
               className="text-slate-500 hover:text-slate-300 p-1 rounded-lg transition-colors cursor-pointer"
+              aria-label="Dismiss notification"
             >
               <X className="h-4 w-4" />
             </button>

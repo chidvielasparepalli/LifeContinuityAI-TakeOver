@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ShieldCheck, RefreshCw, KeyRound, AlertTriangle, Save, Smartphone, MapPin, Clock, Plus, Activity, Send } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import LoadingState from "./LoadingState";
 
 interface ProfileCenterProps {
   uid: string;
@@ -43,6 +44,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
   const [alerts, setAlerts] = useState<any[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchProfile = async () => {
     try {
@@ -87,8 +89,14 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
   };
 
   useEffect(() => {
-    fetchProfile();
-    fetchSessionsAndAlerts();
+    let mounted = true;
+    Promise.all([fetchProfile(), fetchSessionsAndAlerts()]).finally(() => {
+      if (mounted) setInitialLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, [uid]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -179,10 +187,18 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
+        <LoadingState label="Loading your emergency profile" />
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 sm:p-6 max-w-7xl mx-auto text-[#e0dafc]">
+    <div className="lc-page-wrap grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 sm:p-6 max-w-7xl mx-auto text-[#e0dafc]">
       {/* Tab 2 Form Panel */}
-      <div className="lg:col-span-2 bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6">
+      <div className="lg:col-span-2 lc-panel shadow-lg p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#5d6fa3]/10 pb-4">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/20">
@@ -233,7 +249,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Full Name</label>
+                 <label htmlFor="profile-input-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Full Name</label>
                 <input
                   type="text"
                   required
@@ -246,7 +262,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Age</label>
+                   <label htmlFor="profile-input-age" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Age</label>
                   <input
                     type="number"
                     required
@@ -258,7 +274,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Blood Group</label>
+                   <label htmlFor="profile-select-blood" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Blood Group</label>
                   <select
                     value={bloodGroup}
                     onChange={(e) => setBloodGroup(e.target.value)}
@@ -276,7 +292,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
 
           {/* MEDICAL INFRASTRUCTURE */}
           <div className="border-t border-[#5d6fa3]/20 pt-4 space-y-2">
-            <label className="block text-xs font-extrabold uppercase text-indigo-300 tracking-wider">Medical Alert Information</label>
+             <label htmlFor="profile-input-medical" className="block text-xs font-extrabold uppercase text-indigo-300 tracking-wider">Medical Alert Information</label>
             <textarea
               value={medicalInfo}
               onChange={(e) => setMedicalInfo(e.target.value)}
@@ -370,8 +386,9 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Full Name</label>
-                  <input
+                   <label htmlFor="trusted-contact-name" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Full Name</label>
+                   <input
+                     id="trusted-contact-name"
                     type="text"
                     value={newContactName}
                     onChange={(e) => setNewContactName(e.target.value)}
@@ -380,8 +397,9 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Relationship</label>
-                  <input
+                   <label htmlFor="trusted-contact-relation" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Relationship</label>
+                   <input
+                     id="trusted-contact-relation"
                     type="text"
                     value={newContactRelation}
                     onChange={(e) => setNewContactRelation(e.target.value)}
@@ -390,8 +408,9 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Phone Number</label>
-                  <input
+                   <label htmlFor="trusted-contact-phone" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Phone Number</label>
+                   <input
+                     id="trusted-contact-phone"
                     type="tel"
                     value={newContactPhone}
                     onChange={(e) => setNewContactPhone(e.target.value)}
@@ -400,8 +419,9 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Email Address</label>
-                  <input
+                   <label htmlFor="trusted-contact-email" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Email Address</label>
+                   <input
+                     id="trusted-contact-email"
                     type="email"
                     value={newContactEmail}
                     onChange={(e) => setNewContactEmail(e.target.value)}
@@ -456,7 +476,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Primary Emergency Contact Name</label>
+                 <label htmlFor="profile-input-contact-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Primary Emergency Contact Name</label>
                 <input
                   type="text"
                   required
@@ -468,7 +488,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Primary Contact Phone Number</label>
+                 <label htmlFor="profile-input-contact-phone" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Primary Contact Phone Number</label>
                 <input
                   type="tel"
                   required
@@ -498,7 +518,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Nominee Full Name</label>
+                 <label htmlFor="profile-input-nominee-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Nominee Full Name</label>
                 <input
                   type="text"
                   required
@@ -510,7 +530,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Nominee Registered Phone Number</label>
+                 <label htmlFor="profile-input-nominee-phone" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Nominee Registered Phone Number</label>
                 <input
                   type="tel"
                   required
@@ -522,7 +542,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Access PIN</label>
+                 <label htmlFor="profile-input-nominee-pin" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Access PIN</label>
                 <input
                   type="text"
                   required
@@ -556,7 +576,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Name</label>
+                 <label htmlFor="profile-input-nominee-email-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Name</label>
                 <input
                   type="text"
                   value={emergencyNomineeName}
@@ -567,7 +587,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Email</label>
+                 <label htmlFor="profile-input-nominee-email" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Email</label>
                 <input
                   type="email"
                   value={emergencyNomineeEmail}
@@ -578,7 +598,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Streak Duration (days)</label>
+                 <label htmlFor="profile-input-streak-duration" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Streak Duration (days)</label>
                 <input
                   type="number"
                   min={1}
@@ -590,7 +610,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Grace Period (hours)</label>
+                 <label htmlFor="profile-input-grace-period" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Grace Period (hours)</label>
                 <input
                   type="number"
                   min={0}
@@ -639,7 +659,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#e0dafc] hover:brightness-110 text-[#2c3353] font-black py-2.5 px-6 rounded-xl shadow-lg transition-all flex items-center gap-2 text-xs"
+              className="lc-btn-primary font-black py-2.5 px-6 shadow-lg transition-all flex items-center gap-2 text-xs"
               id="profile-btn-save"
             >
               <Save className="h-4 w-4 text-[#2c3353]" />
@@ -652,7 +672,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
       {/* Security & Device Center Panel */}
       <div className="space-y-6">
         {/* MFA Center */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6">
+        <div className="lc-panel shadow-lg p-6">
           <h3 className="text-base font-bold text-white flex items-center gap-2 mb-4">
             <ShieldCheck className="h-5 w-5 text-[#e0dafc]" />
             Multi-Factor Auth (MFA)
@@ -680,15 +700,17 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
         </div>
 
         {/* Device Sessions */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6">
+        <div className="lc-panel shadow-lg p-6">
           <div className="flex items-center justify-between mb-4 border-b border-[#5d6fa3]/20 pb-2">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Smartphone className="h-5 w-5 text-[#e0dafc]" />
               Active Device Sessions
             </h3>
             <button
+              type="button"
               onClick={fetchSessionsAndAlerts}
               className="p-1 hover:bg-[#1e233a]/60 rounded-lg text-[#e0dafc] transition-colors"
+              aria-label="Refresh active device sessions"
               id="btn-refresh-sessions"
             >
               <RefreshCw className="h-4 w-4" />
@@ -696,7 +718,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
           </div>
           <div className="space-y-3">
             {sessions.map((sess) => (
-              <div key={sess.id} className="p-3 border border-[#5d6fa3]/20 rounded-xl bg-[#1e233a] flex justify-between items-start text-xs hover:border-[#5d6fa3]/40 transition-colors">
+               <div key={sess.id} className="lc-hover-lift p-3 border border-[#5d6fa3]/20 rounded-xl bg-[#1e233a] flex justify-between items-start text-xs hover:border-[#5d6fa3]/40 transition-colors">
                 <div className="space-y-1">
                   <p className="font-semibold text-white">{sess.device}</p>
                   <p className="text-[10px] text-[#5d6fa3] flex items-center gap-1">
@@ -718,7 +740,7 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
         </div>
 
         {/* Security Alerts */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 max-h-[300px] overflow-y-auto">
+        <div className="lc-panel shadow-lg p-6 max-h-[300px] overflow-y-auto">
           <h3 className="text-base font-bold text-white flex items-center gap-2 mb-4 sticky top-0 bg-[#2c3353] py-1 border-b border-[#5d6fa3]/20">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
             Live Security Feed

@@ -16,13 +16,13 @@ export default function DashboardHeader({
   getStatusBadgeClass,
 }: DashboardHeaderProps) {
   return (
-    <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 flex flex-col md:flex-row md:items-center justify-between gap-6" id="dashboard-header-banner">
+    <div className="lc-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-6" id="dashboard-header-banner">
       <div className="flex items-center gap-4">
-        <div className="h-12 w-12 rounded-xl bg-[#1e233a] flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
+        <div className="lc-panel-raised h-12 w-12 rounded-xl flex items-center justify-center text-[#e0dafc]">
           <Flame className="h-6 w-6 animate-pulse text-amber-400" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white flex flex-wrap items-center gap-2">
+          <h2 className="text-xl font-extrabold text-white flex flex-wrap items-center gap-2 tracking-tight">
             Lighthouse Safety Check-in Dashboard
             {stats && (
               <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold uppercase tracking-wider ${getStatusBadgeClass(stats.status)}`}>
@@ -46,9 +46,10 @@ export default function DashboardHeader({
         </div>
         
         <button
+          type="button"
           onClick={onManualCheckIn}
           disabled={isCheckingIn}
-          className={`bg-[#e0dafc] hover:brightness-110 text-[#2c3353] font-black text-sm py-3 px-6 rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer ${
+          className={`lc-btn-primary text-sm py-3 px-6 shadow-lg transition-all gap-2 cursor-pointer ${
             isCheckingIn ? "opacity-75 cursor-not-allowed" : ""
           }`}
           id="btn-safety-checkin-dashboard"

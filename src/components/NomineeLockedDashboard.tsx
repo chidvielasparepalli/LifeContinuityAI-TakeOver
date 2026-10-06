@@ -116,10 +116,10 @@ export default function NomineeLockedDashboard({
   const nextCheckInWindow = "08:00 AM - 08:00 PM Tomorrow";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="lc-page-wrap max-w-7xl mx-auto space-y-6">
       
       {/* 1. TOP SECURED ALERT HEADER */}
-      <div className="bg-[#1e233a] border border-[#5d6fa3]/30 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="lc-panel p-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4.5 w-full md:w-auto">
           <div className="h-12 w-12 bg-red-950/40 border border-red-500/30 text-red-400 rounded-2xl flex items-center justify-center shrink-0 animate-pulse">
             <Lock className="h-6 w-6" id="status-lock-icon" />
@@ -187,7 +187,7 @@ export default function NomineeLockedDashboard({
         <div className="space-y-6 flex flex-col justify-between">
           
           {/* A1: LIVE STATUS WIDGET */}
-          <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 p-5 shadow-lg space-y-4 flex-1 flex flex-col justify-between">
+          <div className="lc-panel p-5 shadow-lg space-y-4 flex-1 flex flex-col justify-between">
             <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
               <div className="flex items-center gap-2">
                 <Activity className="h-4.5 w-4.5 text-indigo-400" />
@@ -256,7 +256,7 @@ export default function NomineeLockedDashboard({
           </div>
 
           {/* A2: SYSTEM HEALTH CARD */}
-          <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 p-5 shadow-lg space-y-4">
+          <div className="lc-panel p-5 shadow-lg space-y-4">
             <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4.5 w-4.5 text-indigo-400" />
@@ -300,7 +300,7 @@ export default function NomineeLockedDashboard({
         <div className="space-y-6">
 
           {/* B1: ACTIVITY HEATMAP */}
-          <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 p-5 shadow-lg space-y-4">
+          <div className="lc-panel p-5 shadow-lg space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#5d6fa3]/20 pb-3 gap-2">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4.5 w-4.5 text-indigo-400" />
@@ -328,10 +328,14 @@ export default function NomineeLockedDashboard({
                   }
 
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={idx}
                       onMouseEnter={() => setHoveredDay(day)}
                       onMouseLeave={() => setHoveredDay(null)}
+                      onFocus={() => setHoveredDay(day)}
+                      onBlur={() => setHoveredDay(null)}
+                      aria-label={`${day.label}: ${day.status === "missed" ? "missed check-in" : "successful check-in"}`}
                       className={`aspect-square rounded-md cursor-pointer transition-all border ${bgClass} ${borderClass} relative flex items-center justify-center`}
                       style={{ minHeight: "36px" }}
                     >
@@ -343,7 +347,7 @@ export default function NomineeLockedDashboard({
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                         </span>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>

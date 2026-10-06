@@ -212,12 +212,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }, [slides.length]);
 
   return (
-    <div className={`min-h-screen ${theme === "light" ? "bg-[#e0dafc] text-black theme-light-container" : "bg-[#2c3353] text-[#e0dafc] theme-dark-container"} font-sans flex flex-col justify-between overflow-x-hidden transition-colors duration-300`}>
+    <div className={`lc-shell min-h-screen ${theme === "light" ? "theme-light-container" : "theme-dark-container"} font-sans flex flex-col justify-between overflow-x-hidden transition-colors duration-300`}>
       
       {/* Navigation Header */}
-      <nav className={`h-20 px-6 sm:px-12 flex items-center justify-between border-b ${theme === "light" ? "bg-white border-indigo-200" : "bg-[#2c3353] border-[#5d6fa3]/30"} shrink-0 transition-colors duration-300`}>
+      <nav className="lc-login-nav h-20 px-6 sm:px-12 flex items-center justify-between border-b shrink-0 transition-colors duration-300">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#e0dafc] rounded-lg flex items-center justify-center text-[#2c3353] border border-indigo-300/30">
+          <div className="lc-brand-mark w-10 h-10 rounded-lg">
             <Shield className="w-6 h-6 text-indigo-700" id="logo-icon" />
           </div>
           <span className="text-xl sm:text-2xl font-black tracking-tight uppercase text-inherit" id="portal-title">
@@ -276,9 +276,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <main className="flex-1 flex flex-col md:flex-row">
         
         {/* Left column: Branding, value propositions & Carousel */}
-        <div className="w-full md:w-1/2 p-6 sm:p-12 lg:p-16 flex flex-col justify-center gap-6 border-b md:border-b-0 md:border-r border-[#5d6fa3]/20 bg-gradient-to-br from-[#1e2237] to-[#141727] dark:from-[#2c3353] dark:to-[#1e233a] text-white">
+        <div className="lc-login-hero w-full md:w-1/2 p-6 sm:p-12 lg:p-16 flex flex-col justify-center gap-6 border-b md:border-b-0 md:border-r border-[#5d6fa3]/20 text-white">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-xs text-indigo-300 font-bold uppercase tracking-wider">
+             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/15 text-xs text-teal-200 font-bold uppercase tracking-wider">
               <Sparkles className="h-3 w-3 text-indigo-400" />
               {t("brandName")}
             </div>
@@ -288,7 +288,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           </div>
 
           {/* Interactive Core Showcase Carousel */}
-          <div className="relative p-6 rounded-2xl border border-[#5d6fa3]/30 bg-[#2c3353]/45 overflow-hidden shadow-xl min-h-[170px] flex flex-col justify-between">
+           <div className="relative p-6 rounded-2xl border border-white/15 bg-white/5 overflow-hidden shadow-xl min-h-[170px] flex flex-col justify-between backdrop-blur-sm">
             {/* Slide Background Visual Graphic */}
             <div className="absolute right-3 top-3 opacity-10">
               <Shield className="h-28 w-28 text-indigo-500" />
@@ -354,7 +354,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </div>
 
         {/* Right column: Interactive form panel */}
-        <div className={`w-full md:w-1/2 p-6 sm:p-12 lg:p-16 flex flex-col justify-center items-center ${theme === "light" ? "bg-white" : "bg-[#2c3353]"} transition-colors duration-300`}>
+         <div className="lc-login-form w-full md:w-1/2 p-6 sm:p-12 lg:p-16 flex flex-col justify-center items-center transition-colors duration-300">
           <div className="w-full max-w-sm space-y-8">
             <div className="text-center space-y-2">
               <h2 className="text-2xl sm:text-3xl font-bold text-inherit">{t("welcomeBack")}</h2>
@@ -429,7 +429,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
                   <button
                     onClick={handleSandboxLogin}
-                    className="py-2.5 text-[11px] uppercase tracking-wider font-bold border border-[#e0dafc]/30 rounded-lg hover:bg-[#e0dafc]/10 text-[#e0dafc] transition-colors flex items-center justify-center gap-1.5 cursor-pointer w-full"
+                     disabled={loading}
+                     className="lc-btn-secondary py-2.5 text-[11px] uppercase tracking-wider font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer w-full"
                     id="btn-sandbox-login"
                   >
                     <Sparkles className="h-3.5 w-3.5" />
@@ -455,8 +456,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                     <div className="flex gap-2">
                       <div className="relative flex-1">
                         <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-[#5d6fa3]" />
-                        <input
-                          type="tel"
+                         <input
+                           type="tel"
+                           autoComplete="tel"
                           required
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
@@ -465,10 +467,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                           id="input-nominee-phone"
                         />
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleSendOtp}
-                        className="bg-[#5d6fa3]/20 hover:bg-[#5d6fa3]/30 text-[#e0dafc] text-xs font-semibold px-4 rounded-lg border border-[#e0dafc]/20 transition-all shrink-0"
+                         <button
+                           type="button"
+                           onClick={handleSendOtp}
+                           disabled={loading || !phone.trim()}
+                           className="lc-btn-secondary text-xs font-semibold px-4 transition-all shrink-0"
                         id="btn-send-otp"
                       >
                         {otpSent ? "Resend" : "Send OTP"}
@@ -480,8 +483,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                     <div className="animate-fade-in space-y-4 pt-2">
                       <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-widest text-[#5d6fa3] font-bold">SMS Verification Code (OTP)</label>
-                        <input
-                          type="text"
+                         <input
+                           type="text"
+                           inputMode="numeric"
+                           autoComplete="one-time-code"
                           required
                           value={otp}
                           onChange={(e) => setOtp(e.target.value)}
@@ -497,8 +502,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                         <label className="text-[10px] uppercase tracking-widest text-[#5d6fa3] font-bold">Nominee Access PIN</label>
                         <div className="relative">
                           <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#5d6fa3]" />
-                          <input
-                            type="password"
+                           <input
+                             type="password"
+                             autoComplete="current-password"
                             required
                             value={pin}
                             onChange={(e) => setPin(e.target.value)}

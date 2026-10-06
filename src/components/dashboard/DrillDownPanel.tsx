@@ -59,7 +59,7 @@ export default function DrillDownPanel({
 }: DrillDownPanelProps) {
   if (!currentEvent) {
     return (
-      <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6 flex flex-col justify-between" id="drill-down-empty-panel">
+      <div className="lc-panel shadow-lg p-6 space-y-6 flex flex-col justify-between" id="drill-down-empty-panel">
         <div className="flex items-center justify-between border-b border-[#5d6fa3]/10 pb-4">
           <span className="text-[10px] font-black uppercase text-[#e0dafc]/50 tracking-widest block">NODE DRILL-DOWN ANALYTICS</span>
         </div>
@@ -112,7 +112,7 @@ export default function DrillDownPanel({
   }
 
   return (
-    <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-6 flex flex-col justify-between animate-in fade-in duration-200" id="drill-down-active-panel">
+    <div className="lc-panel shadow-lg p-6 space-y-6 flex flex-col justify-between animate-in fade-in duration-200" id="drill-down-active-panel">
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-[#5d6fa3]/10 pb-4">
           <div>
@@ -127,14 +127,14 @@ export default function DrillDownPanel({
         </div>
 
         {/* Outer White Card layout styled beautifully */}
-        <div className={`bg-white text-slate-900 rounded-2xl border-l-4 ${categoryColor} border border-slate-200/80 p-6 space-y-4 shadow-xl`}>
+        <div className={`lc-detail-card rounded-2xl border-l-4 ${categoryColor} p-6 space-y-4 shadow-xl`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h4 className="text-lg font-bold text-slate-900 leading-tight">
+              <h4 className="text-lg font-bold text-[var(--lc-text)] leading-tight">
                 {currentEvent.name}
               </h4>
-              <p className="text-xs text-slate-500 mt-1">
-                Calendar Schedule: <span className="font-semibold text-slate-700">{getDayFormattedTitle(currentEvent.date)}</span> {currentEvent.time ? `at ${currentEvent.time}` : ""}
+              <p className="text-xs text-[var(--lc-muted)] mt-1">
+                Calendar Schedule: <span className="font-semibold text-[var(--lc-text-soft)]">{getDayFormattedTitle(currentEvent.date)}</span> {currentEvent.time ? `at ${currentEvent.time}` : ""}
               </p>
             </div>
 
@@ -149,31 +149,31 @@ export default function DrillDownPanel({
           </div>
 
           {/* Centered notes box */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/50">
-            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+          <div className="bg-[var(--lc-surface-soft)] p-4 rounded-xl border border-[var(--lc-border)]">
+            <p className="text-xs text-[var(--lc-text-soft)] leading-relaxed font-medium">
               {currentEvent.notes || "No detailed notes or documentation uploaded for this obligation."}
             </p>
           </div>
 
           {/* Bottom row metrics */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-[var(--lc-border)]">
             <div className="flex items-center gap-8">
               <div>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">COMMITTED FUNDING</span>
-                <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--lc-muted)] block">COMMITTED FUNDING</span>
+                <span className="text-lg font-black text-[var(--lc-text)] mt-0.5 block">
                   {currentEvent.amount ? `$${currentEvent.amount}` : "N/A"}
                 </span>
               </div>
 
               <div>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">STATUS STATE</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--lc-muted)] block">STATUS STATE</span>
                 <span className="inline-flex items-center gap-1.5 mt-1">
                   <span className={`h-2 w-2 rounded-full ${
                     currentEvent.status === "Paid" || currentEvent.status === "Completed" 
                       ? "bg-emerald-500 animate-pulse" 
                       : "bg-green-500"
                   }`} />
-                  <span className="text-sm font-black text-slate-800">
+                  <span className="text-sm font-black text-[var(--lc-text-soft)]">
                     {currentEvent.status || "Pending"}
                   </span>
                 </span>
