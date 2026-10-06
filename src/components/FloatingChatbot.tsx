@@ -66,7 +66,7 @@ export default function FloatingChatbot({
   // TTS State
   const [activeSpeakingId, setActiveSpeakingId] = useState<string | null>(null);
   const [isSpeechPaused, setIsSpeechPaused] = useState(false);
-  const [isContinuousMode, setIsContinuousMode] = useState(false); // continuous hands-free dialogue mode
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -204,7 +204,7 @@ export default function FloatingChatbot({
       startAudioVisualizer(stream);
 
       const rec = new SpeechRecognition();
-      rec.continuous = false; // Stop listening when user stops speaking a sentence
+      rec.continuous = false;
       rec.interimResults = true;
       rec.lang = "en-US";
 
@@ -231,7 +231,7 @@ export default function FloatingChatbot({
       rec.onerror = (event: any) => {
         console.error("Speech Recognition error:", event.error);
         if (event.error === "no-speech") {
-          // No speech detected, ignore or warn
+          // No speech detected
         } else if (event.error === "not-allowed" || event.error === "permission-blocked") {
           setMicPermissionState("denied");
           setErrorMessage("Microphone access denied. Please allow microphone permissions in settings.");
@@ -282,7 +282,6 @@ export default function FloatingChatbot({
     try {
       window.speechSynthesis.cancel();
 
-      // Simple Markdown Cleaner
       const cleaned = text
         .replace(/[*_`#\-+]/g, " ")
         .replace(/\[.*?\]/g, "")
@@ -304,7 +303,6 @@ export default function FloatingChatbot({
         setActiveSpeakingId(null);
         setIsSpeechPaused(false);
 
-        // Continuous Flow hands-free auto-trigger
         if (isContinuousModeRef.current) {
           setTimeout(() => {
             startVoiceRecognition();
@@ -368,7 +366,6 @@ export default function FloatingChatbot({
     const textToSend = customText !== undefined ? customText : input;
     if (!textToSend.trim() || loading) return;
 
-    // Interrupt any active speech synthesis on user interaction
     stopSpeaking();
     setErrorMessage(null);
 
@@ -389,7 +386,6 @@ export default function FloatingChatbot({
     setLoading(true);
     setVoiceStatus("Thinking");
 
-    // Abort controller setup
     abortControllerRef.current = new AbortController();
 
     try {
@@ -423,7 +419,6 @@ export default function FloatingChatbot({
         setMessages(prev => [...prev, aiMsg]);
         setLiveTranscript(data.text);
         
-        // Auto-read aloud
         speakText(data.text, aiMsgId);
       } else {
         throw new Error("Empty response from chatbot engine.");
@@ -570,7 +565,6 @@ export default function FloatingChatbot({
     }
   };
 
-  // Mic level display dynamic styling helper
   const getMicBarHeight = (idx: number) => {
     const scaleFactor = [0.4, 0.8, 1.3, 0.9, 0.5][idx % 5];
     const computedHeight = Math.min(48, Math.max(4, (micLevel * scaleFactor) / 3));
@@ -578,31 +572,31 @@ export default function FloatingChatbot({
   };
 
   return (
-    <div className={`fixed z-50 ${activeOpen ? "inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[400px] sm:h-[600px]" : "bottom-6 right-6 w-12 h-12"} flex flex-col items-end transition-all duration-300`}>
+    <div className={`fixed z-50 ${activeOpen ? "inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[420px] sm:h-[620px]" : "bottom-6 right-6 w-14 h-14"} flex flex-col items-end transition-all duration-300`}>
       
       {/* Floating Panel Box */}
       {activeOpen && (
-        <div className="bg-[#2c3353] sm:rounded-2xl shadow-2xl border-none sm:border sm:border-[#5d6fa3]/30 w-full sm:w-full h-full sm:h-[calc(100%-60px)] flex flex-col overflow-hidden sm:mb-4 animate-fade-in relative">
+        <div className="app-card sm:rounded-2xl shadow-2xl border-none sm:border sm:border-[var(--border-card)] w-full sm:w-full h-full sm:h-[calc(100%-70px)] flex flex-col overflow-hidden sm:mb-4 animate-fade-in relative">
           
           {/* Header Bar */}
-          <div className="bg-[#1e233a] text-white p-4 flex items-center justify-between border-b border-[#5d6fa3]/20 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-[#e0dafc] rounded-lg flex items-center justify-center text-[#2c3353] border border-[#5d6fa3]/20">
-                <Sparkles className="h-4.5 w-4.5" />
+          <div className="bg-[var(--bg-app)] p-4 flex items-center justify-between border-b border-[var(--border-card)] shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-bold text-sm">LifeContinuity AI Agent</h4>
-                <p className="text-[10px] text-green-400 flex items-center gap-1 uppercase tracking-wider font-semibold">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                <h4 className="font-bold text-sm text-[var(--text-primary)]">LifeContinuity AI Agent</h4>
+                <p className="text-[10px] text-emerald-400 flex items-center gap-1 uppercase tracking-wider font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Continuous Secure Guard
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handleClearChat}
-                className="text-[#5d6fa3] hover:text-[#e0dafc] p-1.5 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 hover:bg-[var(--bg-card)] rounded-xl transition-colors cursor-pointer"
                 title="Clear Chat History"
               >
                 <Trash2 className="h-4 w-4" />
@@ -612,7 +606,7 @@ export default function FloatingChatbot({
                   if (onToggle) onToggle(false);
                   else setIsOpen(false);
                 }}
-                className="text-[#5d6fa3] hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 hover:bg-[var(--bg-card)] rounded-xl transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -621,14 +615,14 @@ export default function FloatingChatbot({
 
           {/* Error Banner */}
           {errorMessage && (
-            <div className="bg-red-950/95 border-b border-red-500/30 px-4 py-2 flex items-start gap-2 text-[11px] text-red-200 animate-fade-in shrink-0">
-              <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+            <div className="bg-rose-500/10 border-b border-rose-500/30 px-4 py-2.5 flex items-start gap-2 text-xs text-rose-300 animate-fade-in shrink-0">
+              <AlertCircle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
               <div className="flex-1 leading-relaxed">
                 {errorMessage}
               </div>
               <button 
                 onClick={() => setErrorMessage(null)} 
-                className="text-red-400 hover:text-white font-bold ml-1"
+                className="text-rose-400 hover:text-white font-bold ml-1 cursor-pointer"
               >
                 ×
               </button>
@@ -637,21 +631,21 @@ export default function FloatingChatbot({
 
           {isVoiceMode ? (
             /* Immersive Full-Panel Voice Chat Room */
-            <div className="flex-1 flex flex-col items-center justify-between p-5 bg-gradient-to-b from-[#1e233a] to-[#2c3353] text-white overflow-y-auto">
+            <div className="flex-1 flex flex-col items-center justify-between p-6 bg-gradient-to-b from-[var(--bg-app)] to-[var(--bg-card)] text-[var(--text-primary)] overflow-y-auto">
               
               {/* Hands-Free Dialog Mode Toggle */}
-              <div className="w-full flex items-center justify-between bg-[#1e233a]/50 p-2 rounded-xl border border-[#5d6fa3]/10 text-xs shrink-0">
-                <span className="text-[#e0dafc]/80 font-medium flex items-center gap-1.5">
-                  <AudioLines className="h-3.5 w-3.5 text-indigo-400" />
-                  Hands-Free Continuous Mode
+              <div className="w-full flex items-center justify-between bg-[var(--bg-card)] p-3 rounded-2xl border border-[var(--border-card)] text-xs shrink-0">
+                <span className="text-[var(--text-muted)] font-medium flex items-center gap-2">
+                  <AudioLines className="h-4 w-4 text-indigo-400" />
+                  <span>Hands-Free Continuous Mode</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsContinuousMode(prev => !prev)}
-                  className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isContinuousMode 
-                      ? "bg-green-500 text-white shadow-md shadow-green-500/20" 
-                      : "bg-[#1e233a] text-[#5d6fa3] border border-[#5d6fa3]/30"
+                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" 
+                      : "bg-[var(--bg-app)] text-[var(--text-muted)] border border-[var(--border-card)]"
                   }`}
                 >
                   {isContinuousMode ? "Active" : "Disabled"}
@@ -659,7 +653,7 @@ export default function FloatingChatbot({
               </div>
 
               {/* Central Visualization Hub */}
-              <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full py-2">
+              <div className="flex-1 flex flex-col items-center justify-center space-y-5 w-full py-4">
                 
                 {/* Active Orb & Dynamic Waves */}
                 <div className="relative flex items-center justify-center h-24 w-24 shrink-0">
@@ -667,9 +661,9 @@ export default function FloatingChatbot({
                     {voiceStatus === "Listening" && (
                       <motion.div 
                         initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1.15 }}
+                        animate={{ opacity: 1, scale: 1.2 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute inset-0 rounded-full bg-indigo-500/20 border border-indigo-500/30 animate-pulse [animation-duration:1s]"
+                        className="absolute inset-0 rounded-full bg-indigo-500/20 border border-indigo-500/40 animate-pulse [animation-duration:1s]"
                       />
                     )}
                     {voiceStatus === "Thinking" && (
@@ -677,24 +671,24 @@ export default function FloatingChatbot({
                         initial={{ rotate: 0 }}
                         animate={{ rotate: 360 }}
                         transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                        className="absolute inset-0 rounded-full border-2 border-dashed border-indigo-400/50"
+                        className="absolute inset-0 rounded-full border-2 border-dashed border-indigo-400/60"
                       />
                     )}
                     {voiceStatus === "Speaking" && !isSpeechPaused && (
                       <motion.div 
                         initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1.2 }}
+                        animate={{ opacity: 1, scale: 1.25 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute inset-0 rounded-full bg-emerald-500/10 border border-emerald-500/25 animate-ping [animation-duration:2s]"
+                        className="absolute inset-0 rounded-full bg-emerald-500/20 border border-emerald-500/30 animate-ping [animation-duration:2s]"
                       />
                     )}
                   </AnimatePresence>
 
-                  <div className={`h-16 w-16 rounded-full flex items-center justify-center border transition-all duration-300 shadow-xl relative z-10 ${
-                    voiceStatus === "Listening" ? "bg-indigo-600 border-indigo-400 text-white" :
-                    voiceStatus === "Thinking" ? "bg-violet-600 border-violet-400 text-white" :
-                    voiceStatus === "Speaking" ? "bg-emerald-600 border-emerald-400 text-white" :
-                    "bg-[#1e233a] border-[#5d6fa3]/40 text-[#e0dafc]"
+                  <div className={`h-16 w-16 rounded-full flex items-center justify-center border transition-all duration-300 shadow-2xl relative z-10 ${
+                    voiceStatus === "Listening" ? "bg-indigo-600 border-indigo-400 text-white shadow-indigo-500/40" :
+                    voiceStatus === "Thinking" ? "bg-purple-600 border-purple-400 text-white shadow-purple-500/40" :
+                    voiceStatus === "Speaking" ? "bg-emerald-600 border-emerald-400 text-white shadow-emerald-500/40" :
+                    "bg-[var(--bg-card)] border-[var(--border-card)] text-indigo-400"
                   }`}>
                     {voiceStatus === "Listening" ? <Mic className="h-6 w-6 animate-pulse" /> :
                      voiceStatus === "Thinking" ? <Radio className="h-6 w-6 animate-pulse" /> :
@@ -709,7 +703,7 @@ export default function FloatingChatbot({
                     {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                       <span
                         key={i}
-                        className="w-1 bg-indigo-400 rounded-full transition-all duration-75"
+                        className="w-1.5 bg-indigo-500 rounded-full transition-all duration-75"
                         style={{ height: getMicBarHeight(i) }}
                       />
                     ))}
@@ -722,7 +716,7 @@ export default function FloatingChatbot({
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((bar) => (
                       <motion.div
                         key={bar}
-                        className="w-1 bg-emerald-400 rounded-full"
+                        className="w-1.5 bg-emerald-400 rounded-full"
                         animate={{
                           scaleY: isSpeechPaused ? 0.3 : [0.3, 1.4, 0.3],
                         }}
@@ -740,14 +734,14 @@ export default function FloatingChatbot({
 
                 {/* Status Indicator labels */}
                 <div className="text-center w-full shrink-0">
-                  <h5 className="text-xs font-bold uppercase tracking-widest text-[#e0dafc]">
+                  <h5 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
                     {voiceStatus === "Listening" ? "Listening..." :
                      voiceStatus === "Thinking" ? "Thinking..." :
                      voiceStatus === "Speaking" ? (isSpeechPaused ? "Speech Paused" : "Speaking...") :
                      "Tap Mic to Speak"}
                   </h5>
-                  <p className="text-[10px] text-[#5d6fa3] mt-0.5">
-                    {voiceStatus === "Listening" ? "Speak clearly now • stops when finished" :
+                  <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                    {voiceStatus === "Listening" ? "Speak clearly now • stops automatically" :
                      voiceStatus === "Thinking" ? "Consulting secure Gemini intelligence..." :
                      voiceStatus === "Speaking" ? "Lighthouse reading continuous continuity overview" :
                      "Lighthouse Voice Interface ready"}
@@ -755,13 +749,13 @@ export default function FloatingChatbot({
                 </div>
 
                 {/* Live transcript or response read display */}
-                <div className="bg-[#1e233a]/80 border border-[#5d6fa3]/15 rounded-xl p-3.5 w-full min-h-[80px] max-h-[100px] overflow-y-auto flex flex-col justify-center items-center shrink-0">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-card)] rounded-2xl p-4 w-full min-h-[80px] max-h-[100px] overflow-y-auto flex flex-col justify-center items-center shrink-0">
                   {liveTranscript ? (
-                    <p className="text-xs italic text-indigo-200 text-center leading-relaxed font-medium">
+                    <p className="text-xs italic text-[var(--text-primary)] text-center leading-relaxed font-medium">
                       "{liveTranscript}"
                     </p>
                   ) : (
-                    <p className="text-xs text-[#5d6fa3] italic text-center">
+                    <p className="text-xs text-[var(--text-muted)] italic text-center">
                       {voiceStatus === "Listening" ? "Say something..." : "Ready for safety commands"}
                     </p>
                   )}
@@ -769,16 +763,16 @@ export default function FloatingChatbot({
               </div>
 
               {/* Action buttons */}
-              <div className="w-full border-t border-[#5d6fa3]/15 pt-4 flex flex-col items-center gap-3 shrink-0">
+              <div className="w-full border-t border-[var(--border-card)] pt-4 flex flex-col items-center gap-3 shrink-0">
                 <div className="flex items-center gap-5">
                   {/* Speech synthesis controller: Pause/Resume/Stop */}
                   {voiceStatus === "Speaking" ? (
-                    <div className="flex items-center gap-2 bg-[#1e233a]/80 p-1.5 rounded-full border border-[#5d6fa3]/15">
+                    <div className="flex items-center gap-2 bg-[var(--bg-card)] p-1.5 rounded-full border border-[var(--border-card)]">
                       {isSpeechPaused ? (
                         <button
                           type="button"
                           onClick={resumeSpeaking}
-                          className="h-8 w-8 rounded-full bg-emerald-600/30 hover:bg-emerald-600 text-emerald-400 hover:text-white transition-all flex items-center justify-center cursor-pointer"
+                          className="h-8 w-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white transition-all flex items-center justify-center cursor-pointer"
                           title="Resume speaking"
                         >
                           <Play className="h-3.5 w-3.5" />
@@ -787,7 +781,7 @@ export default function FloatingChatbot({
                         <button
                           type="button"
                           onClick={pauseSpeaking}
-                          className="h-8 w-8 rounded-full bg-amber-600/30 hover:bg-amber-600 text-amber-400 hover:text-white transition-all flex items-center justify-center cursor-pointer"
+                          className="h-8 w-8 rounded-full bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-white transition-all flex items-center justify-center cursor-pointer"
                           title="Pause speaking"
                         >
                           <Pause className="h-3.5 w-3.5" />
@@ -796,7 +790,7 @@ export default function FloatingChatbot({
                       <button
                         type="button"
                         onClick={stopSpeaking}
-                        className="h-8 w-8 rounded-full bg-red-600/30 hover:bg-red-600 text-red-400 hover:text-white transition-all flex items-center justify-center cursor-pointer"
+                        className="h-8 w-8 rounded-full bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white transition-all flex items-center justify-center cursor-pointer"
                         title="Stop speaking"
                       >
                         <Square className="h-3.5 w-3.5" />
@@ -806,7 +800,7 @@ export default function FloatingChatbot({
                     <button
                       type="button"
                       disabled={voiceStatus !== "Speaking"}
-                      className="h-9 w-9 rounded-full bg-[#1e233a]/60 border border-[#5d6fa3]/15 text-red-400/40 disabled:opacity-30 flex items-center justify-center"
+                      className="h-10 w-10 rounded-full bg-[var(--bg-card)] border border-[var(--border-card)] text-[var(--text-muted)] opacity-40 disabled:opacity-30 flex items-center justify-center"
                       title="TTS Playback Idle"
                     >
                       <VolumeX className="h-4.5 w-4.5" />
@@ -818,20 +812,20 @@ export default function FloatingChatbot({
                     <button
                       type="button"
                       onClick={stopRecording}
-                      className="h-14 w-14 rounded-full bg-red-600 hover:bg-red-700 border border-red-400 text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all cursor-pointer"
+                      className="h-14 w-14 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all cursor-pointer shadow-rose-950/40"
                       title="Stop Recording"
                     >
-                      <span className="h-3.5 w-3.5 bg-white rounded-xs" />
+                      <span className="h-4 w-4 bg-white rounded-xs" />
                     </button>
                   ) : (
                     <button
                       type="button"
                       disabled={loading || voiceStatus === "Speaking"}
                       onClick={startVoiceRecognition}
-                      className={`h-14 w-14 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all cursor-pointer ${
+                      className={`h-14 w-14 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-all cursor-pointer ${
                         voiceStatus === "Speaking" 
-                          ? "bg-gray-600 border-gray-400 text-gray-300 opacity-50 cursor-not-allowed" 
-                          : "bg-indigo-600 hover:bg-indigo-700 border border-indigo-400 text-white"
+                          ? "bg-slate-700 text-slate-400 opacity-50 cursor-not-allowed" 
+                          : "btn-primary shadow-indigo-500/30"
                       }`}
                       title={voiceStatus === "Speaking" ? "Wait for AI to finish speaking" : "Start Speaking"}
                     >
@@ -846,7 +840,7 @@ export default function FloatingChatbot({
                       setLiveTranscript("");
                       stopSpeaking();
                     }}
-                    className="h-9 w-9 rounded-full bg-[#1e233a]/60 border border-[#5d6fa3]/20 text-indigo-300 hover:bg-[#1e233a] transition-all flex items-center justify-center cursor-pointer"
+                    className="h-10 w-10 rounded-full bg-[var(--bg-card)] border border-[var(--border-card)] text-indigo-400 hover:bg-[var(--bg-app)] transition-all flex items-center justify-center cursor-pointer"
                     title="Reset Voice Window"
                   >
                     <RefreshCcw className="h-4 w-4" />
@@ -860,17 +854,17 @@ export default function FloatingChatbot({
                     if (isRecording) stopRecording();
                     setIsVoiceMode(false);
                   }}
-                  className="text-[10px] text-[#e0dafc] bg-[#1e233a]/50 hover:bg-[#1e233a] border border-[#5d6fa3]/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                  className="btn-secondary py-2 px-4 text-xs font-semibold"
                 >
                   <MessageSquare className="h-3.5 w-3.5 text-indigo-400" />
-                  Return to Text Messenger
+                  <span>Return to Text Messenger</span>
                 </button>
               </div>
             </div>
           ) : (
             <>
               {/* Messages Thread list */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#1e233a]" ref={scrollRef}>
+              <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[var(--bg-app)]" ref={scrollRef}>
                 {messages.map((m) => {
                   const isSpeakingThis = activeSpeakingId === m.id;
                   return (
@@ -879,31 +873,31 @@ export default function FloatingChatbot({
                       className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
                     >
                       <div
-                        className={`p-3 max-w-[85%] rounded-2xl text-xs leading-relaxed shadow-sm transition-all duration-300 ${
+                        className={`p-3.5 max-w-[85%] rounded-2xl text-xs leading-relaxed shadow-sm transition-all duration-300 ${
                           m.role === "user"
-                            ? "bg-[#e0dafc] text-[#2c3353] rounded-br-none font-bold"
-                            : `bg-[#2c3353] text-[#e0dafc] border rounded-bl-none ${
+                            ? "bg-indigo-600 text-white rounded-br-none font-medium shadow-md shadow-indigo-600/10"
+                            : `bg-[var(--bg-card)] text-[var(--text-primary)] border rounded-bl-none ${
                                 isSpeakingThis 
-                                  ? "border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.25)] ring-1 ring-emerald-500/20 scale-[1.01]" 
-                                  : "border-[#5d6fa3]/25"
+                                  ? "border-emerald-500 shadow-lg shadow-emerald-500/15 ring-2 ring-emerald-500/20 scale-[1.01]" 
+                                  : "border-[var(--border-card)]"
                               }`
                         }`}
                       >
-                        <p>{m.text}</p>
+                        <p className="whitespace-pre-line">{m.text}</p>
 
                         {/* Text Message controls (Copy / Speak) */}
                         {m.role === "assistant" && (
-                          <div className="mt-2 pt-2 border-t border-[#5d6fa3]/10 flex items-center justify-end gap-2 text-[10px]">
+                          <div className="mt-2.5 pt-2 border-t border-[var(--border-card)] flex items-center justify-end gap-2.5 text-[11px]">
                             {/* Copy button */}
                             <button
                               type="button"
                               onClick={() => copyToClipboard(m.id, m.text)}
-                              className="text-[#5d6fa3] hover:text-[#e0dafc] transition-colors flex items-center gap-1 cursor-pointer"
+                              className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               {copiedId === m.id ? (
                                 <>
-                                  <Check className="h-3 w-3 text-green-400" />
-                                  <span>Copied</span>
+                                  <Check className="h-3 w-3 text-emerald-400" />
+                                  <span className="text-emerald-400 font-semibold">Copied</span>
                                 </>
                               ) : (
                                 <>
@@ -915,29 +909,29 @@ export default function FloatingChatbot({
 
                             {/* Speak toggle controls */}
                             {isSpeakingThis ? (
-                              <div className="flex items-center gap-1.5 bg-[#1e233a] px-1.5 py-0.5 rounded-full border border-emerald-500/30 text-emerald-400">
+                              <div className="flex items-center gap-1.5 bg-[var(--bg-app)] px-2 py-0.5 rounded-full border border-emerald-500/30 text-emerald-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                                 {isSpeechPaused ? (
                                   <button onClick={resumeSpeaking} className="hover:text-white cursor-pointer" title="Resume">
-                                    <Play className="h-2.5 w-2.5" />
+                                    <Play className="h-3 w-3" />
                                   </button>
                                 ) : (
                                   <button onClick={pauseSpeaking} className="hover:text-white cursor-pointer" title="Pause">
-                                    <Pause className="h-2.5 w-2.5" />
+                                    <Pause className="h-3 w-3" />
                                   </button>
                                 )}
-                                <button onClick={stopSpeaking} className="hover:text-red-400 cursor-pointer" title="Stop">
-                                  <X className="h-2.5 w-2.5" />
+                                <button onClick={stopSpeaking} className="hover:text-rose-400 cursor-pointer" title="Stop">
+                                  <X className="h-3 w-3" />
                                 </button>
                               </div>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => speakText(m.text, m.id)}
-                                className="text-[#5d6fa3] hover:text-[#e0dafc] transition-colors flex items-center gap-1 cursor-pointer"
+                                className="text-[var(--text-muted)] hover:text-indigo-400 transition-colors flex items-center gap-1 cursor-pointer"
                                 title="Listen to AI voice response"
                               >
-                                <Volume1 className="h-3 w-3" />
+                                <Volume1 className="h-3.5 w-3.5" />
                                 <span>Speak</span>
                               </button>
                             )}
@@ -945,7 +939,7 @@ export default function FloatingChatbot({
                         )}
                       </div>
                       
-                      <span className="text-[9px] text-[#5d6fa3] mt-1 px-1">
+                      <span className="text-[10px] text-[var(--text-muted)] mt-1 px-1 font-mono">
                         {m.timestamp}
                       </span>
                     </div>
@@ -955,20 +949,20 @@ export default function FloatingChatbot({
                 {/* Loading / Typing anim indicator */}
                 {loading && (
                   <div className="flex flex-col items-start space-y-1">
-                    <div className="bg-[#2c3353] text-[#e0dafc] border border-[#5d6fa3]/20 p-3 rounded-2xl rounded-bl-none text-xs flex items-center gap-2 shadow-sm animate-pulse">
+                    <div className="bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-card)] p-3.5 rounded-2xl rounded-bl-none text-xs flex items-center gap-2.5 shadow-sm animate-pulse">
                       <div className="flex gap-1">
                         <span className="h-1.5 w-1.5 bg-indigo-400 rounded-full animate-bounce" />
                         <span className="h-1.5 w-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
                         <span className="h-1.5 w-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]" />
                       </div>
-                      <span className="text-[10px] text-[#5d6fa3] font-medium">Lighthouse thinking...</span>
+                      <span className="text-[11px] text-[var(--text-muted)] font-medium">Lighthouse thinking...</span>
                     </div>
                     
                     {/* Stop Generation command */}
                     <button
                       type="button"
                       onClick={handleStopGeneration}
-                      className="text-[9px] font-bold text-red-400 hover:text-white bg-red-950/40 px-2 py-1 rounded-md border border-red-500/20 cursor-pointer flex items-center gap-1 mt-1 ml-1"
+                      className="text-[10px] font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 cursor-pointer flex items-center gap-1 mt-1 ml-1"
                     >
                       <Square className="h-2.5 w-2.5" /> Stop Generation
                     </button>
@@ -977,18 +971,18 @@ export default function FloatingChatbot({
               </div>
 
               {/* Quick Actions Panel */}
-              <div className="p-2.5 bg-[#2c3353] border-t border-[#5d6fa3]/20 flex flex-wrap gap-1.5 shrink-0 relative z-20">
+              <div className="p-2.5 bg-[var(--bg-card)] border-t border-[var(--border-card)] flex flex-wrap gap-1.5 shrink-0 relative z-20">
                 <button
                   type="button"
                   onClick={() => handleSendMessage("When was my last check-in?")}
-                  className="text-[9px] font-bold text-[#e0dafc] bg-[#1e233a] border border-[#5d6fa3]/30 hover:bg-[#1e233a]/80 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  className="text-[10px] font-semibold text-[var(--text-primary)] bg-[var(--bg-app)] border border-[var(--border-card)] hover:border-indigo-500/40 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                 >
                   Check-in Log Status
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSendMessage("What happens if I miss a check-in?")}
-                  className="text-[9px] font-bold text-[#e0dafc] bg-[#1e233a] border border-[#5d6fa3]/30 hover:bg-[#1e233a]/80 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  className="text-[10px] font-semibold text-[var(--text-primary)] bg-[var(--bg-app)] border border-[var(--border-card)] hover:border-indigo-500/40 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                 >
                   What if I miss check-in?
                 </button>
@@ -996,10 +990,10 @@ export default function FloatingChatbot({
                   type="button"
                   onClick={handleSyncCalendar}
                   disabled={syncingCalendar || isCalendarSynced}
-                  className="text-[9px] font-extrabold text-[#2c3353] bg-[#e0dafc] hover:brightness-110 px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
+                  className="text-[10px] font-bold btn-primary px-3 py-1.5 text-xs flex items-center gap-1 cursor-pointer"
                 >
-                  <CalendarRange className="h-3 w-3 text-[#2c3353]" />
-                  {syncingCalendar ? "Syncing..." : isCalendarSynced ? "Calendar Connected" : "Sync Google Calendar"}
+                  <CalendarRange className="h-3 w-3" />
+                  <span>{syncingCalendar ? "Syncing..." : isCalendarSynced ? "Calendar Connected" : "Sync Calendar"}</span>
                 </button>
                 <button
                   type="button"
@@ -1007,21 +1001,21 @@ export default function FloatingChatbot({
                     setIsVoiceMode(true);
                     startVoiceRecognition();
                   }}
-                  className="text-[9px] font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-md"
+                  className="text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer shadow-md"
                 >
                   <Mic className="h-3.5 w-3.5 text-white animate-pulse" />
-                  Voice Mode (Hands-Free)
+                  <span>Voice Mode</span>
                 </button>
                 {messages.length > 1 && (
                   <button
                     type="button"
                     onClick={handleRegenerateResponse}
                     disabled={loading}
-                    className="text-[9px] font-bold text-indigo-300 bg-[#1e233a] border border-indigo-500/20 hover:text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] font-semibold text-indigo-400 bg-[var(--bg-app)] border border-indigo-500/20 hover:bg-indigo-500/10 px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
                     title="Regenerate Last response"
                   >
                     <RotateCcw className="h-3 w-3" />
-                    Regenerate
+                    <span>Regenerate</span>
                   </button>
                 )}
               </div>
@@ -1032,13 +1026,13 @@ export default function FloatingChatbot({
                   e.preventDefault();
                   handleSendMessage();
                 }}
-                className="p-3 border-t border-[#5d6fa3]/20 bg-[#2c3353] flex gap-2 shrink-0 relative z-20"
+                className="p-3 border-t border-[var(--border-card)] bg-[var(--bg-card)] flex gap-2 shrink-0 relative z-20"
               >
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="flex-1 bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field flex-1 text-xs py-2.5"
                   placeholder="Ask about security, bills, or plans..."
                 />
                 
@@ -1047,7 +1041,7 @@ export default function FloatingChatbot({
                   <button
                     type="button"
                     onClick={stopRecording}
-                    className="bg-red-600 border border-red-500 text-white p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer animate-pulse"
+                    className="bg-rose-600 border border-rose-500 text-white p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer animate-pulse"
                     title="Stop Listening"
                   >
                     <MicOff className="h-4 w-4" />
@@ -1056,19 +1050,19 @@ export default function FloatingChatbot({
                   <button
                     type="button"
                     onClick={startVoiceRecognition}
-                    className="bg-[#1e233a] border border-[#5d6fa3]/30 text-indigo-300 hover:text-white p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                    className="btn-secondary p-2.5 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
                     title="Dictation Speech-to-Text"
                   >
-                    <Mic className="h-4 w-4" />
+                    <Mic className="h-4 w-4 text-indigo-400" />
                   </button>
                 )}
 
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="bg-[#e0dafc] hover:brightness-110 text-[#2c3353] p-2.5 rounded-xl transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="btn-primary p-2.5 rounded-xl flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Send className="h-4 w-4 text-[#2c3353]" />
+                  <Send className="h-4 w-4" />
                 </button>
               </form>
             </>
@@ -1080,11 +1074,11 @@ export default function FloatingChatbot({
       {!activeOpen && (
         <button
           onClick={toggleOpen}
-          className="h-12 w-12 rounded-full bg-[#2c3353] hover:bg-[#2c3353]/90 text-[#e0dafc] flex items-center justify-center shadow-2xl hover:scale-105 transition-all relative border border-[#5d6fa3]/30 cursor-pointer"
+          className="h-14 w-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-2xl hover:scale-105 transition-all relative border border-indigo-400/40 cursor-pointer shadow-indigo-500/30"
           id="btn-global-floating-chatbot"
         >
-          <MessageSquare className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-3.5 w-3.5 bg-red-600 rounded-full text-[8px] font-bold flex items-center justify-center text-white border-2 border-[#2c3353]">
+          <MessageSquare className="h-6 w-6" />
+          <span className="absolute top-0 right-0 h-4 w-4 bg-rose-500 rounded-full text-[9px] font-bold flex items-center justify-center text-white border-2 border-[var(--bg-card)]">
             !
           </span>
         </button>

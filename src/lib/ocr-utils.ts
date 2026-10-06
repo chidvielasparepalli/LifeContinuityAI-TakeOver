@@ -203,7 +203,7 @@ async function renderPdfPages(file: File): Promise<string[]> {
     const ctx = canvas.getContext('2d');
     if (!ctx) continue;
 
-    await page.render({ canvasContext: ctx, viewport }).promise;
+    await (page.render({ canvasContext: ctx, viewport, canvas } as any)).promise;
     
     const processedDataUrl = preprocessImageCanvas(canvas);
     pageImages.push(processedDataUrl);
