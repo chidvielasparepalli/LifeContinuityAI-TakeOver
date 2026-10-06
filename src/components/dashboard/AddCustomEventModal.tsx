@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
+import { Plus, X, Calendar, Clock, DollarSign, MapPin, AlignLeft, Tag } from "lucide-react";
 
 interface AddCustomEventModalProps {
   customTitle: string;
@@ -41,70 +42,60 @@ export default function AddCustomEventModal({
   onClose,
   onSubmit,
 }: AddCustomEventModalProps) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   return (
-    <div className="fixed inset-0 z-50 bg-[#1e233a]/80 backdrop-blur-sm flex items-center justify-center p-4" id="modal-add-custom-event" role="dialog" aria-modal="true" aria-labelledby="add-event-modal-title">
-      <div className="lc-panel max-w-md w-full p-6 shadow-2xl space-y-4 text-[#e0dafc] max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
-          <h4 className="font-bold text-white text-base" id="add-event-modal-title">Add Custom Life Obligation</h4>
-          <button
-            type="button"
-            ref={closeButtonRef}
-            onClick={onClose}
-              className="lc-btn-secondary min-h-0 px-3 py-1.5 text-xs"
-              aria-label="Close add obligation dialog"
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" id="modal-add-custom-event">
+      <div className="app-card max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+              <Plus className="h-4.5 w-4.5" />
+            </div>
+            <h4 className="font-extrabold text-slate-900 dark:text-white text-base">Add Custom Life Obligation</h4>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
-            Close
+            <X className="h-5 w-5" />
           </button>
         </div>
         
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-1">
-             <label htmlFor="add-event-title" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Event / Obligation Title</label>
-             <input
-               id="add-event-title"
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Event / Obligation Title</label>
+            <input
               type="text"
               required
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}
-              className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+              className="input-field"
               placeholder="e.g. Cardiology Consult — Dr. Gupta"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-               <label htmlFor="add-event-category" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Event Category</label>
-               <select
-                 id="add-event-category"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Event Category</label>
+              <select
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value as any)}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field cursor-pointer"
               >
                 <option value="Medical Consults">Medical Consults</option>
                 <option value="Financial / EMI">Financial / EMI</option>
-                <option value="Family & School">Family & School</option>
+                <option value="Family & School">Family &amp; School</option>
               </select>
             </div>
 
-            <div className="space-y-1">
-               <label htmlFor="add-event-priority" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Priority Level</label>
-               <select
-                 id="add-event-priority"
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Priority Level</label>
+              <select
                 value={customPriority}
                 onChange={(e) => setCustomPriority(e.target.value as any)}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field cursor-pointer"
               >
+                <option value="Critical">Critical Priority</option>
                 <option value="High">High Priority</option>
                 <option value="Medium">Medium Priority</option>
                 <option value="Low">Low Priority</option>
@@ -112,80 +103,75 @@ export default function AddCustomEventModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-               <label htmlFor="add-event-date" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Target Date</label>
-               <input
-                 id="add-event-date"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Target Date</label>
+              <input
                 type="date"
                 required
                 value={customDate}
                 onChange={(e) => setCustomDate(e.target.value)}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field"
               />
             </div>
-            <div className="space-y-1">
-               <label htmlFor="add-event-time" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Time</label>
-               <input
-                 id="add-event-time"
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Time</label>
+              <input
                 type="text"
                 value={customTime}
                 onChange={(e) => setCustomTime(e.target.value)}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field"
                 placeholder="e.g. 10:00 AM"
               />
             </div>
           </div>
 
           {customCategory === "Financial / EMI" ? (
-            <div className="space-y-1">
-               <label htmlFor="add-event-amount" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Ledger Amount ($)</label>
-               <input
-                 id="add-event-amount"
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ledger Amount ($)</label>
+              <input
                 type="number"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field"
                 placeholder="e.g. 1200"
               />
             </div>
           ) : (
-            <div className="space-y-1">
-               <label htmlFor="add-event-location" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Clinical / Meeting Location</label>
-               <input
-                 id="add-event-location"
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Clinical / Meeting Location</label>
+              <input
                 type="text"
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field"
                 placeholder="e.g. Desk 4, Apollo Clinic"
               />
             </div>
           )}
 
-          <div className="space-y-1">
-             <label htmlFor="add-event-notes" className="text-[10px] font-black uppercase tracking-widest text-[#5d6fa3]">Detailed Description & Guidance notes</label>
-             <textarea
-               id="add-event-notes"
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Detailed Description &amp; Guidance</label>
+            <textarea
               value={customNotes}
               onChange={(e) => setCustomNotes(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2 bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl focus:outline-none focus:border-[#e0dafc] text-xs resize-none text-[#e0dafc]"
+              className="input-field resize-none"
               placeholder="e.g. Monthly apartment lease amortization auto-debit process or Medical follow-up instructions..."
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-[#5d6fa3]/10">
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-[#1e233a] hover:bg-[#1e233a]/80 text-[#5d6fa3] text-xs rounded-xl font-bold border border-[#5d6fa3]/20 cursor-pointer"
+              className="btn-secondary text-xs py-2 px-4"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-xs rounded-xl font-extrabold hover:brightness-110 shadow-lg transition-all cursor-pointer"
+              className="btn-primary text-xs py-2 px-5"
             >
               Save Obligation Event
             </button>

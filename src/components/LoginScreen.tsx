@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Shield, Key, Sparkles, Phone, Lock, ArrowRight, UserCheck, Sun, Moon, Languages } from "lucide-react";
+import { Shield, Key, Sparkles, Phone, Lock, ArrowRight, UserCheck, Sun, Moon, Languages, CheckCircle2 } from "lucide-react";
 import { useThemeLanguage } from "./ThemeLanguageContext";
 import { apiFetch } from "../lib/api";
 import { SignIn, SignUp } from "@clerk/clerk-react";
@@ -7,28 +7,28 @@ import { SignIn, SignUp } from "@clerk/clerk-react";
 const clerkAppearance = {
   variables: {
     colorPrimary: '#6366f1',
-    colorBackground: '#1e233a',
-    colorInputBackground: '#2c3353',
-    colorText: '#e0dafc',
-    colorTextSecondary: '#a5b4fc',
-    colorInputText: '#e0dafc',
+    colorBackground: '#111726',
+    colorInputBackground: '#182238',
+    colorText: '#f8fafc',
+    colorTextSecondary: '#94a3b8',
+    colorInputText: '#f8fafc',
     colorTextOnPrimaryBackground: '#ffffff',
   },
   elements: {
-    card: 'bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl shadow-xl w-full p-4',
+    card: 'bg-[#111726] border border-slate-800 rounded-2xl shadow-xl w-full p-5',
     headerTitle: 'text-white font-bold text-lg',
-    headerSubtitle: 'text-[#a5b4fc] text-xs mt-1',
-    socialButtonsBlockButton: 'border border-[#5d6fa3]/30 hover:bg-[#2c3353] text-[#e0dafc] font-semibold py-2 rounded-lg transition-all w-full flex items-center justify-center gap-2 cursor-pointer',
-    socialButtonsBlockButtonText: 'text-[#e0dafc] font-semibold text-sm',
+    headerSubtitle: 'text-slate-400 text-xs mt-1',
+    socialButtonsBlockButton: 'border border-slate-700 hover:bg-slate-800 text-slate-200 font-semibold py-2.5 rounded-xl transition-all w-full flex items-center justify-center gap-2 cursor-pointer',
+    socialButtonsBlockButtonText: 'text-slate-200 font-semibold text-xs',
     socialButtonsBlockButtonArrow: 'hidden',
-    formButtonPrimary: 'w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg hover:shadow-indigo-500/25 transition-all text-sm uppercase tracking-wider cursor-pointer',
-    formFieldLabel: 'text-[10px] uppercase tracking-widest text-[#a5b4fc] font-bold mb-1',
-    formFieldInput: 'w-full bg-[#2c3353] border border-[#5d6fa3]/30 rounded-lg p-2.5 text-sm text-[#e0dafc] focus:outline-none focus:border-indigo-400 transition-all placeholder-[#5d6fa3]/70',
-    footerActionText: 'text-[#a5b4fc] text-xs',
+    formButtonPrimary: 'w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all text-xs uppercase tracking-wider cursor-pointer',
+    formFieldLabel: 'text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1',
+    formFieldInput: 'w-full bg-[#182238] border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-500',
+    footerActionText: 'text-slate-400 text-xs',
     footerActionLink: 'text-indigo-400 hover:text-indigo-300 font-bold transition-all underline text-xs cursor-pointer',
-    dividerText: 'text-[#5d6fa3] font-bold text-[10px] uppercase tracking-widest',
-    dividerLine: 'bg-[#5d6fa3]/20',
-    formFieldErrorText: 'text-xs text-red-400 bg-red-950/40 p-2 rounded-lg border border-red-900/50 mt-1',
+    dividerText: 'text-slate-500 font-bold text-[10px] uppercase tracking-widest',
+    dividerLine: 'bg-slate-800',
+    formFieldErrorText: 'text-xs text-rose-400 bg-rose-950/40 p-2.5 rounded-xl border border-rose-900/50 mt-1',
   }
 };
 
@@ -212,46 +212,51 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }, [slides.length]);
 
   return (
-    <div className={`lc-shell min-h-screen ${theme === "light" ? "theme-light-container" : "theme-dark-container"} font-sans flex flex-col justify-between overflow-x-hidden transition-colors duration-300`}>
+    <div className={`min-h-screen ${theme === "light" ? "bg-[#f4f6fb] text-slate-900 theme-light-container" : "bg-[#0d111d] text-slate-100 theme-dark-container"} font-sans flex flex-col justify-between overflow-x-hidden transition-colors duration-300`}>
       
       {/* Navigation Header */}
-      <nav className="lc-login-nav h-20 px-6 sm:px-12 flex items-center justify-between border-b shrink-0 transition-colors duration-300">
+      <nav className={`h-20 px-6 sm:px-12 flex items-center justify-between border-b ${theme === "light" ? "bg-white/90 backdrop-blur-md border-slate-200" : "bg-[#111726]/90 backdrop-blur-md border-slate-800"} shrink-0 transition-colors duration-300 sticky top-0 z-40`}>
         <div className="flex items-center gap-3">
-          <div className="lc-brand-mark w-10 h-10 rounded-lg">
-            <Shield className="w-6 h-6 text-indigo-700" id="logo-icon" />
+          <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-600/20">
+            <Shield className="w-5.5 h-5.5 text-white" id="logo-icon" />
           </div>
-          <span className="text-xl sm:text-2xl font-black tracking-tight uppercase text-inherit" id="portal-title">
-            {t("brandName")}
-          </span>
+          <div>
+            <span className="text-lg sm:text-xl font-extrabold tracking-tight uppercase text-slate-900 dark:text-white" id="portal-title">
+              {t("brandName")}
+            </span>
+            <span className="hidden sm:inline-block ml-2 text-[9px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/20 uppercase tracking-widest">
+              Security Protocol
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-3">
           {/* Theme Selector */}
           <button
             onClick={toggleTheme}
-            className="p-2.5 bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl text-inherit border border-transparent hover:border-[#5d6fa3]/30 transition-all cursor-pointer"
+            className="p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer"
             title={t("themeSelector")}
             id="btn-login-toggle-theme"
           >
             {theme === "light" ? (
-              <Moon className="h-4.5 w-4.5 text-indigo-700" />
+              <Moon className="h-4.5 w-4.5 text-indigo-600" />
             ) : (
               <Sun className="h-4.5 w-4.5 text-amber-400" />
             )}
           </button>
 
           {/* Language Selector */}
-          <div className="relative flex items-center bg-white/10 dark:bg-white/5 rounded-xl border border-[#5d6fa3]/10 hover:border-[#5d6fa3]/40 transition-all py-1.5 px-2.5 gap-2 text-white">
-            <Languages className="h-4 w-4 text-indigo-300 shrink-0" />
+          <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 py-1.5 px-3 gap-2">
+            <Languages className="h-4 w-4 text-indigo-500 shrink-0" />
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="bg-transparent text-[10px] font-black uppercase tracking-wider text-white border-none outline-none cursor-pointer pr-1"
+              className="bg-transparent text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-none outline-none cursor-pointer pr-1"
               id="btn-login-toggle-language"
               title={t("languageSelector")}
             >
               {languages.map((lang) => (
-                <option key={lang.code} value={lang.code} className="text-black bg-white dark:bg-[#1e233a] dark:text-white uppercase font-bold text-xs">
+                <option key={lang.code} value={lang.code} className="text-slate-900 bg-white dark:bg-slate-900 dark:text-white uppercase font-bold text-xs">
                   {lang.nativeName}
                 </option>
               ))}
@@ -263,66 +268,64 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </span>
             )}
           </div>
-
-          <div className="hidden lg:flex gap-6 text-xs uppercase tracking-wider font-bold opacity-80">
-            <span className="hover:text-indigo-500 dark:hover:text-white cursor-pointer">Protocol</span>
-            <span className="hover:text-indigo-500 dark:hover:text-white cursor-pointer">Vault</span>
-            <span className="hover:text-indigo-500 dark:hover:text-white cursor-pointer">FAQ</span>
-          </div>
         </div>
       </nav>
 
       {/* Main Content split screen */}
-      <main className="flex-1 flex flex-col md:flex-row">
+      <main className="flex-1 flex flex-col lg:flex-row min-h-0">
         
-        {/* Left column: Branding, value propositions & Carousel */}
-        <div className="lc-login-hero w-full md:w-1/2 p-6 sm:p-12 lg:p-16 flex flex-col justify-center gap-6 border-b md:border-b-0 md:border-r border-[#5d6fa3]/20 text-white">
-          <div className="space-y-4">
-             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/15 text-xs text-teal-200 font-bold uppercase tracking-wider">
-              <Sparkles className="h-3 w-3 text-indigo-400" />
-              {t("brandName")}
+        {/* Left column: High-end hero showcase */}
+        <div className="w-full lg:w-1/2 p-8 sm:p-14 lg:p-18 flex flex-col justify-center gap-8 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-900 via-[#111728] to-[#0c101d] text-white relative overflow-hidden">
+          
+          {/* Subtle glowing orb background effect */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="space-y-4 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/25 text-xs text-indigo-300 font-bold uppercase tracking-widest">
+              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+              Fail-Safe Family Continuity System
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight text-white" id="portal-desc">
-              {t("loginTitle")}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight text-white" id="portal-desc">
+              Organize vital assets before emergencies occur.
             </h1>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
+              Automated proof-of-life heartbeats, zero-knowledge encrypted vaults, and intelligent nominee handovers designed for complete peace of mind.
+            </p>
           </div>
 
-          {/* Interactive Core Showcase Carousel */}
-           <div className="relative p-6 rounded-2xl border border-white/15 bg-white/5 overflow-hidden shadow-xl min-h-[170px] flex flex-col justify-between backdrop-blur-sm">
-            {/* Slide Background Visual Graphic */}
-            <div className="absolute right-3 top-3 opacity-10">
-              <Shield className="h-28 w-28 text-indigo-500" />
-            </div>
-
-            <div className="space-y-3">
+          {/* Interactive Core Showcase Carousel Card */}
+          <div className="relative p-7 rounded-3xl border border-slate-700/80 bg-slate-800/60 backdrop-blur-md shadow-2xl min-h-[190px] flex flex-col justify-between relative z-10 group">
+            
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 uppercase tracking-widest">
+                <span className="app-badge badge-brand">
                   {slides[activeSlide].badge}
                 </span>
-                <span className="text-[10px] font-mono text-indigo-200/50">
-                  {activeSlide + 1} / {slides.length}
+                <span className="text-[11px] font-mono text-slate-400 font-semibold">
+                  {activeSlide + 1} of {slides.length}
                 </span>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 shrink-0 mt-0.5">
-                  {React.createElement(slides[activeSlide].icon, { className: "h-5 w-5" })}
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-2xl bg-gradient-to-tr from-indigo-600/20 to-violet-600/20 border border-indigo-500/30 text-indigo-300 shrink-0 mt-0.5">
+                  {React.createElement(slides[activeSlide].icon, { className: "h-6 w-6 text-indigo-400" })}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">{slides[activeSlide].title}</h3>
-                  <p className="text-xs text-indigo-200/80 leading-relaxed mt-1">{slides[activeSlide].desc}</p>
+                  <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">{slides[activeSlide].title}</h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1.5">{slides[activeSlide].desc}</p>
                 </div>
               </div>
             </div>
 
             {/* Carousel Navigation indicators & manual buttons */}
-            <div className="flex items-center justify-between border-t border-[#5d6fa3]/20 pt-4 mt-4">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between border-t border-slate-700/60 pt-4 mt-6">
+              <div className="flex items-center gap-2">
                 {slides.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveSlide(idx)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${idx === activeSlide ? "w-6 bg-indigo-400" : "w-2 bg-indigo-500/30 hover:bg-indigo-500/50"}`}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${idx === activeSlide ? "w-7 bg-indigo-400" : "w-2 bg-slate-600 hover:bg-slate-500"}`}
                     title={`Slide ${idx + 1}`}
                   />
                 ))}
@@ -331,13 +334,13 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length)}
-                  className="px-2.5 py-1 text-xs rounded-md bg-white/5 hover:bg-white/10 text-indigo-200 transition-all cursor-pointer font-bold border border-white/5"
+                  className="px-3 py-1.5 text-xs rounded-xl bg-slate-700/60 hover:bg-slate-700 text-slate-200 transition-all cursor-pointer font-bold border border-slate-600"
                 >
                   &larr;
                 </button>
                 <button
                   onClick={() => setActiveSlide((prev) => (prev + 1) % slides.length)}
-                  className="px-2.5 py-1 text-xs rounded-md bg-white/5 hover:bg-white/10 text-indigo-200 transition-all cursor-pointer font-bold border border-white/5"
+                  className="px-3 py-1.5 text-xs rounded-xl bg-slate-700/60 hover:bg-slate-700 text-slate-200 transition-all cursor-pointer font-bold border border-slate-600"
                 >
                   &rarr;
                 </button>
@@ -345,31 +348,32 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </div>
           </div>
 
-          <div className="mt-2 flex items-center justify-between">
-            <div className="inline-flex px-4 py-2 rounded-full bg-[#5d6fa3]/20 border border-[#5d6fa3]/40 text-xs text-indigo-200 font-semibold items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+          <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
+            <span className="app-badge badge-verified">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               {t("systemStatus")}
-            </div>
+            </span>
+            <span>AES-256 GCM Multi-Region Encryption</span>
           </div>
         </div>
 
-        {/* Right column: Interactive form panel */}
-         <div className="lc-login-form w-full md:w-1/2 p-6 sm:p-12 lg:p-16 flex flex-col justify-center items-center transition-colors duration-300">
-          <div className="w-full max-w-sm space-y-8">
+        {/* Right column: Interactive Authentication Portal */}
+        <div className={`w-full lg:w-1/2 p-8 sm:p-14 lg:p-18 flex flex-col justify-center items-center ${theme === "light" ? "bg-white" : "bg-[#0d111d]"} transition-colors duration-300`}>
+          <div className="w-full max-w-md space-y-8">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-bold text-inherit">{t("welcomeBack")}</h2>
-              <p className="text-[#5d6fa3] text-sm font-medium">{t("portalDesc")}</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("welcomeBack")}</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">{t("portalDesc")}</p>
             </div>
 
             {/* Main Tabs */}
-            <div className="bg-[#5d6fa3]/10 p-1 rounded-full flex mb-8 border border-[#5d6fa3]/10">
+            <div className="bg-slate-100 dark:bg-slate-800/70 p-1.5 rounded-2xl flex border border-slate-200/80 dark:border-slate-700/60 shadow-xs">
               <button
                 type="button"
                 onClick={() => { setActiveTab("user"); setError(""); setNomineeError(""); }}
-                className={`flex-1 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                   activeTab === "user"
-                    ? "bg-indigo-600 text-white shadow-lg"
-                    : "text-[#5d6fa3] hover:text-indigo-600 dark:hover:text-[#e0dafc]"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
                 id="tab-primary-user"
               >
@@ -378,10 +382,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <button
                 type="button"
                 onClick={() => { setActiveTab("nominee"); setError(""); setNomineeError(""); }}
-                className={`flex-1 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                   activeTab === "nominee"
-                    ? "bg-indigo-600 text-white shadow-lg"
-                    : "text-[#5d6fa3] hover:text-indigo-600 dark:hover:text-[#e0dafc]"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
                 id="tab-nominee-user"
               >
@@ -392,17 +396,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             {activeTab === "user" ? (
               <div className="space-y-4 w-full flex flex-col items-center">
                 {!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ? (
-                  <div className="w-full bg-amber-950/40 border border-amber-900/50 rounded-xl p-4 text-xs text-amber-250 space-y-2 text-left">
-                    <span className="font-extrabold text-[10px] uppercase text-amber-400 block tracking-widest">Clerk Integration Required</span>
+                  <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4.5 text-xs text-amber-700 dark:text-amber-300 space-y-2 text-left">
+                    <span className="font-extrabold text-[10px] uppercase text-amber-600 dark:text-amber-400 block tracking-widest">Clerk Integration Config</span>
                     <p className="leading-relaxed text-[11px]">
-                      Google Sign-In and User Authentication requires Clerk. To configure this:
+                      Google Sign-In and User Authentication uses Clerk. To configure live OAuth:
                     </p>
-                    <ol className="list-decimal pl-4 space-y-1 text-[11px] text-amber-200">
-                      <li>Create an account/project at <a href="https://clerk.com" target="_blank" rel="noopener noreferrer" className="underline font-bold text-white hover:text-indigo-300">clerk.com</a>.</li>
-                      <li>Enable **Google** under User & Auth &rarr; Social Connections.</li>
-                      <li>Copy your **Publishable Key**.</li>
-                      <li>Create a file named <code className="bg-black/45 px-1 py-0.5 rounded font-mono text-white text-[10px]">.env</code> in the project root.</li>
-                      <li>Add: <code className="bg-black/45 px-1.5 py-0.5 rounded font-mono text-white text-[10px] block mt-1 break-all select-all">VITE_CLERK_PUBLISHABLE_KEY=your_publishable_key</code></li>
+                    <ol className="list-decimal pl-4 space-y-1 text-[11px]">
+                      <li>Create an account at <a href="https://clerk.com" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-indigo-500">clerk.com</a>.</li>
+                      <li>Enable Google OAuth under User &amp; Auth &rarr; Social Connections.</li>
+                      <li>Add <code className="bg-black/10 dark:bg-black/30 px-1.5 py-0.5 rounded font-mono text-[10px]">VITE_CLERK_PUBLISHABLE_KEY</code> to your <code className="bg-black/10 dark:bg-black/30 px-1 py-0.5 rounded font-mono text-[10px]">.env</code> file.</li>
                     </ol>
                   </div>
                 ) : (
@@ -416,11 +418,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 )}
 
                 {/* Additional Actions & Sandbox Fallback */}
-                <div className="w-full border-t border-[#5d6fa3]/10 pt-4 mt-2 flex flex-col gap-3">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800 pt-5 mt-2 flex flex-col gap-3">
                   {import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && (
                     <button
                       onClick={() => setIsSignUp(!isSignUp)}
-                      className="text-xs font-semibold text-[#5d6fa3] hover:text-[#e0dafc] underline text-center block w-full cursor-pointer"
+                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline text-center block w-full cursor-pointer transition-colors"
                       id="btn-toggle-auth-mode"
                     >
                       {isSignUp ? "Already registered? Sign In" : "Need an account? Sign Up"}
@@ -429,49 +431,47 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
                   <button
                     onClick={handleSandboxLogin}
-                     disabled={loading}
-                     className="lc-btn-secondary py-2.5 text-[11px] uppercase tracking-wider font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer w-full"
+                    className="w-full py-3.5 text-xs uppercase tracking-wider font-bold rounded-xl border border-indigo-500/30 hover:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     id="btn-sandbox-login"
                   >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Sandbox Demo Login
+                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                    Instant Sandbox Demo Login
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="bg-[#1e233a] border border-[#5d6fa3]/20 rounded-xl p-3.5 text-xs text-[#a5b4fc]/95 space-y-1">
-                  <span className="font-extrabold text-[10px] uppercase text-[#e0dafc] block">Sandbox Nominee Portal</span>
+              <div className="space-y-5">
+                <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 text-xs text-indigo-900 dark:text-indigo-200 space-y-1.5">
+                  <span className="font-extrabold text-[10px] uppercase text-indigo-600 dark:text-indigo-300 block tracking-wider">Sandbox Nominee Portal</span>
                   <p className="leading-relaxed text-[11px]">
-                    To test, configure a **Nominee Registered Phone Number** and **Access PIN** in your **Profile Center**. 
+                    To test nominee verification, configure a **Nominee Registered Phone Number** and **Access PIN** in your Profile Center.
                   </p>
                   <p className="leading-relaxed text-[11px]">
-                    Enter that nominee phone number here, click **Send OTP** to receive the mock OTP <span className="font-bold text-white">7777</span>, and use your configured PIN to authenticate.
+                    Click **Send OTP** to receive demo OTP <span className="font-bold font-mono px-1 py-0.5 rounded bg-indigo-500/20 text-indigo-600 dark:text-indigo-300">7777</span> and use your PIN to authenticate.
                   </p>
                 </div>
-                {/* NOMINEE LOGIN ENTRY POINT */}
+
+                {/* NOMINEE LOGIN FORM */}
                 <form className="space-y-4" onSubmit={handleNomineeLogin}>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-[#5d6fa3] font-bold">Nominee Mobile Number</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">Nominee Mobile Number</label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
-                        <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-[#5d6fa3]" />
-                         <input
-                           type="tel"
-                           autoComplete="tel"
+                        <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                        <input
+                          type="tel"
                           required
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
-                          className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-3 pl-10 text-sm text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                          className="input-field pl-10"
                           placeholder="+1 (555) 012-3456"
                           id="input-nominee-phone"
                         />
                       </div>
-                         <button
-                           type="button"
-                           onClick={handleSendOtp}
-                           disabled={loading || !phone.trim()}
-                           className="lc-btn-secondary text-xs font-semibold px-4 transition-all shrink-0"
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        className="bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/70 text-indigo-600 dark:text-indigo-300 text-xs font-bold px-4 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-all shrink-0 cursor-pointer"
                         id="btn-send-otp"
                       >
                         {otpSent ? "Resend" : "Send OTP"}
@@ -480,47 +480,47 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   </div>
 
                   {otpSent && (
-                    <div className="animate-fade-in space-y-4 pt-2">
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#5d6fa3] font-bold">SMS Verification Code (OTP)</label>
-                         <input
-                           type="text"
-                           inputMode="numeric"
-                           autoComplete="one-time-code"
+                    <div className="animate-fade-in space-y-4 pt-1">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">SMS Verification Code (OTP)</label>
+                        <input
+                          type="text"
                           required
                           value={otp}
                           onChange={(e) => setOtp(e.target.value)}
-                          className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-3 text-sm text-center font-mono tracking-widest text-lg text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                          className="input-field text-center font-mono tracking-widest text-base font-bold"
                           placeholder="7777"
                           maxLength={4}
                           id="input-nominee-otp"
                         />
-                        <p className="text-[10px] text-green-400">Demo code 7777 successfully sent.</p>
+                        <p className="text-[11px] text-emerald-500 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Demo code 7777 successfully generated.
+                        </p>
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#5d6fa3] font-bold">Nominee Access PIN</label>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">Nominee Access PIN</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#5d6fa3]" />
-                           <input
-                             type="password"
-                             autoComplete="current-password"
+                          <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                          <input
+                            type="password"
                             required
                             value={pin}
                             onChange={(e) => setPin(e.target.value)}
-                            className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-3 pl-10 text-sm text-center font-mono tracking-widest text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                            className="input-field pl-10 text-center font-mono tracking-widest text-base font-bold"
                             placeholder="••••"
                             maxLength={6}
                             id="input-nominee-pin"
                           />
                         </div>
-                        <p className="text-[9px] text-[#5d6fa3]">Default Demo PIN: 1234</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">Default Demo PIN: 1234</p>
                       </div>
                     </div>
                   )}
 
                   {nomineeError && (
-                    <p className="text-xs text-red-400 bg-red-950/40 p-3 rounded-lg border border-red-900/50" id="nominee-auth-error">
+                    <p className="text-xs text-rose-500 bg-rose-500/10 p-3 rounded-xl border border-rose-500/30" id="nominee-auth-error">
                       {nomineeError}
                     </p>
                   )}
@@ -528,15 +528,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <button
                     type="submit"
                     disabled={loading || !otpSent}
-                    className={`w-full py-4 font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full py-3.5 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider ${
                       otpSent
-                        ? "bg-[#e0dafc] text-[#2c3353] hover:brightness-110 shadow-lg"
-                        : "bg-gray-700/50 text-gray-500 cursor-not-allowed"
+                        ? "btn-primary"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                     }`}
                     id="btn-nominee-submit"
                   >
                     <UserCheck className="h-4 w-4" />
-                    Verify & Unlock Handover
+                    Verify &amp; Unlock Handover
                   </button>
                 </form>
               </div>
@@ -546,16 +546,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       </main>
 
       {/* Footer / Status Bar */}
-      <footer className="h-auto md:h-12 px-6 sm:px-12 py-4 md:py-0 border-t border-[#5d6fa3]/30 flex flex-col md:flex-row items-center justify-between text-[10px] uppercase tracking-widest text-[#5d6fa3] gap-2 shrink-0">
+      <footer className={`h-auto md:h-14 px-6 sm:px-12 py-4 md:py-0 border-t ${theme === "light" ? "bg-white border-slate-200 text-slate-500" : "bg-[#111726] border-slate-800 text-slate-400"} flex flex-col md:flex-row items-center justify-between text-[11px] uppercase tracking-widest gap-2 shrink-0`}>
         <div>v1.0.4 — Secured with AES-256 GCM + Gemini 1.5</div>
         <div className="flex flex-wrap items-center gap-4 md:gap-6">
           <span className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div> Firebase Auth Active
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Session Security Active
           </span>
           <span className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div> Firestore Sync: 22ms
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Zero-Knowledge Storage
           </span>
-          <span className="text-[#e0dafc]/60 italic font-medium hidden sm:inline">Privacy is a fundamental right.</span>
+          <span className="italic font-medium hidden sm:inline text-slate-400">Privacy is a fundamental right.</span>
         </div>
       </footer>
     </div>

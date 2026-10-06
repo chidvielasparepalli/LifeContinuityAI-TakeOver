@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Mail, RefreshCw, Sliders, Sparkles, FolderSync, ExternalLink, ShieldCheck, Trash2 } from "lucide-react";
+import { Mail, RefreshCw, Sliders, Sparkles, FolderSync, ExternalLink, ShieldCheck, Trash2, Filter } from "lucide-react";
 import { apiFetch } from "../lib/api";
-import LoadingState from "./LoadingState";
 
 interface DataExtractorProps {
   uid: string;
@@ -15,9 +14,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
   const [isLinkingComposio, setIsLinkingComposio] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [syncError, setSyncError] = useState<string | null>(null);
-  const [syncNotice, setSyncNotice] = useState<string | null>(null);
   const [needsComposioAuth, setNeedsComposioAuth] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
 
   const checkComposioStatus = async () => {
     try {
@@ -34,7 +31,6 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
   const handleConnectComposio = async () => {
     setIsLinkingComposio(true);
     setSyncError(null);
-    setSyncNotice(null);
     try {
       const res = await apiFetch("/api/composio/link", {
         method: "POST",
@@ -47,7 +43,7 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
       }
       if (data.redirectUrl) {
         window.open(data.redirectUrl, "_blank", "noopener,noreferrer");
-        setSyncNotice("Authorization opened in a new window. Finish connecting Gmail, then verify the connection here.");
+        alert("A window has been opened to connect your Gmail via Composio. Once authorized, click 'Check connection status' or 'Verify' to update status.");
       }
     } catch (err: any) {
       console.error(err);
@@ -70,8 +66,6 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
       setEmailRecords(Array.isArray(rData) ? rData : []);
     } catch (e) {
       console.error(e);
-    } finally {
-      setInitialLoading(false);
     }
   };
 
@@ -94,12 +88,9 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
     }
   };
 
-
-
   const handleSyncNow = async () => {
     setIsSyncing(true);
     setSyncError(null);
-    setSyncNotice(null);
     setNeedsComposioAuth(false);
     // Persist active settings first
     await handleSaveSettings();
@@ -130,14 +121,14 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
     }
   };
 
-  const getCategoryColor = (cat: string) => {
+  const getCategoryBadgeClass = (cat: string) => {
     switch (cat) {
-      case "Bills": return "bg-red-950/40 text-red-400 border border-red-900/50";
-      case "Insurance": return "bg-blue-950/40 text-blue-400 border border-blue-900/50";
-      case "Travel": return "bg-amber-950/40 text-amber-400 border border-amber-900/50";
-      case "Healthcare": return "bg-green-950/40 text-green-400 border border-green-900/50";
-      case "Appointments": return "bg-indigo-950/40 text-indigo-400 border border-indigo-900/50";
-      default: return "bg-[#2c3353] text-[#e0dafc] border border-[#5d6fa3]/20";
+      case "Bills": return "bg-rose-500/10 text-rose-400 border-rose-500/30";
+      case "Insurance": return "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
+      case "Travel": return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+      case "Healthcare": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+      case "Appointments": return "bg-indigo-500/10 text-indigo-400 border-indigo-500/30";
+      default: return "bg-white/5 text-[var(--text-muted)] border-[var(--border-card)]";
     }
   };
 
@@ -182,54 +173,44 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
         fetchSettingsAndRecords();
       } else {
         const data = await res.json().catch(() => ({}));
-        setSyncError(data.error || "Failed to delete email record.");
+        alert(data.error || "Failed to delete email record.");
       }
     } catch (err: any) {
       console.error(err);
-      setSyncError(err.message || "Failed to delete email record.");
+      alert(err.message || "Failed to delete email record.");
     }
   };
 
-  if (initialLoading) {
-    return (
-      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
-        <LoadingState label="Loading your Gmail timeline" />
-      </div>
-    );
-  }
-
   return (
-    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 text-[#e0dafc]">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       {/* OAuth & Sync Configuration */}
       <div className="space-y-6">
         
         {/* Workspace Auth Box */}
-        <div className="lc-panel shadow-lg p-6 space-y-4">
-          <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
-            <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
+        <div className="app-card p-6 space-y-4">
+          <div className="flex items-center gap-3 border-b border-[var(--border-card)] pb-3">
+            <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
               <FolderSync className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Workspace Connector</h3>
-              <p className="text-xs text-[#5d6fa3]">Authorized Google API syncing</p>
+              <h3 className="text-base font-bold text-[var(--text-primary)]">Workspace Connector</h3>
+              <p className="text-xs text-[var(--text-muted)]">Authorized Google API syncing</p>
             </div>
           </div>
 
-          <p className="text-xs text-[#5d6fa3] leading-relaxed">
-            By connecting Google Workspace, Lighthouse securely scans your inbox and scheduled agendas for important alerts (renewals, bills, appointments, healthcare summaries) to map out a complete real-time continuity timeline automatically.
+          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+            By connecting Google Workspace, Lighthouse securely scans your inbox for critical updates (renewals, bills, appointments, healthcare summaries) to map out a complete real-time continuity timeline automatically.
           </p>
 
-
           {/* Gmail via Composio */}
-          <div className="space-y-2">
+          <div className="space-y-2 pt-2 border-t border-[var(--border-card)]">
             <div className="flex items-center justify-between">
-              <h4 className="text-[10px] font-bold text-white uppercase tracking-wider">Gmail Connection</h4>
+              <h4 className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Gmail Connection</h4>
               {composioAuthorized && (
                 <button
-                  type="button"
                   onClick={checkComposioStatus}
-                  className="text-[10px] text-[#e0dafc] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                  className="text-xs text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer transition-colors"
                   title="Verify connection status"
                 >
                   Verify
@@ -237,36 +218,34 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
               )}
             </div>
             {composioAuthorized ? (
-              <div className="flex items-center gap-2 text-xs font-semibold text-green-400 bg-green-950/40 p-2.5 rounded-xl border border-green-800/60">
-                <ShieldCheck className="h-4 w-4 text-green-400" />
-                Connected via Composio
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/30">
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <span>Connected via Composio</span>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2.5">
                 {needsComposioAuth && (
-                  <div className="text-xs bg-amber-950/60 border border-amber-700/60 text-amber-300 p-3 rounded-xl leading-relaxed" role="alert">
-                    <span className="font-extrabold text-[10px] uppercase tracking-widest block mb-1 text-amber-400">⚡ Action Required</span>
+                  <div className="text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 p-3.5 rounded-xl leading-relaxed">
+                    <span className="font-extrabold text-[10px] uppercase tracking-wider block mb-1 text-amber-400">⚡ Action Required</span>
                     Click <strong>"Connect Gmail via Composio"</strong> below to authorize Gmail access, then click <strong>"Check connection status"</strong> and retry syncing.
                   </div>
                 )}
                 <button
-                  type="button"
                   onClick={handleConnectComposio}
                   disabled={isLinkingComposio}
-                  className={`w-full font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer ${
                     needsComposioAuth
-                      ? "bg-amber-400 hover:bg-amber-300 text-[#1e233a] animate-pulse"
-                      : "bg-[#e0dafc] hover:brightness-110 text-[#2c3353]"
+                      ? "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20"
+                      : "btn-primary"
                   }`}
                   id="btn-composio-connect"
                 >
-                  {isLinkingComposio ? "Generating Link..." : "Connect Gmail via Composio"}
-                  <ExternalLink className="h-3 w-3" />
+                  <span>{isLinkingComposio ? "Generating Link..." : "Connect Gmail via Composio"}</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </button>
                 <button
-                  type="button"
                   onClick={() => { setNeedsComposioAuth(false); checkComposioStatus(); }}
-                  className="w-full bg-transparent hover:bg-[#3b426b] text-[#e0dafc] font-bold text-xs py-1.5 px-3 rounded-xl border border-[#5d6fa3]/25 transition-all cursor-pointer"
+                  className="btn-secondary w-full justify-center py-2 text-xs"
                 >
                   Check connection status
                 </button>
@@ -276,55 +255,46 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
         </div>
 
         {/* Sync Filters Setting */}
-        <div className="lc-panel shadow-lg p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-2">
-            <Sliders className="h-4 w-4 text-[#e0dafc]" />
-            Synchronization Filters
+        <div className="app-card p-6 space-y-4">
+          <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 border-b border-[var(--border-card)] pb-3">
+            <Sliders className="h-4 w-4 text-indigo-400" />
+            <span>Synchronization Filters</span>
           </h3>
 
-          <div className="space-y-3">
-
-
-            <div className="space-y-1">
-               <label htmlFor="input-sync-keywords" className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-wider">Target Subject Keywords</label>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Target Subject Keywords</label>
               <input
                 type="text"
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
                 onBlur={handleSaveSettings}
-                className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                className="input-field w-full text-xs"
                 placeholder="loan, emi, bills, policy, booking"
                 id="input-sync-keywords"
               />
-              <p className="text-[9px] text-[#5d6fa3] opacity-80">Restrict search queries to terms. Comma-separated.</p>
+              <p className="text-[10px] text-[var(--text-muted)]">Restrict search queries to terms. Comma-separated.</p>
             </div>
 
             {syncError && (
-              <div className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl border border-red-900/50 text-left leading-relaxed" role="alert">
-                <span className="font-extrabold text-[10px] uppercase text-red-300 block tracking-widest mb-0.5">Authorization Sync Error</span>
+              <div className="text-xs text-rose-300 bg-rose-500/10 p-3 rounded-xl border border-rose-500/30 text-left leading-relaxed">
+                <span className="font-extrabold text-[10px] uppercase text-rose-400 block tracking-wider mb-0.5">Authorization Sync Error</span>
                 {syncError}
               </div>
             )}
 
-            {syncNotice && (
-              <div className="lc-alert-success p-3 text-xs text-left leading-relaxed" role="status" aria-live="polite">
-                <span className="font-bold">Connection update:</span> {syncNotice}
-              </div>
-            )}
-
             <button
-              type="button"
               onClick={handleSyncNow}
               disabled={isSyncing || !uid}
-              className={`w-full font-black text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all ${
                 uid && !isSyncing
-                  ? "bg-[#e0dafc] hover:brightness-110 text-[#2c3353] shadow-md border border-[#5d6fa3]/10 cursor-pointer"
-                  : "bg-[#1e233a] text-[#5d6fa3] border border-[#5d6fa3]/20 cursor-not-allowed"
+                  ? "btn-primary cursor-pointer"
+                  : "bg-[var(--bg-app)] text-[var(--text-muted)] border border-[var(--border-card)] cursor-not-allowed opacity-60"
               }`}
               id="btn-sync-trigger"
             >
               <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
-              {isSyncing ? "Syncing Workspace..." : "Scan & Classify Inbox"}
+              <span>{isSyncing ? "Syncing Workspace..." : "Scan & Classify Inbox"}</span>
             </button>
           </div>
         </div>
@@ -332,29 +302,28 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
 
       {/* Sync Timeline Results Panel */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="lc-panel shadow-lg p-6 text-[#e0dafc]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#5d6fa3]/20 pb-3">
+        <div className="app-card p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[var(--border-card)] pb-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
+              <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
                 <Mail className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Synced Gmail Timeline</h3>
-                <p className="text-xs text-[#5d6fa3]">Automatically classified bills, healthcare and booking events</p>
+                <h3 className="text-base font-bold text-[var(--text-primary)]">Synced Gmail Timeline</h3>
+                <p className="text-xs text-[var(--text-muted)]">Automatically classified bills, healthcare and booking events</p>
               </div>
             </div>
 
             {/* Category Filter Pills */}
-            <div className="flex flex-wrap gap-1 bg-[#1e233a] p-1 rounded-xl self-start border border-[#5d6fa3]/20" id="gmail-category-filters">
+            <div className="flex flex-wrap gap-1 bg-[var(--bg-app)] p-1 rounded-xl self-start border border-[var(--border-card)]" id="gmail-category-filters">
               {["All", "Bills", "Insurance", "Healthcare", "Appointments"].map(cat => (
                 <button
-                  type="button"
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-all ${
+                  className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeCategory === cat
-                      ? "bg-[#2c3353] text-[#e0dafc] border border-[#5d6fa3]/25 shadow-md"
-                      : "text-[#5d6fa3] hover:text-[#e0dafc]"
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   {cat}
@@ -365,49 +334,43 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
 
           <div className="space-y-4">
             {filteredRecords.length === 0 ? (
-              <div className="text-center py-16 text-[#5d6fa3]">
-                <Mail className="h-12 w-12 mx-auto text-[#5d6fa3] opacity-60 mb-3" />
-                <p className="text-sm font-semibold text-[#e0dafc]">No synchronized email records yet.</p>
-                <p className="text-xs text-[#5d6fa3] mt-1 max-w-sm mx-auto leading-relaxed">Authorize your workspace connection and run "Scan & Classify Inbox" to sync critical timelines.</p>
+              <div className="text-center py-16 text-[var(--text-muted)] bg-[var(--bg-app)] rounded-2xl border border-[var(--border-card)]">
+                <Mail className="h-12 w-12 mx-auto text-[var(--text-muted)] opacity-50 mb-3" />
+                <p className="text-sm font-semibold text-[var(--text-primary)]">No synchronized email records yet.</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1 max-w-sm mx-auto leading-relaxed">
+                  Authorize your workspace connection and run "Scan & Classify Inbox" to sync critical timelines.
+                </p>
               </div>
             ) : (
               filteredRecords.map((rec) => (
                 <div
                   key={rec.id}
                   onClick={(e) => handleCardClick(e, rec)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      window.open(getGmailUrl(rec), "_blank", "noopener,noreferrer");
-                    }
-                  }}
-                  role="link"
-                  tabIndex={0}
-                  aria-label={`Open email: ${rec.subject}`}
-                  className="lc-hover-lift p-4 border border-[#5d6fa3]/20 rounded-xl hover:border-indigo-400/60 hover:bg-[#1e233a]/80 bg-[#1e233a] space-y-2.5 transition-all cursor-pointer relative group"
+                  className="p-4 rounded-2xl border border-[var(--border-card)] hover:border-indigo-500/40 bg-[var(--bg-app)] space-y-3 transition-all cursor-pointer group shadow-sm hover:shadow-md"
                   title="Click to view original email in Gmail"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div>
+                    <div className="min-w-0">
                       <a
                         href={getGmailUrl(rec)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-bold text-white text-sm hover:text-indigo-300 transition-colors flex items-center gap-1.5 inline-flex"
+                        className="font-bold text-sm text-[var(--text-primary)] group-hover:text-indigo-400 transition-colors flex items-center gap-1.5 inline-flex"
                       >
-                        {rec.subject}
-                        <ExternalLink className="h-3.5 w-3.5 text-[#5d6fa3] hover:text-indigo-300 transition-all shrink-0" />
+                        <span className="truncate">{rec.subject}</span>
+                        <ExternalLink className="h-3.5 w-3.5 text-[var(--text-muted)] group-hover:text-indigo-400 transition-all shrink-0" />
                       </a>
-                      <p className="text-[10px] text-[#5d6fa3] mt-0.5">Sender: {rec.sender} • {new Date(rec.date).toLocaleDateString()}</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                        Sender: <span className="text-[var(--text-primary)] font-medium">{rec.sender}</span> • {new Date(rec.date).toLocaleDateString()}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${getCategoryColor(rec.category)}`}>
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${getCategoryBadgeClass(rec.category)}`}>
                         {rec.category}
                       </span>
                       <button
-                        type="button"
                         onClick={(e) => handleDeleteEmail(e, rec.id)}
-                        className="p-1.5 text-[#5d6fa3] hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-all cursor-pointer"
+                        className="p-1.5 text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
                         title="Delete extracted email record"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -415,19 +378,20 @@ export default function DataExtractor({ uid }: DataExtractorProps) {
                     </div>
                   </div>
 
-                  <div className="bg-[#2c3353] p-3 rounded-lg border border-[#5d6fa3]/15">
-                    <p className="text-xs font-bold text-white flex items-center gap-1.5 mb-1">
-                      <Sparkles className="h-3.5 w-3.5 text-[#e0dafc] shrink-0" />
-                      Gemini Extracted Action Item Summary:
+                  <div className="bg-[var(--bg-card)] p-3.5 rounded-xl border border-[var(--border-card)]">
+                    <p className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5 mb-1">
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+                      <span>Gemini Extracted Action Item:</span>
                     </p>
-                    <p className="text-xs text-[#e0dafc]/90 leading-relaxed font-medium">{rec.extractedSummary}</p>
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">{rec.extractedSummary}</p>
                   </div>
 
-                  <details className="group">
-                    <summary className="text-[10px] font-bold text-[#5d6fa3] cursor-pointer hover:text-[#e0dafc] select-none list-none flex items-center gap-1">
-                      <span>▶</span> View Original Email Snippet
+                  <details className="group/details">
+                    <summary className="text-[11px] font-semibold text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-primary)] select-none list-none flex items-center gap-1">
+                      <span className="transition-transform group-open/details:rotate-90">▶</span>
+                      <span>View Original Email Snippet</span>
                     </summary>
-                    <div className="mt-2 p-2.5 bg-[#1e233a]/80 rounded text-[11px] font-mono text-[#5d6fa3] border border-[#5d6fa3]/15 whitespace-pre-wrap leading-relaxed">
+                    <div className="mt-2 p-3 bg-[var(--bg-card)] rounded-xl text-[11px] font-mono text-[var(--text-muted)] border border-[var(--border-card)] whitespace-pre-wrap leading-relaxed">
                       {rec.rawSnippet}...
                     </div>
                   </details>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, RefreshCw, KeyRound, AlertTriangle, Save, Smartphone, MapPin, Clock, Plus, Activity, Send } from "lucide-react";
+import { ShieldCheck, RefreshCw, KeyRound, AlertTriangle, Save, Smartphone, MapPin, Clock, Plus, Activity, Send, User, Trash2 } from "lucide-react";
 import { apiFetch } from "../lib/api";
-import LoadingState from "./LoadingState";
 
 interface ProfileCenterProps {
   uid: string;
@@ -44,7 +43,6 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
   const [alerts, setAlerts] = useState<any[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchProfile = async () => {
     try {
@@ -89,14 +87,8 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
   };
 
   useEffect(() => {
-    let mounted = true;
-    Promise.all([fetchProfile(), fetchSessionsAndAlerts()]).finally(() => {
-      if (mounted) setInitialLoading(false);
-    });
-
-    return () => {
-      mounted = false;
-    };
+    fetchProfile();
+    fetchSessionsAndAlerts();
   }, [uid]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -187,41 +179,33 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
     }
   };
 
-  if (initialLoading) {
-    return (
-      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
-        <LoadingState label="Loading your emergency profile" />
-      </div>
-    );
-  }
-
   return (
-    <div className="lc-page-wrap grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 sm:p-6 max-w-7xl mx-auto text-[#e0dafc]">
-      {/* Tab 2 Form Panel */}
-      <div className="lg:col-span-2 lc-panel shadow-lg p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#5d6fa3]/10 pb-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 sm:p-6 max-w-7xl mx-auto">
+      {/* Form Panel */}
+      <div className="lg:col-span-2 app-card p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[var(--border-card)] pb-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/20">
+            <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
               <KeyRound className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white" id="profile-section-title">Emergency Core Profile</h2>
-              <p className="text-xs text-[#5d6fa3] mt-0.5">Vital responder statistics synced to secure fallback channels</p>
+              <h2 className="text-xl font-bold text-[var(--text-primary)]" id="profile-section-title">Emergency Core Profile</h2>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5">Vital responder statistics synced to secure fallback channels</p>
             </div>
           </div>
 
           <div className="shrink-0">
             {lastNomineeActive ? (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-950/40 border border-green-800/60 rounded-xl text-xs text-green-400">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-400">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span className="font-semibold text-xs">Nominee Portal Active</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1e233a] border border-[#5d6fa3]/20 rounded-xl text-xs text-[#5d6fa3]">
-                <span className="h-2 w-2 rounded-full bg-gray-600" />
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-app)] border border-[var(--border-card)] rounded-xl text-xs text-[var(--text-muted)]">
+                <span className="h-2 w-2 rounded-full bg-slate-500" />
                 <span className="font-semibold text-xs">Nominee Portal Inactive</span>
               </div>
             )}
@@ -229,56 +213,58 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
         </div>
 
         {saveSuccess && (
-          <div className="mb-4 bg-green-950/40 border border-green-900/50 text-green-400 p-3.5 rounded-xl text-xs font-semibold animate-fade-in" id="profile-save-success">
-            ✓ Your vital resilience metadata and Nominee configurations have been persisted and secured.
+          <div className="mb-6 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-4 rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2" id="profile-save-success">
+            <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>Your vital resilience metadata and Nominee configurations have been persisted and secured.</span>
           </div>
         )}
 
         {saveError && (
-          <div className="mb-4 bg-red-950/40 border border-red-950/50 text-red-400 p-3.5 rounded-xl text-xs font-semibold animate-fade-in" id="profile-save-error">
-            ✗ {saveError}
+          <div className="mb-6 bg-rose-500/10 border border-rose-500/30 text-rose-300 p-4 rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2" id="profile-save-error">
+            <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+            <span>{saveError}</span>
           </div>
         )}
 
-        <form onSubmit={handleSaveProfile} className="space-y-6">
+        <form onSubmit={handleSaveProfile} className="space-y-8">
           {/* PERSONAL INFORMATION */}
           <div className="space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4" />
-              PERSONAL RESILIENCE PARAMETERS
+            <h3 className="text-xs font-extrabold uppercase text-indigo-400 tracking-wider flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span>Personal Resilience Parameters</span>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Full Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Full Name</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="Alex Mercer"
                   id="profile-input-name"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                   <label htmlFor="profile-input-age" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Age</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Age</label>
                   <input
                     type="number"
                     required
                     value={age}
                     onChange={(e) => setAge(Number(e.target.value))}
-                    className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                    className="input-field w-full text-xs"
                     placeholder="34"
                     id="profile-input-age"
                   />
                 </div>
-                <div className="space-y-1">
-                   <label htmlFor="profile-select-blood" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Blood Group</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Blood Group</label>
                   <select
                     value={bloodGroup}
                     onChange={(e) => setBloodGroup(e.target.value)}
-                    className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                    className="input-field w-full text-xs"
                     id="profile-select-blood"
                   >
                     {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
@@ -291,35 +277,35 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
           </div>
 
           {/* MEDICAL INFRASTRUCTURE */}
-          <div className="border-t border-[#5d6fa3]/20 pt-4 space-y-2">
-             <label htmlFor="profile-input-medical" className="block text-xs font-extrabold uppercase text-indigo-300 tracking-wider">Medical Alert Information</label>
+          <div className="border-t border-[var(--border-card)] pt-6 space-y-2">
+            <label className="block text-xs font-extrabold uppercase text-indigo-400 tracking-wider">Medical Alert Information</label>
             <textarea
               value={medicalInfo}
               onChange={(e) => setMedicalInfo(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2 bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl focus:outline-none focus:border-[#e0dafc] text-xs resize-none text-[#e0dafc]"
+              className="input-field w-full text-xs resize-none"
               placeholder="Allergies, chronic conditions, prescriptions, insurance numbers, active treatments..."
               id="profile-input-medical"
             />
           </div>
 
           {/* TRUSTED EMERGENCY CONTACTS (CRUD) */}
-          <div className="border-t border-[#5d6fa3]/20 pt-4 space-y-4">
+          <div className="border-t border-[var(--border-card)] pt-6 space-y-4">
             <div>
-              <h3 className="text-xs font-extrabold uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+              <h3 className="text-xs font-extrabold uppercase text-indigo-400 tracking-wider flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" />
-                Trusted Emergency Contacts (Trusted Contacts CRUD)
+                <span>Trusted Emergency Contacts (Circle of Trust)</span>
               </h3>
-              <p className="text-[11px] text-[#5d6fa3] mt-1 leading-relaxed">
+              <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
                 Build your circle of trusted medical responders, family members, or legal guardians. Give them permission to view specific documents or contact medical desks.
               </p>
             </div>
 
             {/* Contacts Table */}
-            <div className="overflow-x-auto rounded-xl border border-[#5d6fa3]/20 bg-[#1e233a]/45">
+            <div className="overflow-x-auto rounded-2xl border border-[var(--border-card)] bg-[var(--bg-app)]">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#5d6fa3]/20 bg-[#1e233a]/80 text-[#5d6fa3] font-bold text-[10px] uppercase tracking-wider">
+                  <tr className="border-b border-[var(--border-card)] bg-[var(--bg-card)] text-[var(--text-muted)] font-bold text-[10px] uppercase tracking-wider">
                     <th className="py-3 px-4">Name</th>
                     <th className="py-3 px-4">Relation</th>
                     <th className="py-3 px-4">Phone / Email</th>
@@ -327,23 +313,23 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                     <th className="py-3 px-4 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#5d6fa3]/10">
+                <tbody className="divide-y divide-[var(--border-card)]">
                   {trustedContacts.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-xs text-[#5d6fa3]">
+                      <td colSpan={5} className="py-8 text-center text-xs text-[var(--text-muted)]">
                         No additional trusted contacts registered. Add your first below!
                       </td>
                     </tr>
                   ) : (
                     trustedContacts.map((contact, index) => (
-                      <tr key={contact.id || index} className="hover:bg-[#1e233a]/30 transition-colors">
-                        <td className="py-3 px-4 font-bold text-white">{contact.name}</td>
-                        <td className="py-3 px-4 text-indigo-200">{contact.relation}</td>
-                        <td className="py-3 px-4 text-[#e0dafc]/80 font-mono">
+                      <tr key={contact.id || index} className="hover:bg-[var(--bg-card)]/50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-[var(--text-primary)]">{contact.name}</td>
+                        <td className="py-3.5 px-4 text-indigo-400 font-medium">{contact.relation}</td>
+                        <td className="py-3.5 px-4 text-[var(--text-muted)] font-mono">
                           <div>{contact.phone}</div>
-                          {contact.email && <div className="text-[10px] text-[#5d6fa3]">{contact.email}</div>}
+                          {contact.email && <div className="text-[10px] opacity-75">{contact.email}</div>}
                         </td>
-                        <td className="py-3 px-4 text-center">
+                        <td className="py-3.5 px-4 text-center">
                           <label className="relative inline-flex items-center cursor-pointer justify-center">
                             <input
                               type="checkbox"
@@ -355,19 +341,20 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                               }}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-[#2c3353] border border-[#5d6fa3]/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                           </label>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right">
                           <button
                             type="button"
                             onClick={() => {
                               const updated = trustedContacts.filter((_, i) => i !== index);
                               setTrustedContacts(updated);
                             }}
-                            className="text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-950/20 px-2 py-1 rounded transition-colors"
+                            className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 text-xs"
                           >
-                            Delete
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>Remove</span>
                           </button>
                         </td>
                       </tr>
@@ -378,61 +365,57 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
             </div>
 
             {/* Register New Form Container */}
-            <div className="bg-[#1e233a]/30 border border-[#5d6fa3]/10 rounded-xl p-4 space-y-4">
-              <h4 className="text-[11px] font-black uppercase text-[#e0dafc] tracking-wider flex items-center gap-1">
-                <Plus className="h-3.5 w-3.5 text-indigo-400" />
-                REGISTER NEW TRUSTED CONTACT
+            <div className="bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl p-5 space-y-4">
+              <h4 className="text-[11px] font-black uppercase text-[var(--text-primary)] tracking-wider flex items-center gap-1.5">
+                <Plus className="h-4 w-4 text-indigo-400" />
+                <span>Register New Trusted Contact</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                   <label htmlFor="trusted-contact-name" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Full Name</label>
-                   <input
-                     id="trusted-contact-name"
+                  <label className="block text-[10px] uppercase text-[var(--text-muted)] font-bold">Full Name</label>
+                  <input
                     type="text"
                     value={newContactName}
                     onChange={(e) => setNewContactName(e.target.value)}
-                    className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-2 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                    className="input-field w-full text-xs"
                     placeholder="e.g. Dr. Ramesh Gupta"
                   />
                 </div>
                 <div className="space-y-1">
-                   <label htmlFor="trusted-contact-relation" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Relationship</label>
-                   <input
-                     id="trusted-contact-relation"
+                  <label className="block text-[10px] uppercase text-[var(--text-muted)] font-bold">Relationship</label>
+                  <input
                     type="text"
                     value={newContactRelation}
                     onChange={(e) => setNewContactRelation(e.target.value)}
-                    className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-2 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                    className="input-field w-full text-xs"
                     placeholder="e.g. Family Physician"
                   />
                 </div>
                 <div className="space-y-1">
-                   <label htmlFor="trusted-contact-phone" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Phone Number</label>
-                   <input
-                     id="trusted-contact-phone"
+                  <label className="block text-[10px] uppercase text-[var(--text-muted)] font-bold">Phone Number</label>
+                  <input
                     type="tel"
                     value={newContactPhone}
                     onChange={(e) => setNewContactPhone(e.target.value)}
-                    className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-2 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                    className="input-field w-full text-xs"
                     placeholder="+91 99000-00001"
                   />
                 </div>
                 <div className="space-y-1">
-                   <label htmlFor="trusted-contact-email" className="block text-[10px] uppercase text-[#5d6fa3] font-bold">Email Address</label>
-                   <input
-                     id="trusted-contact-email"
+                  <label className="block text-[10px] uppercase text-[var(--text-muted)] font-bold">Email Address</label>
+                  <input
                     type="email"
                     value={newContactEmail}
                     onChange={(e) => setNewContactEmail(e.target.value)}
-                    className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-lg p-2 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                    className="input-field w-full text-xs"
                     placeholder="doctor@apollo.com"
                   />
                 </div>
               </div>
 
               {contactError && (
-                <div className="text-xs text-red-400 font-medium px-1">
+                <div className="text-xs text-rose-400 font-medium px-1">
                   {contactError}
                 </div>
               )}
@@ -460,41 +443,42 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                     setNewContactEmail("");
                     setContactError("");
                   }}
-                  className="bg-[#2c3353] hover:bg-[#1e233a] text-white border border-[#5d6fa3]/40 hover:border-[#e0dafc] font-bold py-2 px-5 rounded-lg text-xs transition-all shadow-md"
+                  className="btn-secondary py-2 px-4 text-xs font-bold"
                 >
-                  Add Contact
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Contact</span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* IMMEDIATE EMERGENCY RESPONDERS */}
-          <div className="border-t border-[#5d6fa3]/20 pt-4 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+          <div className="border-t border-[var(--border-card)] pt-6 space-y-4">
+            <h3 className="text-xs font-extrabold uppercase text-indigo-400 tracking-wider flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
-              IMMEDIATE EMERGENCY RESPONDERS
+              <span>Immediate Emergency Responders</span>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-contact-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Primary Emergency Contact Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Primary Emergency Contact Name</label>
                 <input
                   type="text"
                   required
                   value={emergencyContactName}
                   onChange={(e) => setEmergencyContactName(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="Sarah Mercer (Spouse)"
                   id="profile-input-contact-name"
                 />
               </div>
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-contact-phone" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Primary Contact Phone Number</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Primary Contact Phone Number</label>
                 <input
                   type="tel"
                   required
                   value={emergencyContactPhone}
                   onChange={(e) => setEmergencyContactPhone(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="+1 (555) 019-2834"
                   id="profile-input-contact-phone"
                 />
@@ -503,120 +487,120 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
           </div>
 
           {/* PRIMARY NOMINEE CREDENTIALS */}
-          <div className="border-t border-[#5d6fa3]/25 pt-4 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+          <div className="border-t border-[var(--border-card)] pt-6 space-y-4">
+            <h3 className="text-xs font-extrabold uppercase text-indigo-400 tracking-wider flex items-center gap-2">
               <KeyRound className="h-4 w-4" />
-              PRIMARY NOMINEE CREDENTIALS
+              <span>Primary Nominee Credentials</span>
             </h3>
             
-            <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-4 text-xs space-y-1.5">
-              <p className="font-bold text-[#e0dafc]">Nominee Rule:</p>
-              <p className="text-[#a5b4fc] leading-relaxed">
+            <div className="bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl p-4 text-xs space-y-1.5">
+              <p className="font-bold text-[var(--text-primary)]">Nominee Access Rule:</p>
+              <p className="text-[var(--text-muted)] leading-relaxed">
                 This individual is your primary legal nominee. They will have authorized permission to log in and access your continuity plan and essential records during crisis mode using their phone number and your Emergency PIN.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-nominee-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Nominee Full Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Nominee Full Name</label>
                 <input
                   type="text"
                   required
                   value={nomineeName}
                   onChange={(e) => setNomineeName(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="Nominee Legal Name"
                   id="profile-input-nominee-name"
                 />
               </div>
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-nominee-phone" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Nominee Registered Phone Number</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Nominee Registered Phone</label>
                 <input
                   type="tel"
                   required
                   value={nomineePhone}
                   onChange={(e) => setNomineePhone(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="+1 (555) 012-3456"
                   id="profile-input-nominee-phone"
                 />
               </div>
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-nominee-pin" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Access PIN</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Emergency Access PIN</label>
                 <input
                   type="text"
                   required
                   maxLength={6}
                   value={nomineePin}
                   onChange={(e) => setNomineePin(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc] font-mono tracking-widest text-center"
-                  placeholder="4-digit PIN (e.g. 8829)"
+                  className="input-field w-full text-xs font-mono tracking-widest text-center font-bold"
+                  placeholder="4-digit PIN"
                   id="profile-input-nominee-pin"
                 />
               </div>
             </div>
 
-            <div className="text-[11px] bg-indigo-950/40 border border-indigo-900/40 text-indigo-300 p-3.5 rounded-xl space-y-1">
-              <span className="font-extrabold uppercase tracking-wider block">Sandbox Testing Guide:</span>
-              <p className="leading-relaxed">
-                Log out and access the **Nominee Access** tab with nominee phone number <span className="font-mono font-bold text-white">{nomineePhone || "+1 (555) 012-3456"}</span> and your custom PIN <span className="font-mono font-bold text-white">{nomineePin || "1234"}</span>. You will receive a mock OTP <span className="font-bold text-white">7777</span> dynamically sent on screen!
+            <div className="text-xs bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 p-4 rounded-2xl space-y-1">
+              <span className="font-bold uppercase tracking-wider block text-indigo-200">Sandbox Testing Guide:</span>
+              <p className="leading-relaxed text-[var(--text-muted)]">
+                Log out and access the <strong className="text-[var(--text-primary)]">Nominee Access</strong> tab with phone <span className="font-mono font-bold text-indigo-300">{nomineePhone || "+1 (555) 012-3456"}</span> and custom PIN <span className="font-mono font-bold text-indigo-300">{nomineePin || "1234"}</span>. You will receive a mock OTP <span className="font-bold text-white">7777</span> automatically!
               </p>
             </div>
           </div>
 
           {/* SAFETY MONITORING (Life Streak) */}
-          <div className="border-t border-[#5d6fa3]/25 pt-4 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+          <div className="border-t border-[var(--border-card)] pt-6 space-y-4">
+            <h3 className="text-xs font-extrabold uppercase text-indigo-400 tracking-wider flex items-center gap-2">
               <Activity className="h-4 w-4" />
-              SAFETY MONITORING (LIFE STREAK)
+              <span>Safety Monitoring (Life Streak)</span>
             </h3>
-            <p className="text-[11px] text-[#5d6fa3] leading-relaxed">
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
               If you do not check in for the streak duration plus the grace period, we email you a check-in confirmation. If you do not confirm within 12 hours, your emergency nominee is notified. Never alarmed immediately — you are always asked first.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-nominee-email-name" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Emergency Nominee Name</label>
                 <input
                   type="text"
                   value={emergencyNomineeName}
                   onChange={(e) => setEmergencyNomineeName(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="Sarah Mercer"
                   id="profile-input-nominee-email-name"
                 />
               </div>
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-nominee-email" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Emergency Nominee Email</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Emergency Nominee Email</label>
                 <input
                   type="email"
                   value={emergencyNomineeEmail}
                   onChange={(e) => setEmergencyNomineeEmail(e.target.value)}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="nominee@example.com"
                   id="profile-input-nominee-email"
                 />
               </div>
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-streak-duration" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Streak Duration (days)</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Streak Duration (days)</label>
                 <input
                   type="number"
                   min={1}
                   value={streakDuration}
                   onChange={(e) => setStreakDuration(Number(e.target.value))}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="7"
                   id="profile-input-streak-duration"
                 />
               </div>
-              <div className="space-y-1">
-                 <label htmlFor="profile-input-grace-period" className="block text-xs font-semibold uppercase text-[#5d6fa3] tracking-wider">Grace Period (hours)</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">Grace Period (hours)</label>
                 <input
                   type="number"
                   min={0}
                   value={gracePeriod}
                   onChange={(e) => setGracePeriod(Number(e.target.value))}
-                  className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                  className="input-field w-full text-xs"
                   placeholder="24"
                   id="profile-input-grace-period"
                 />
@@ -624,46 +608,46 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-3.5">
-                <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Last Active</p>
-                <p className="text-xs font-bold text-white mt-1">
+              <div className="bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl p-4">
+                <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Last Active</p>
+                <p className="text-xs font-bold text-[var(--text-primary)] mt-1 font-mono">
                   {lastActiveTimestamp
                     ? new Date(lastActiveTimestamp).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
                     : "No activity recorded yet"}
                 </p>
               </div>
-              <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-3.5">
-                <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Current Status</p>
-                <p className={`text-xs font-black mt-1 ${currentStreakStatus === "Safe" ? "text-green-400" : currentStreakStatus === "Awaiting Confirmation" ? "text-amber-400" : "text-red-400"}`}>
+              <div className="bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl p-4">
+                <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Current Status</p>
+                <p className={`text-xs font-bold mt-1 ${currentStreakStatus === "Safe" ? "text-emerald-400" : currentStreakStatus === "Awaiting Confirmation" ? "text-amber-400" : "text-rose-400"}`}>
                   {currentStreakStatus}
                 </p>
               </div>
-              <div className="bg-[#1e233a]/60 border border-[#5d6fa3]/20 rounded-xl p-3.5 flex flex-col justify-between">
-                <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Test (dev only)</p>
+              <div className="bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl p-4 flex flex-col justify-between">
+                <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Test Sandbox</p>
                 <button
                   type="button"
                   onClick={handleTestEmail}
                   disabled={testEmailSending}
-                  className="mt-1 inline-flex items-center gap-1.5 bg-indigo-950/40 border border-indigo-800/50 text-indigo-300 hover:bg-indigo-900/40 hover:text-indigo-200 text-[10px] font-bold py-1.5 px-3 rounded-lg transition-all self-start cursor-pointer"
+                  className="mt-1 btn-secondary py-1.5 px-3 text-[11px] font-bold self-start cursor-pointer"
                   id="btn-test-emergency-email"
                 >
                   <Send className="h-3 w-3" />
-                  {testEmailSending ? "Sending..." : "Test Emergency Email"}
+                  <span>{testEmailSending ? "Sending..." : "Test Emergency Email"}</span>
                 </button>
-                {testEmailResult && <p className="text-[9px] text-[#5d6fa3] mt-1">{testEmailResult}</p>}
+                {testEmailResult && <p className="text-[10px] text-[var(--text-muted)] mt-1 font-medium">{testEmailResult}</p>}
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="lc-btn-primary font-black py-2.5 px-6 shadow-lg transition-all flex items-center gap-2 text-xs"
+              className="btn-primary py-3 px-8 text-xs font-bold"
               id="profile-btn-save"
             >
-              <Save className="h-4 w-4 text-[#2c3353]" />
-              {loading ? "Saving Records..." : "Save Profiles"}
+              <Save className="h-4 w-4" />
+              <span>{loading ? "Saving Records..." : "Save Emergency Profile"}</span>
             </button>
           </div>
         </form>
@@ -672,19 +656,19 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
       {/* Security & Device Center Panel */}
       <div className="space-y-6">
         {/* MFA Center */}
-        <div className="lc-panel shadow-lg p-6">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 mb-4">
-            <ShieldCheck className="h-5 w-5 text-[#e0dafc]" />
-            Multi-Factor Auth (MFA)
+        <div className="app-card p-6 space-y-4">
+          <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2 border-b border-[var(--border-card)] pb-3">
+            <ShieldCheck className="h-5 w-5 text-indigo-400" />
+            <span>Multi-Factor Auth (MFA)</span>
           </h3>
-          <div className="flex items-center justify-between bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/20">
+          <div className="flex items-center justify-between bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)]">
             <div>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold ${
-                mfaEnabled ? "bg-green-950/50 text-green-400 border border-green-800/60" : "bg-amber-950/50 text-amber-400 border border-amber-800/60"
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold ${
+                mfaEnabled ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
               }`}>
                 {mfaEnabled ? "Secured — MFA enabled" : "Unsecured — MFA disabled"}
               </span>
-              <p className="text-[10px] text-[#5d6fa3] mt-1.5">Requiring SMS or authenticator passkey verification</p>
+              <p className="text-[11px] text-[var(--text-muted)] mt-1.5">Requiring passkey or SMS OTP confirmation</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -694,23 +678,21 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
                 className="sr-only peer"
                 id="checkbox-mfa"
               />
-              <div className="w-11 h-6 bg-[#1e233a] border border-[#5d6fa3]/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e0dafc]"></div>
+              <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             </label>
           </div>
         </div>
 
         {/* Device Sessions */}
-        <div className="lc-panel shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4 border-b border-[#5d6fa3]/20 pb-2">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Smartphone className="h-5 w-5 text-[#e0dafc]" />
-              Active Device Sessions
+        <div className="app-card p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-3">
+            <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-indigo-400" />
+              <span>Active Device Sessions</span>
             </h3>
             <button
-              type="button"
               onClick={fetchSessionsAndAlerts}
-              className="p-1 hover:bg-[#1e233a]/60 rounded-lg text-[#e0dafc] transition-colors"
-              aria-label="Refresh active device sessions"
+              className="p-1.5 hover:bg-[var(--bg-app)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
               id="btn-refresh-sessions"
             >
               <RefreshCw className="h-4 w-4" />
@@ -718,19 +700,19 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
           </div>
           <div className="space-y-3">
             {sessions.map((sess) => (
-               <div key={sess.id} className="lc-hover-lift p-3 border border-[#5d6fa3]/20 rounded-xl bg-[#1e233a] flex justify-between items-start text-xs hover:border-[#5d6fa3]/40 transition-colors">
+              <div key={sess.id} className="p-3.5 border border-[var(--border-card)] rounded-xl bg-[var(--bg-app)] flex justify-between items-start text-xs hover:border-indigo-500/30 transition-colors">
                 <div className="space-y-1">
-                  <p className="font-semibold text-white">{sess.device}</p>
-                  <p className="text-[10px] text-[#5d6fa3] flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> {sess.location}
+                  <p className="font-bold text-[var(--text-primary)]">{sess.device}</p>
+                  <p className="text-[11px] text-[var(--text-muted)] flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> <span>{sess.location}</span>
                   </p>
-                  <p className="text-[10px] text-[#5d6fa3] flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {new Date(sess.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <p className="text-[11px] text-[var(--text-muted)] flex items-center gap-1 font-mono">
+                    <Clock className="h-3 w-3" /> <span>{new Date(sess.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </p>
                 </div>
                 <button
                   onClick={() => handleRevokeSession(sess.id)}
-                  className="text-[10px] text-red-400 font-bold hover:bg-red-950/40 px-2 py-1 rounded-lg border border-red-900/40 shrink-0 transition-all"
+                  className="text-[10px] text-rose-400 font-bold hover:bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/30 shrink-0 transition-all cursor-pointer"
                 >
                   Revoke
                 </button>
@@ -740,20 +722,20 @@ export default function ProfileCenter({ uid, onProfileUpdated }: ProfileCenterPr
         </div>
 
         {/* Security Alerts */}
-        <div className="lc-panel shadow-lg p-6 max-h-[300px] overflow-y-auto">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 mb-4 sticky top-0 bg-[#2c3353] py-1 border-b border-[#5d6fa3]/20">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            Live Security Feed
+        <div className="app-card p-6 space-y-4 max-h-[300px] overflow-y-auto">
+          <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2 sticky top-0 bg-[var(--bg-card)] py-1 border-b border-[var(--border-card)]">
+            <AlertTriangle className="h-5 w-5 text-amber-400" />
+            <span>Live Security Feed</span>
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {alerts.length === 0 ? (
-              <p className="text-xs text-[#5d6fa3] text-center py-4">No recent security anomalies on record.</p>
+              <p className="text-xs text-[var(--text-muted)] text-center py-4">No recent security anomalies on record.</p>
             ) : (
               alerts.map((al) => (
-                <div key={al.id} className="relative pl-4 border-l-2 border-amber-500 space-y-1 animate-fade-in">
-                  <p className="text-xs font-bold text-white">{al.event}</p>
-                  <p className="text-[10px] text-[#e0dafc]/80">{al.details}</p>
-                  <p className="text-[9px] text-[#5d6fa3]">
+                <div key={al.id} className="relative pl-3.5 border-l-2 border-amber-400 space-y-0.5 animate-fade-in">
+                  <p className="text-xs font-bold text-[var(--text-primary)]">{al.event}</p>
+                  <p className="text-[11px] text-[var(--text-muted)]">{al.details}</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-mono">
                     {new Date(al.timestamp).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>

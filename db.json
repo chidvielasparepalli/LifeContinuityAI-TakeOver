@@ -62,7 +62,9 @@
       "streakDuration": 7,
       "gracePeriod": 24,
       "lastActiveTimestamp": 1786018405415,
-      "currentStreakStatus": "Safe"
+      "currentStreakStatus": "Awaiting Confirmation",
+      "statusChangedAt": 1791265295938,
+      "confirmationSentTimestamp": 1791265295938
     },
     "user_3Gcona6Lmnf2lyPcQszgGcAOErX": {
       "uid": "user_3Gcona6Lmnf2lyPcQszgGcAOErX",
@@ -136,8 +138,10 @@
       "gracePeriod": 24,
       "emergencyNomineeName": "mohankmadhan",
       "emergencyNomineeEmail": "mohankmadhan59@gmail.com",
-      "lastActiveTimestamp": 1786095884496,
-      "currentStreakStatus": "Safe"
+      "lastActiveTimestamp": 1791277107862,
+      "currentStreakStatus": "Safe",
+      "statusChangedAt": 1791265295948,
+      "confirmationSentTimestamp": 1791265295948
     },
     "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
       "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
@@ -156,10 +160,166 @@
       "emergencyNomineeName": "",
       "emergencyNomineeEmail": "",
       "lastActiveTimestamp": 1786094322135,
-      "currentStreakStatus": "Safe"
+      "currentStreakStatus": "Awaiting Confirmation",
+      "statusChangedAt": 1791265295957,
+      "confirmationSentTimestamp": 1791265295957
     }
   },
   "securityAlerts": [
+    {
+      "id": "alert-caaohzbc7",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:58:27.865Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-4u2x7bvkh",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:58:17.870Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-m7qnvdryp",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:58:02.447Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-sxo5dq0a9",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:57:19.898Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-zt5mp2ogw",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:57:18.300Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-j2dk6d6sk",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:57:14.881Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-pehrryu9f",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:56:57.878Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-yatsr7j1y",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:56:28.024Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-9ngesy7u5",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:55:12.878Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-158dh9ww8",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:54:47.893Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-khh3zf4wu",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:51:52.887Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-skoeubhb8",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:50:07.708Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-ujh66x2r0",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:49:56.442Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-2m03yb80r",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:42:11.842Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-dp1walqy0",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:40:25.918Z",
+      "event": "User Sign In",
+      "details": "Logged in via Clerk Authentication"
+    },
+    {
+      "id": "alert-06u02vss5",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:40:25.913Z",
+      "event": "Emergency Verification Cancelled",
+      "details": "Check-in received from user. Standing down active emergency state."
+    },
+    {
+      "id": "alert-2dqq9dq6d",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-10-06T05:41:35.962Z",
+      "event": "Confirmation Email Sent",
+      "details": "Sent check-in confirmation email to mohankmadhan59@gmail.com."
+    },
+    {
+      "id": "alert-m72i5eh38",
+      "uid": "user_3Ha77CDZHup5UFilbM05ew4oaEU",
+      "timestamp": "2026-10-06T05:41:35.959Z",
+      "event": "Life Streak Expired",
+      "details": "User's inactivity period exceeded 7 days + 24h grace. Confirmation email sent."
+    },
+    {
+      "id": "alert-5txcp435h",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T05:41:35.954Z",
+      "event": "Confirmation Email Sent",
+      "details": "Sent check-in confirmation email to ruthvikaniathyderabad@gmail.com."
+    },
+    {
+      "id": "alert-3bwdvlbgm",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T05:41:35.951Z",
+      "event": "Life Streak Expired",
+      "details": "User's inactivity period exceeded 7 days + 24h grace. Confirmation email sent."
+    },
+    {
+      "id": "alert-1kppxyx61",
+      "uid": "sandbox-demo",
+      "timestamp": "2026-10-06T05:41:35.943Z",
+      "event": "Confirmation Email Sent",
+      "details": "Sent check-in confirmation email to sandbox@lighthouseresilience.com."
+    },
+    {
+      "id": "alert-1appum6qu",
+      "uid": "sandbox-demo",
+      "timestamp": "2026-10-06T05:41:35.941Z",
+      "event": "Life Streak Expired",
+      "details": "User's inactivity period exceeded 7 days + 24h grace. Confirmation email sent."
+    },
     {
       "id": "alert-u3ed9gsxm",
       "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
@@ -2920,6 +3080,11 @@
         "date": "2026-08-07",
         "timestamp": "2026-08-07T08:30:48.450Z",
         "method": "login"
+      },
+      "2026-10-06": {
+        "date": "2026-10-06",
+        "timestamp": "2026-10-06T08:40:25.897Z",
+        "method": "login"
       }
     },
     "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
@@ -3008,13 +3173,13 @@
       "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
       "currentStreak": 1,
       "longestStreak": 1,
-      "lastCheckInDate": "2026-08-07",
-      "lastCheckInTimestamp": "2026-08-07T08:30:48.458Z",
+      "lastCheckInDate": "2026-10-06",
+      "lastCheckInTimestamp": "2026-10-06T08:40:25.903Z",
       "status": "Verified",
       "lastKnownLocation": {
-        "latitude": 17.474556917344643,
-        "longitude": 78.48314679110669,
-        "timestamp": "2026-08-07T09:44:48.283Z"
+        "latitude": 17.47452717993368,
+        "longitude": 78.48307035754809,
+        "timestamp": "2026-10-06T08:58:06.114Z"
       }
     },
     "user_3Ha77CDZHup5UFilbM05ew4oaEU": {
@@ -3331,6 +3496,16 @@
       "timestamp": "2026-08-07T09:15:56.236Z",
       "date": "2026-08-07",
       "time": "2:45:56 PM",
+      "method": "login",
+      "methodLabel": "App Login",
+      "status": "Success"
+    },
+    {
+      "id": "evt-jvumobekw",
+      "uid": "user_3GeEA85elag3gW3twuGN3mLiS4W",
+      "timestamp": "2026-10-06T08:40:25.907Z",
+      "date": "2026-10-06",
+      "time": "2:10:25 PM",
       "method": "login",
       "methodLabel": "App Login",
       "status": "Success"

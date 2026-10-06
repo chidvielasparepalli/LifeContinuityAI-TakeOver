@@ -20,7 +20,6 @@ import AgendaPanel from "./dashboard/AgendaPanel";
 import DrillDownPanel from "./dashboard/DrillDownPanel";
 import AddCustomEventModal from "./dashboard/AddCustomEventModal";
 import GoogleCalendarSyncModal from "./dashboard/GoogleCalendarSyncModal";
-import LoadingState from "./LoadingState";
 
 interface LifeGraphDashboardProps {
   uid: string;
@@ -699,30 +698,16 @@ export default function LifeGraphDashboard({
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "Verified": return "bg-green-950/40 text-green-400 border-green-800/60";
-      case "AwaitingCheckIn": return "bg-amber-950/40 text-amber-400 border-amber-800/60";
-      case "Unverified": return "bg-red-950/40 text-red-400 border-red-800/60";
-      case "EmergencyVerificationActive": return "bg-rose-600 text-white border-rose-800 animate-pulse";
-      default: return "bg-[#1e233a] text-[#5d6fa3] border-[#5d6fa3]/30";
+      case "Verified": return "badge-verified";
+      case "AwaitingCheckIn": return "badge-warning";
+      case "Unverified": return "badge-danger";
+      case "EmergencyVerificationActive": return "badge-danger animate-pulse";
+      default: return "badge-brand";
     }
   };
 
-  if (loading) {
-    return (
-      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-        <LoadingState label="Building your life graph" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-hidden="true">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="lc-panel-raised h-28 lc-skeleton" />
-          ))}
-        </div>
-        <div className="lc-panel h-80 lc-skeleton" aria-hidden="true" />
-      </div>
-    );
-  }
-
   return (
-    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 space-y-8" id="life-graph-root">
+    <div className="max-w-7xl mx-auto space-y-8" id="life-graph-root">
       
       {/* Top Banner: Safety Status Widget (Modularized) */}
       <DashboardHeader 
@@ -733,14 +718,14 @@ export default function LifeGraphDashboard({
       />
 
       {/* Redesigned Life Graph Agenda Header */}
-       <div className="lc-panel shadow-lg p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#5d6fa3]/10 pb-4">
+      <div className="app-card p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-indigo-400" />
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-indigo-500" />
               Life Graph Agenda
             </h3>
-            <p className="text-xs text-[#5d6fa3] mt-0.5">Chronological heatmaps and obligations catalog</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Chronological heatmaps and obligations catalog</p>
           </div>
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <button
@@ -748,7 +733,7 @@ export default function LifeGraphDashboard({
                 setCustomDate(selectedDayStr);
                 setShowAddCustomEvent(true);
               }}
-               className="lc-btn-primary flex-1 sm:flex-none text-xs py-2.5 px-4 shadow-md transition-all gap-1.5 cursor-pointer"
+              className="flex-1 sm:flex-none btn-primary text-xs py-2.5 px-4"
               id="btn-add-custom-event"
             >
               <Plus className="h-4 w-4" />
@@ -756,46 +741,46 @@ export default function LifeGraphDashboard({
             </button>
             <button
               onClick={() => setShowCalendarSyncModal(true)}
-               className="lc-btn-secondary flex-1 sm:flex-none text-xs py-2.5 px-4 shadow-md transition-all gap-1.5 cursor-pointer"
+              className="flex-1 sm:flex-none btn-secondary text-xs py-2.5 px-4"
               id="btn-open-calendar-sync"
             >
-              <Calendar className="h-4 w-4 text-indigo-400" />
+              <Calendar className="h-4 w-4 text-indigo-500" />
               Sync Google Calendar
             </button>
             <button
               onClick={handleExportData}
-               className="lc-btn-secondary flex-1 sm:flex-none text-xs py-2.5 px-4 transition-all gap-1.5 cursor-pointer"
+              className="flex-1 sm:flex-none btn-secondary text-xs py-2.5 px-4"
               title="Export report"
             >
-              <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
+              <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
               Export Life Graph
             </button>
           </div>
         </div>
 
         {/* Care & Obligation Heatmap Section */}
-        <div className="space-y-4 pt-2">
+        <div className="space-y-4 pt-1">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-black uppercase text-[#e0dafc]/80 tracking-widest">Care & Obligation Heatmap</h4>
-            <div className="flex items-center gap-2 bg-[#1e233a] border border-[#5d6fa3]/25 px-2.5 py-1 rounded-xl">
-               <button type="button" onClick={handlePrevMonth} aria-label="Previous month" className="lc-touch-target p-1 hover:text-white transition-colors cursor-pointer">
+            <h4 className="text-xs font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-widest">Care &amp; Obligation Heatmap</h4>
+            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 px-2.5 py-1 rounded-xl shadow-2xs">
+              <button onClick={handlePrevMonth} className="p-1 hover:text-slate-900 dark:hover:text-white text-slate-500 dark:text-slate-400 transition-colors cursor-pointer">
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-xs font-bold text-white min-w-28 text-center select-none">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 min-w-28 text-center select-none">
                 {months[calendarMonth]} {calendarYear}
               </span>
-               <button type="button" onClick={handleNextMonth} aria-label="Next month" className="lc-touch-target p-1 hover:text-white transition-colors cursor-pointer">
+              <button onClick={handleNextMonth} className="p-1 hover:text-slate-900 dark:hover:text-white text-slate-500 dark:text-slate-400 transition-colors cursor-pointer">
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
 
           {/* Interactive Heatmap Grid */}
-          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15 space-y-3">
+          <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-3">
             {/* Week Headers */}
             <div className="grid grid-cols-7 gap-2 text-center">
               {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map(day => (
-                <span key={day} className="text-[10px] font-black text-[#5d6fa3] tracking-wider">{day}</span>
+                <span key={day} className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 tracking-wider">{day}</span>
               ))}
             </div>
 
@@ -821,28 +806,28 @@ export default function LifeGraphDashboard({
                 const isSelected = selectedDayStr === dayObj.dateStr;
 
                 // Color code backgrounds based on highest priority
-                let bgClass = "bg-[#2c3353]/30 text-indigo-200/50";
-                let ringClass = "border border-[#5d6fa3]/10 hover:border-[#5d6fa3]/40";
+                let bgClass = "bg-slate-100/60 dark:bg-slate-800/30 text-slate-400 dark:text-slate-600";
+                let ringClass = "border border-transparent";
                 
                 if (dayObj.isCurrentMonth) {
-                  bgClass = "bg-[#2c3353]/60 text-white font-medium";
-                  ringClass = "border border-[#5d6fa3]/20 hover:border-indigo-400/50";
+                  bgClass = "bg-white dark:bg-[#151c2e] text-slate-800 dark:text-slate-200 font-semibold shadow-2xs";
+                  ringClass = "border border-slate-200 dark:border-slate-800 hover:border-indigo-400/50";
 
                   if (dayEvents.length > 0) {
                     if (highestPriority === "Critical") {
-                      bgClass = "bg-red-950/65 text-red-200 hover:bg-red-950/80 border-red-500/20";
+                      bgClass = "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30 hover:bg-rose-500/25 font-bold";
                     } else if (highestPriority === "High") {
-                      bgClass = "bg-orange-950/65 text-orange-200 hover:bg-orange-950/80 border-orange-500/20";
+                      bgClass = "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/25 font-bold";
                     } else if (highestPriority === "Medium") {
-                      bgClass = "bg-yellow-950/60 text-yellow-200 hover:bg-yellow-950/85 border-yellow-500/20";
+                      bgClass = "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/25 font-bold";
                     } else if (highestPriority === "Low") {
-                      bgClass = "bg-green-950/65 text-green-200 hover:bg-green-950/80 border-green-500/20";
+                      bgClass = "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25 font-bold";
                     }
                   }
                 }
 
                 if (isSelected) {
-                  ringClass = "ring-2 ring-indigo-400 border-indigo-400";
+                  ringClass = "ring-2 ring-indigo-500 border-indigo-500 shadow-sm";
                 }
 
                 return (
@@ -859,16 +844,16 @@ export default function LifeGraphDashboard({
                         setIsConfiguring(false);
                       }
                     }}
-                    className={`h-11 sm:h-14 rounded-xl flex flex-col items-center justify-between p-1.5 sm:p-2 transition-all cursor-pointer relative ${bgClass} ${ringClass}`}
+                    className={`h-12 sm:h-15 rounded-xl flex flex-col items-center justify-between p-1.5 sm:p-2.5 transition-all cursor-pointer relative ${bgClass} ${ringClass}`}
                   >
                     <span className="text-[10px] sm:text-xs font-bold self-start">{dayObj.day}</span>
                     
                     {dayEvents.length > 0 && (
-                      <div className="flex items-center gap-0.5 mt-0.5 justify-center w-full">
-                        {dayEvents.some(e => e.priority === "Critical") && <span className="h-1.5 w-1.5 rounded-full bg-red-500" title="Critical Priority" />}
-                        {dayEvents.some(e => e.priority === "High") && <span className="h-1.5 w-1.5 rounded-full bg-orange-500" title="High Priority" />}
-                        {dayEvents.some(e => e.priority === "Medium") && <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" title="Medium Priority" />}
-                        {dayEvents.some(e => e.priority === "Low") && <span className="h-1.5 w-1.5 rounded-full bg-green-500" title="Low Priority" />}
+                      <div className="flex items-center gap-1 mt-0.5 justify-center w-full">
+                        {dayEvents.some(e => e.priority === "Critical") && <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shadow-xs" title="Critical Priority" />}
+                        {dayEvents.some(e => e.priority === "High") && <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-xs" title="High Priority" />}
+                        {dayEvents.some(e => e.priority === "Medium") && <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 shadow-xs" title="Medium Priority" />}
+                        {dayEvents.some(e => e.priority === "Low") && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-xs" title="Low Priority" />}
                       </div>
                     )}
                   </button>
@@ -877,14 +862,14 @@ export default function LifeGraphDashboard({
             </div>
 
             {/* Priority Urgency Legend */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] font-bold text-[#5d6fa3] border-t border-[#5d6fa3]/10 pt-3 mt-1">
-              <span className="text-[10px] font-black uppercase text-[#e0dafc]/50 tracking-wider">Urgency Index:</span>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 border-t border-slate-200/80 dark:border-slate-800 pt-3 mt-1">
+              <span className="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Urgency Index:</span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                 Critical (Today / Overdue)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
                 High (Within 3 days)
               </span>
               <span className="flex items-center gap-1.5">
@@ -892,13 +877,14 @@ export default function LifeGraphDashboard({
                 Medium (Within 7 days)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                 Low (Later)
               </span>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Four Category Summary Grid Cards (Modularized) */}
       <DashboardStatsGrid 

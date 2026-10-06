@@ -26,7 +26,6 @@ import {
   Eye
 } from "lucide-react";
 import { apiFetch } from "../lib/api";
-import LoadingState from "./LoadingState";
 
 interface SafetyPanelProps {
   uid: string;
@@ -34,7 +33,6 @@ interface SafetyPanelProps {
 
 export default function SafetyPanel({ uid }: SafetyPanelProps) {
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Settings states corresponding to database
@@ -43,7 +41,7 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
   const [grace, setGrace] = useState(120);
   const [intervals, setIntervals] = useState<number[]>([120, 60, 15]);
 
-  // Extended safety custom fields (automatically persisted thanks to ...spread in backend)
+  // Extended safety custom fields
   const [checkingInterval, setCheckingInterval] = useState("daily");
   const [activeChannels, setActiveChannels] = useState<string[]>(["sms", "email", "login"]);
   const [secondaryValidatorName, setSecondaryValidatorName] = useState("Sarah Mercer (Sister)");
@@ -52,22 +50,6 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
   // Heartbeat test state
   const [heartbeatActive, setHeartbeatActive] = useState(false);
   const [heartbeatLog, setHeartbeatLog] = useState<string[]>([]);
-
-  // Security Audit Log states (stubbed to fulfill "Remove Security Audit Log and Ledger features" requirement)
-  const [securityLogs, setSecurityLogs] = useState<any[]>([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
-  const [logFilter, setLogFilter] = useState("all"); 
-  const [logSearch, setLogSearch] = useState("");
-
-  const fetchLogs = async () => {
-    // Stubbed
-  };
-
-  useEffect(() => {
-    // Stubbed
-  }, [uid]);
-
-  const filteredLogs: any[] = [];
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -90,7 +72,6 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
         console.error("Error loading safety settings:", e);
       } finally {
         setLoading(false);
-        setInitialLoading(false);
       }
     };
     fetchSettings();
@@ -109,7 +90,6 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
           checkInWindowEnd: winEnd,
           reminderIntervals: intervals,
           gracePeriodMinutes: Number(grace),
-          // Additional custom configurations
           checkingInterval,
           activeChannels,
           secondaryValidatorName,
@@ -119,7 +99,6 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
 
       if (res.ok) {
         setSaveSuccess(true);
-        fetchLogs(); // refresh security logs
         setTimeout(() => setSaveSuccess(false), 3000);
       }
     } catch (err) {
@@ -137,43 +116,6 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
     }
   };
 
-  const handleTestHeartbeat = () => {
-    setHeartbeatActive(true);
-    const logs = [
-      "Initializing localized safety verification audit...",
-      "Querying check-in settings from persistence...",
-      `Active window configured from ${winStart} to ${winEnd}`,
-      "Checking device activity heartbeats...",
-      "Simulating heartbeat trigger: SUCCESS.",
-      "LifeContinuity AI proof-of-life state: VERIFIED and safe."
-    ];
-
-    setHeartbeatLog([]);
-    logs.forEach((log, index) => {
-      setTimeout(async () => {
-        setHeartbeatLog(prev => [...prev, log]);
-        if (index === logs.length - 1) {
-          setHeartbeatActive(false);
-          // Log heartbeat tested to security alerts backend
-          try {
-            await apiFetch("/api/security/log", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                uid,
-                event: "Heartbeat Tested",
-                details: `Executed interactive dry-run safety verification heartbeat. State: VERIFIED.`
-              })
-            });
-            fetchLogs(); // refresh list
-          } catch (e) {
-            console.error("Failed to log heartbeat tested:", e);
-          }
-        }
-      }, (index + 1) * 600);
-    });
-  };
-
   const toggleInterval = (mins: number) => {
     if (intervals.includes(mins)) {
       setIntervals(intervals.filter(i => i !== mins).sort((a,b) => b-a));
@@ -182,31 +124,23 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
     }
   };
 
-  if (initialLoading) {
-    return (
-      <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6">
-        <LoadingState label="Loading your safety playbook" />
-      </div>
-    );
-  }
-
   return (
-    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc] space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8 animate-fade-in">
       
       {/* Description Info Header */}
-      <div className="lc-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="app-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
             <Shield className="h-5 w-5 text-indigo-400" />
-            Lighthouse Safety Configuration Desk
+            <span>Lighthouse Safety Configuration Desk</span>
           </h3>
-          <p className="text-xs text-[#5d6fa3] leading-relaxed max-w-2xl">
+          <p className="text-xs text-[var(--text-muted)] leading-relaxed max-w-2xl">
             This panel governs your proof-of-life confirmation thresholds. Ensure these values match your routine so that safety notifications feel natural, while establishing bulletproof contingency handovers for your Nominees.
           </p>
         </div>
-        <div className="flex items-center gap-1.5 self-start md:self-center">
-          <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-          <span className="text-[10px] font-bold uppercase text-[#5d6fa3]">Auto Escalation: STANDBY</span>
+        <div className="flex items-center gap-2 self-start md:self-center">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="app-badge app-badge-info text-[11px] font-bold">Auto Escalation: STANDBY</span>
         </div>
       </div>
 
@@ -217,25 +151,25 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
           <form onSubmit={handleSave} className="space-y-6">
             
             {/* Box 1: Checking intervals & active window */}
-            <div className="lc-panel shadow-lg p-6 space-y-6">
-              <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
-                <div className="h-9 w-9 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
-                  <Clock className="h-4.5 w-4.5" />
+            <div className="app-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 border-b border-[var(--border-card)] pb-4">
+                <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                  <Clock className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Proof-of-Life Intervals & Safety Windows</h4>
-                  <p className="text-[11px] text-[#5d6fa3]">Determine how often and when Lighthouse checks on you</p>
+                  <h4 className="text-base font-bold text-[var(--text-primary)]">Proof-of-Life Intervals & Safety Windows</h4>
+                  <p className="text-xs text-[var(--text-muted)]">Determine how often and when Lighthouse checks on you</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* Check-in frequency */}
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-widest">
+                <div className="space-y-3">
+                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                     Verification Frequency
                   </label>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-2.5">
                     {[
                       { id: "daily", title: "Once Daily Proof-of-life", desc: "One check-in required inside the window" },
                       { id: "twice", title: "Twice Daily Verification", desc: "Morning and evening checkpoints" },
@@ -245,14 +179,14 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                         type="button"
                         key={opt.id}
                         onClick={() => setCheckingInterval(opt.id)}
-                        className={`text-left p-3 rounded-xl border text-xs transition-all ${
+                        className={`text-left p-3.5 rounded-2xl border text-xs transition-all cursor-pointer ${
                           checkingInterval === opt.id
-                            ? "bg-[#1e233a] border-[#e0dafc] text-white"
-                            : "bg-[#1e233a]/40 border-[#5d6fa3]/15 text-[#e0dafc]/80 hover:bg-[#1e233a]/70"
+                            ? "bg-indigo-500/15 border-indigo-500 text-[var(--text-primary)] shadow-sm"
+                            : "bg-[var(--bg-app)] border-[var(--border-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-indigo-500/30"
                         }`}
                       >
-                        <p className="font-bold">{opt.title}</p>
-                        <p className="text-[10px] text-[#5d6fa3] mt-0.5">{opt.desc}</p>
+                        <p className="font-bold text-xs">{opt.title}</p>
+                        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{opt.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -261,41 +195,39 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                 {/* Timing Window inputs */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-widest">
+                    <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                       Active Monitoring Window
                     </label>
-                    <p className="text-[10px] text-[#5d6fa3] leading-normal">
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                       Notifications are only dispatched during this timeframe to prevent night-time disruptions.
                     </p>
                     
                     <div className="grid grid-cols-2 gap-3.5 pt-1.5">
-                      <div className="space-y-1">
-                         <label htmlFor="safety-window-start" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Opens</label>
-                         <input
-                           id="safety-window-start"
+                      <div className="space-y-1.5">
+                        <span className="block text-[10px] font-bold uppercase text-[var(--text-muted)]">Opens</span>
+                        <input
                           type="text"
                           value={winStart}
                           onChange={(e) => setWinStart(e.target.value)}
-                          className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-center font-mono font-bold text-white focus:outline-none focus:border-[#e0dafc]"
+                          className="input-field w-full text-center font-mono font-bold"
                           placeholder="08:00"
                         />
                       </div>
-                      <div className="space-y-1">
-                         <label htmlFor="safety-window-end" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Closes</label>
-                         <input
-                           id="safety-window-end"
+                      <div className="space-y-1.5">
+                        <span className="block text-[10px] font-bold uppercase text-[var(--text-muted)]">Closes</span>
+                        <input
                           type="text"
                           value={winEnd}
                           onChange={(e) => setWinEnd(e.target.value)}
-                          className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-center font-mono font-bold text-white focus:outline-none focus:border-[#e0dafc]"
+                          className="input-field w-full text-center font-mono font-bold"
                           placeholder="20:00"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-3 bg-[#1e233a]/50 rounded-xl border border-[#5d6fa3]/10 text-[10px] text-[#5d6fa3] leading-relaxed">
-                    <span className="font-bold text-white">Rule Note:</span> Your daily check-in is complete if you log in, respond to an SMS, or sync workspace activity once between <span className="font-bold text-[#e0dafc]">{winStart}</span> and <span className="font-bold text-[#e0dafc]">{winEnd}</span>.
+                  <div className="p-4 bg-[var(--bg-app)] rounded-2xl border border-[var(--border-card)] text-xs text-[var(--text-muted)] leading-relaxed">
+                    <strong className="text-[var(--text-primary)]">Rule Note:</strong> Your daily check-in is complete if you log in, respond to an SMS, or sync workspace activity once between <span className="font-bold text-indigo-400">{winStart}</span> and <span className="font-bold text-indigo-400">{winEnd}</span>.
                   </div>
                 </div>
 
@@ -303,28 +235,28 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
             </div>
 
             {/* Box 2: Grace period & Reminder triggers */}
-            <div className="lc-panel shadow-lg p-6 space-y-6">
-              <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
-                <div className="h-9 w-9 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
-                  <Sliders className="h-4.5 w-4.5 text-indigo-400" />
+            <div className="app-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 border-b border-[var(--border-card)] pb-4">
+                <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                  <Sliders className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Grace Period & Prior Reminder Escalations</h4>
-                  <p className="text-[11px] text-[#5d6fa3]">Define pre-deadline warnings and emergency delays</p>
+                  <h4 className="text-base font-bold text-[var(--text-primary)]">Grace Period & Prior Reminder Escalations</h4>
+                  <p className="text-xs text-[var(--text-muted)]">Define pre-deadline warnings and emergency delays</p>
                 </div>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {/* Grace Period slider/options */}
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-widest">
+                <div className="space-y-3">
+                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                     Grace Period Delay Post-Deadline
                   </label>
-                  <p className="text-[10px] text-[#5d6fa3] leading-normal">
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     How much time do you have to check in after the active window closes before Nominee extraction triggers?
                   </p>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                     {[
                       { mins: 2, label: "2 Minutes", desc: "Ultra-high alert" },
                       { mins: 60, label: "1 Hour", desc: "High alert" },
@@ -335,14 +267,14 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                         type="button"
                         key={opt.mins}
                         onClick={() => setGrace(opt.mins)}
-                        className={`p-3 rounded-xl border text-center transition-all ${
+                        className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                           grace === opt.mins
-                            ? "bg-[#1e233a] border-[#e0dafc] text-white"
-                            : "bg-[#1e233a]/40 border-[#5d6fa3]/15 text-[#e0dafc]/80 hover:bg-[#1e233a]/70"
+                            ? "bg-indigo-500/15 border-indigo-500 text-[var(--text-primary)] shadow-sm"
+                            : "bg-[var(--bg-app)] border-[var(--border-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-indigo-500/30"
                         }`}
                       >
-                        <span className="block font-black text-xs">{opt.label}</span>
-                        <span className="block text-[8px] text-[#5d6fa3] mt-0.5">{opt.desc}</span>
+                        <span className="block font-bold text-xs">{opt.label}</span>
+                        <span className="block text-[10px] text-[var(--text-muted)] mt-0.5">{opt.desc}</span>
                       </button>
                     ))}
                   </div>
@@ -350,10 +282,10 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
 
                 {/* Reminder triggers checklist */}
                 <div className="space-y-3 pt-2">
-                  <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-widest">
+                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                     Pre-Deadline Warnings Dispatch Schedule
                   </label>
-                  <p className="text-[10px] text-[#5d6fa3] leading-normal">
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     Lighthouse will send you direct alerts on your enabled communication channels at these intervals prior to the window closing.
                   </p>
                   
@@ -370,18 +302,18 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                           type="button"
                           key={rem.id}
                           onClick={() => toggleInterval(rem.id)}
-                          className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs transition-all text-left ${
+                          className={`flex items-center gap-2.5 p-3 rounded-2xl border text-xs transition-all text-left cursor-pointer ${
                             isActive
-                              ? "bg-indigo-950/40 border-indigo-500/50 text-[#e0dafc]"
-                              : "bg-[#1e233a]/40 border-[#5d6fa3]/15 text-[#5d6fa3] hover:text-[#e0dafc]"
+                              ? "bg-indigo-500/15 border-indigo-500 text-[var(--text-primary)]"
+                              : "bg-[var(--bg-app)] border-[var(--border-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                           }`}
                         >
-                          <div className={`h-4 w-4 rounded flex items-center justify-center border transition-all ${
-                            isActive ? "bg-indigo-500 border-indigo-400 text-white" : "border-[#5d6fa3]/30"
+                          <div className={`h-4 w-4 rounded-md flex items-center justify-center border transition-all ${
+                            isActive ? "bg-indigo-600 border-indigo-500 text-white" : "border-[var(--border-card)]"
                           }`}>
                             {isActive && <CheckCircle className="h-3 w-3" />}
                           </div>
-                          <span className="font-bold text-[10px]">{rem.label}</span>
+                          <span className="font-bold text-xs">{rem.label}</span>
                         </button>
                       );
                     })}
@@ -391,14 +323,14 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
             </div>
 
             {/* Box 3: Verification Channels & Escalation Validator */}
-            <div className="lc-panel shadow-lg p-6 space-y-6">
-              <div className="flex items-center gap-3 border-b border-[#5d6fa3]/20 pb-3">
-                <div className="h-9 w-9 bg-[#1e233a] rounded-lg flex items-center justify-center text-[#e0dafc] border border-[#5d6fa3]/25">
-                  <Smartphone className="h-4.5 w-4.5 text-indigo-400" />
+            <div className="app-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 border-b border-[var(--border-card)] pb-4">
+                <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                  <Smartphone className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Verification Channels & Secondary Validators</h4>
-                  <p className="text-[11px] text-[#5d6fa3]">Manage notification delivery methods and backup contacts</p>
+                  <h4 className="text-base font-bold text-[var(--text-primary)]">Verification Channels & Secondary Validators</h4>
+                  <p className="text-xs text-[var(--text-muted)]">Manage notification delivery methods and backup contacts</p>
                 </div>
               </div>
 
@@ -406,42 +338,40 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
                 
                 {/* Channels toggles */}
                 <div className="space-y-3">
-                  <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-widest">
+                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                     Authorized Safety Channels
                   </label>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {[
-                      { id: "sms", icon: Smartphone, title: "SMS Reminders & Direct Reply", desc: "Send automated text alerts to your mobile phone" },
-                      { id: "email", icon: Mail, title: "Email Backup Verification", desc: "Daily proof-of-life reminders sent via email" },
-                      { id: "login", icon: UserCheck, title: "Dashboard Session Logins", desc: "Logging in automatically checks you in for the day" }
+                      { id: "sms", icon: Smartphone, title: "SMS Reminders & Direct Reply", desc: "Automated text alerts to your mobile" },
+                      { id: "email", icon: Mail, title: "Email Backup Verification", desc: "Daily proof-of-life email dispatch" },
+                      { id: "login", icon: UserCheck, title: "Dashboard Session Logins", desc: "Logging in checks you in automatically" }
                     ].map((chan) => {
                       const isChecked = activeChannels.includes(chan.id);
                       const Icon = chan.icon;
                       return (
-                        <button
-                          type="button"
+                        <div
                           key={chan.id}
                           onClick={() => toggleChannel(chan.id)}
-                          aria-pressed={isChecked}
-                          className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
                             isChecked
-                              ? "bg-indigo-950/30 border-indigo-500/40 text-white"
-                              : "bg-[#1e233a]/30 border-[#5d6fa3]/10 text-[#5d6fa3] hover:text-[#e0dafc]"
+                              ? "bg-indigo-500/10 border-indigo-500/40 text-[var(--text-primary)]"
+                              : "bg-[var(--bg-app)] border-[var(--border-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <Icon className={`h-4.5 w-4.5 shrink-0 ${isChecked ? "text-indigo-400" : ""}`} />
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Icon className={`h-4.5 w-4.5 shrink-0 ${isChecked ? "text-indigo-400" : "text-[var(--text-muted)]"}`} />
                             <div className="min-w-0 text-left">
-                              <p className="font-bold text-xs truncate text-[#e0dafc]">{chan.title}</p>
-                              <p className="text-[10px] text-[#5d6fa3] truncate">{chan.desc}</p>
+                              <p className="font-bold text-xs truncate text-[var(--text-primary)]">{chan.title}</p>
+                              <p className="text-[11px] text-[var(--text-muted)] truncate">{chan.desc}</p>
                             </div>
                           </div>
                           <div className={`h-5 w-9 rounded-full transition-colors flex items-center p-0.5 shrink-0 ${
-                            isChecked ? "bg-indigo-500 justify-end" : "bg-[#1e233a] justify-start border border-[#5d6fa3]/20"
+                            isChecked ? "bg-indigo-600 justify-end" : "bg-slate-700 justify-start"
                           }`}>
                             <span className="h-4 w-4 rounded-full bg-white shadow-md block" />
                           </div>
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -449,35 +379,33 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
 
                 {/* Secondary trusted contact validators */}
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="block text-[10px] font-bold uppercase text-[#5d6fa3] tracking-widest">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                       Secondary Safety Contact (Validator)
                     </label>
-                    <p className="text-[10px] text-[#5d6fa3] leading-normal">
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                       If you miss your check-in deadline, this trusted validator is notified first to verify your status before nominee release.
                     </p>
                   </div>
 
                   <div className="space-y-3 text-xs">
-                    <div className="space-y-1">
-                       <label htmlFor="safety-validator-name" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Validator Name</label>
-                       <input
-                         id="safety-validator-name"
+                    <div className="space-y-1.5">
+                      <span className="block text-[10px] font-bold uppercase text-[var(--text-muted)]">Validator Name</span>
+                      <input
                         type="text"
                         value={secondaryValidatorName}
                         onChange={(e) => setSecondaryValidatorName(e.target.value)}
-                        className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                        className="input-field w-full text-xs"
                         placeholder="e.g. Sarah Mercer (Sister)"
                       />
                     </div>
-                    <div className="space-y-1">
-                       <label htmlFor="safety-validator-phone" className="block text-[9px] font-bold uppercase text-[#5d6fa3]">Validator Phone Number</label>
-                       <input
-                         id="safety-validator-phone"
+                    <div className="space-y-1.5">
+                      <span className="block text-[10px] font-bold uppercase text-[var(--text-muted)]">Validator Phone Number</span>
+                      <input
                         type="text"
                         value={secondaryValidatorPhone}
                         onChange={(e) => setSecondaryValidatorPhone(e.target.value)}
-                        className="w-full bg-[#1e233a] border border-[#5d6fa3]/30 rounded-xl p-2.5 text-xs text-[#e0dafc] focus:outline-none focus:border-[#e0dafc]"
+                        className="input-field w-full text-xs"
                         placeholder="e.g. +1 (555) 019-2834"
                       />
                     </div>
@@ -488,15 +416,15 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
             </div>
 
             {/* Form Save Button and success trigger */}
-            <div className="lc-panel-raised p-4 rounded-2xl gap-4 flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-card)] gap-4">
               <div className="text-xs">
                 {saveSuccess ? (
-                  <p className="text-green-400 font-bold flex items-center gap-1.5">
-                    <CheckCircle className="h-4 w-4 text-green-400" />
-                    Safety configuration saved securely to profile registry!
+                  <p className="text-emerald-400 font-bold flex items-center gap-1.5">
+                    <CheckCircle className="h-4 w-4 text-emerald-400" />
+                    <span>Safety configuration saved securely to profile registry!</span>
                   </p>
                 ) : (
-                  <p className="text-[#5d6fa3] font-medium leading-relaxed">
+                  <p className="text-[var(--text-muted)] font-medium leading-relaxed">
                     Make sure to save changes to register update events onto your nominee ledger.
                   </p>
                 )}
@@ -505,11 +433,11 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="lc-btn-primary font-black text-xs py-3 px-6 flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer"
+                className="btn-primary py-3 px-8 text-xs font-bold shrink-0 cursor-pointer"
                 id="btn-safety-save-settings"
               >
-                <Save className="h-4 w-4 text-[#2c3353]" />
-                {loading ? "Persisting Settings..." : "Save Safety Parameters"}
+                <Save className="h-4 w-4" />
+                <span>{loading ? "Persisting Settings..." : "Save Safety Parameters"}</span>
               </button>
             </div>
 
@@ -517,8 +445,6 @@ export default function SafetyPanel({ uid }: SafetyPanelProps) {
         </div>
 
       </div>
-
-
 
     </div>
   );

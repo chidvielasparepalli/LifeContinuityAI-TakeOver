@@ -39,7 +39,7 @@ import NomineeDashboard from "./components/NomineeDashboard";
 import FloatingChatbot from "./components/FloatingChatbot";
 import SafetyPanel from "./components/SafetyPanel";
 import { useThemeLanguage } from "./components/ThemeLanguageContext";
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useSafeUser, useSafeClerk } from "./lib/clerkSafe";
 import { apiFetch } from "./lib/api";
 
 
@@ -60,9 +60,9 @@ export default function App() {
   const [role, setRole] = useState<"user" | "nominee" | null>(null);
   const [syncTimeoutReached, setSyncTimeoutReached] = useState(false);
 
-  // Clerk authentication
-  const { isSignedIn, user: clerkUser, isLoaded: isClerkLoaded } = useUser();
-  const { signOut } = useClerk();
+  // Clerk authentication (safe fallback when key is not provided)
+  const { isSignedIn, user: clerkUser, isLoaded: isClerkLoaded } = useSafeUser();
+  const { signOut } = useSafeClerk();
 
   // Nominee session state
   const [nomineeSession, setNomineeSession] = useState<{
@@ -77,17 +77,6 @@ export default function App() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isMobileDrawerOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMobileDrawerOpen(false);
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isMobileDrawerOpen]);
 
   // Sync Clerk session with backend mock DB
   useEffect(() => {
@@ -249,8 +238,8 @@ export default function App() {
 
   if (!isClerkLoaded) {
     return (
-      <div className="lc-shell theme-dark-container min-h-screen flex flex-col justify-center items-center gap-4">
-        <div className="lc-brand-mark h-12 w-12 rounded-xl shadow-md animate-pulse">
+      <div className="min-h-screen bg-[#2c3353] text-[#e0dafc] flex flex-col justify-center items-center gap-4">
+        <div className="h-12 w-12 bg-[#e0dafc] rounded-xl flex items-center justify-center text-[#2c3353] shadow-md border border-indigo-300/30 animate-pulse">
           <Shield className="h-6 w-6 text-indigo-700 animate-spin" />
         </div>
         <p className="text-xs uppercase tracking-widest font-bold text-[#5d6fa3]">Connecting Secure Session...</p>
@@ -262,8 +251,8 @@ export default function App() {
   if (isSignedIn && !role) {
 
     return (
-      <div className="lc-shell theme-dark-container min-h-screen flex flex-col justify-center items-center gap-4">
-        <div className="lc-brand-mark h-12 w-12 rounded-xl shadow-md animate-pulse">
+      <div className="min-h-screen bg-[#2c3353] text-[#e0dafc] flex flex-col justify-center items-center gap-4">
+        <div className="h-12 w-12 bg-[#e0dafc] rounded-xl flex items-center justify-center text-[#2c3353] shadow-md border border-indigo-300/30 animate-pulse">
           <Shield className="h-6 w-6 text-indigo-700 animate-spin" />
         </div>
         <p className="text-xs uppercase tracking-widest font-bold text-[#5d6fa3]">Syncing Secure Vault...</p>
@@ -290,37 +279,37 @@ export default function App() {
   }
 
   return (
-    <div className={`lc-shell min-h-screen ${theme === "light" ? "theme-light-container" : "theme-dark-container"} flex flex-col lg:flex-row relative transition-colors duration-300`}>
+    <div className={`min-h-screen ${theme === "light" ? "bg-[#f4f6fb] text-slate-900 theme-light-container" : "bg-[#0d111d] text-slate-100 theme-dark-container"} flex flex-col lg:flex-row relative transition-colors duration-300 font-sans`}>
 
       {/* -------------------------------------------------------------
           1. PERSISTENT SIDEBAR (Desktop & Tablet Landscape >= 1024px)
           ------------------------------------------------------------- */}
-      <aside className={`lc-sidebar h-screen sticky top-0 lg:flex hidden flex-col justify-between shrink-0 select-none border-r transition-all duration-300 z-30 ${theme === "light" ? "bg-white border-indigo-100 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/20 text-[#e0dafc]"
-        } ${isSidebarCollapsed ? "w-20" : "w-64"}`}>
+      <aside className={`h-screen sticky top-0 lg:flex hidden flex-col justify-between shrink-0 select-none border-r transition-all duration-300 z-30 ${
+        theme === "light" ? "bg-white border-slate-200/80 text-slate-900 shadow-sm" : "bg-[#111726] border-slate-800/80 text-slate-200 shadow-xl"
+      } ${isSidebarCollapsed ? "w-20" : "w-64"}`}>
 
         {/* Top Branding / Logo & Collapse button */}
-        <div className="p-4 flex items-center justify-between border-b border-[#5d6fa3]/10 shrink-0">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="lc-brand-mark h-10 w-10 rounded-xl shadow-md shrink-0">
-              <Shield className="h-5.5 w-5.5 text-indigo-700" />
+        <div className="p-4 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="h-10 w-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+              <Shield className="h-5 w-5 text-white" />
             </div>
             {!isSidebarCollapsed && (
               <div className="animate-fade-in shrink-0">
-                <h1 className="font-black text-sm text-inherit tracking-tight flex items-center gap-1">
+                <h1 className="font-extrabold text-sm tracking-tight flex items-center gap-1.5 text-slate-900 dark:text-white">
                   {t("brandName")}
-                  <span className="text-[8px] bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t("brandBadge")}</span>
+                  <span className="text-[9px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider border border-indigo-500/20">
+                    {t("brandBadge")}
+                  </span>
                 </h1>
-                <p className="text-[9px] text-indigo-700/80 dark:text-indigo-300/80 font-medium truncate">{t("secureSession")}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{t("secureSession")}</p>
               </div>
             )}
           </div>
 
           <button
-            type="button"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            aria-expanded={!isSidebarCollapsed}
-            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -332,7 +321,7 @@ export default function App() {
           {/* General Section */}
           <div className="space-y-1">
             {!isSidebarCollapsed && (
-              <h3 className="px-3 text-[9px] font-bold text-[#5d6fa3] uppercase tracking-wider mb-2">General Portal</h3>
+              <h3 className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">General Portal</h3>
             )}
             {[
               { id: "Dashboard", label: t("tabDashboard") || "Dashboard", icon: LayoutDashboard },
@@ -346,17 +335,19 @@ export default function App() {
               return (
                 <button
                   key={item.id}
-                  type="button"
                   onClick={() => setCurrentTab(item.id as Tab)}
-                  aria-current={isSelected ? "page" : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected
-                    ? "lc-active-nav font-bold"
-                    : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
-                    } ${isSidebarCollapsed ? "justify-center" : "justify-start"}`}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer font-semibold relative ${
+                    isSelected
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-bold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white"
+                  } ${isSidebarCollapsed ? "justify-center" : "justify-start"}`}
                   title={item.label}
                 >
-                  <IconComp className="h-5 w-5 shrink-0" />
+                  <IconComp className={`h-4.5 w-4.5 shrink-0 ${isSelected ? "text-white" : "text-slate-500 dark:text-slate-400"}`} />
                   {!isSidebarCollapsed && <span className="text-xs">{item.label}</span>}
+                  {isSelected && !isSidebarCollapsed && (
+                    <span className="absolute right-2.5 h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                  )}
                 </button>
               );
             })}
@@ -365,7 +356,7 @@ export default function App() {
           {/* Safety Handover & Emergency Section */}
           <div className="space-y-1">
             {!isSidebarCollapsed && (
-              <h3 className="px-3 text-[9px] font-bold text-[#5d6fa3] uppercase tracking-wider mb-2">Safety & Handover</h3>
+              <h3 className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Safety & Handover</h3>
             )}
             {[
               { id: "SafetyPanel", label: t("tabSafetyPanel") || "Resilience Settings", icon: Sliders },
@@ -378,17 +369,19 @@ export default function App() {
               return (
                 <button
                   key={item.id}
-                  type="button"
                   onClick={() => setCurrentTab(item.id as Tab)}
-                  aria-current={isSelected ? "page" : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected
-                    ? "lc-active-nav font-bold"
-                    : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
-                    } ${isSidebarCollapsed ? "justify-center" : "justify-start"}`}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer font-semibold relative ${
+                    isSelected
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-bold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white"
+                  } ${isSidebarCollapsed ? "justify-center" : "justify-start"}`}
                   title={item.label}
                 >
-                  <IconComp className="h-5 w-5 shrink-0" />
+                  <IconComp className={`h-4.5 w-4.5 shrink-0 ${isSelected ? "text-white" : "text-slate-500 dark:text-slate-400"}`} />
                   {!isSidebarCollapsed && <span className="text-xs truncate">{item.label}</span>}
+                  {isSelected && !isSidebarCollapsed && (
+                    <span className="absolute right-2.5 h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                  )}
                 </button>
               );
             })}
@@ -396,32 +389,31 @@ export default function App() {
         </div>
 
         {/* Sidebar Footer Controls */}
-        <div className="p-3 border-t border-[#5d6fa3]/10 space-y-3 shrink-0">
+        <div className="p-3 border-t border-slate-200/60 dark:border-slate-800/60 space-y-3 shrink-0">
 
           {/* Quick theme & lang row */}
           {!isSidebarCollapsed ? (
-            <div className="flex items-center justify-between gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+            <div className="flex items-center justify-between gap-1 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl border border-slate-200/40 dark:border-slate-700/40">
               <button
-                type="button"
                 onClick={toggleTheme}
-                className="flex-1 py-1.5 flex items-center justify-center rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-inherit cursor-pointer transition-colors"
+                className="flex-1 py-1.5 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-xs"
                 title={t("themeSelector")}
               >
                 {theme === "light" ? (
-                  <Moon className="h-4 w-4 text-indigo-700" />
+                  <Moon className="h-4 w-4 text-indigo-600" />
                 ) : (
                   <Sun className="h-4 w-4 text-amber-400" />
                 )}
               </button>
-              <div className="relative flex-1 py-1.5 flex items-center justify-center rounded-lg border-l border-[#5d6fa3]/10">
-                <Languages className="h-4 w-4 text-indigo-500 dark:text-indigo-300 shrink-0 mr-1" />
+              <div className="relative flex-1 py-1.5 flex items-center justify-center rounded-lg border-l border-slate-200 dark:border-slate-700">
+                <Languages className="h-4 w-4 text-indigo-500 shrink-0 mr-1" />
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="bg-transparent text-[9px] font-black uppercase text-inherit border-none outline-none cursor-pointer pr-1"
+                  className="bg-transparent text-[10px] font-bold uppercase text-slate-800 dark:text-slate-200 border-none outline-none cursor-pointer pr-1"
                 >
                   {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code} className="text-black bg-white dark:bg-[#1e233a] dark:text-white uppercase font-bold text-[10px]">
+                    <option key={lang.code} value={lang.code} className="text-slate-900 bg-white dark:bg-slate-900 dark:text-white uppercase font-bold text-[10px]">
                       {lang.code}
                     </option>
                   ))}
@@ -431,27 +423,25 @@ export default function App() {
           ) : (
             <div className="flex flex-col gap-2 items-center">
               <button
-                type="button"
                 onClick={toggleTheme}
-                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
+                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-inherit cursor-pointer transition-colors"
                 title={t("themeSelector")}
               >
-                {theme === "light" ? <Moon className="h-4 w-4 text-indigo-700" /> : <Sun className="h-4 w-4 text-amber-400" />}
+                {theme === "light" ? <Moon className="h-4 w-4 text-indigo-600" /> : <Sun className="h-4 w-4 text-amber-400" />}
               </button>
             </div>
           )}
 
           {/* User profile details / logout */}
           {!isSidebarCollapsed ? (
-            <div className="bg-black/5 dark:bg-white/5 p-2 rounded-xl flex items-center justify-between gap-2">
+            <div className="bg-slate-100 dark:bg-slate-800/60 p-2.5 rounded-xl flex items-center justify-between gap-2 border border-slate-200/40 dark:border-slate-700/40">
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold text-inherit truncate leading-tight">{user.name}</p>
-                <p className="text-[9px] text-[#5d6fa3] truncate font-mono">{user.email}</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">{user.name}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-mono mt-0.5">{user.email}</p>
               </div>
               <button
-                type="button"
                 onClick={handleLogout}
-                className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-lg shrink-0 cursor-pointer transition-all"
+                className="p-1.5 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg shrink-0 cursor-pointer transition-all"
                 title={t("logout")}
               >
                 <LogOut className="h-4.5 w-4.5" />
@@ -459,9 +449,8 @@ export default function App() {
             </div>
           ) : (
             <button
-              type="button"
               onClick={handleLogout}
-              className="w-full flex items-center justify-center p-2 text-red-500 hover:bg-red-500/10 rounded-xl cursor-pointer"
+              className="w-full flex items-center justify-center p-2 text-rose-500 hover:bg-rose-500/10 rounded-xl cursor-pointer transition-colors"
               title={t("logout")}
             >
               <LogOut className="h-4.5 w-4.5" />
@@ -470,39 +459,40 @@ export default function App() {
         </div>
       </aside>
 
+
       {/* -------------------------------------------------------------
           2. STICKY MOBILE & TABLET HEADER (< 1024px)
           ------------------------------------------------------------- */}
-      <header className={`lc-topbar lg:hidden flex items-center justify-between sticky top-0 z-30 h-16 px-4 sm:px-6 shadow-md border-b shrink-0 transition-colors duration-300 ${theme === "light" ? "bg-white border-indigo-200 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/30 text-[#e0dafc]"
-        }`}>
+      <header className={`lg:hidden flex items-center justify-between sticky top-0 z-30 h-16 px-4 sm:px-6 shadow-sm border-b shrink-0 transition-colors duration-300 ${
+        theme === "light" ? "bg-white/95 backdrop-blur-md border-slate-200 text-slate-900" : "bg-[#111726]/95 backdrop-blur-md border-slate-800 text-slate-100"
+      }`}>
         <div className="flex items-center gap-3">
           <button
-            type="button"
             onClick={() => setIsMobileDrawerOpen(true)}
-            className="p-2 -ml-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
+            className="p-2 -ml-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
             aria-label="Open menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           </button>
-          <div className="lc-brand-mark h-8 w-8 rounded-lg">
-            <Shield className="h-4.5 w-4.5 text-indigo-700" />
+          <div className="h-8 w-8 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-lg flex items-center justify-center text-white shadow-xs">
+            <Shield className="h-4.5 w-4.5 text-white" />
           </div>
-          <span className="font-black text-sm tracking-tight uppercase text-inherit">
+          <span className="font-extrabold text-sm tracking-tight uppercase text-slate-900 dark:text-white">
             {t("brandName")}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Mobile Theme Toggle */}
-           <button
-             onClick={toggleTheme}
-             className="lc-touch-target p-2 bg-white/5 hover:bg-white/10 dark:bg-white/5 rounded-xl text-inherit cursor-pointer"
+          <button
+            onClick={toggleTheme}
+            className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
             title={t("themeSelector")}
           >
-            {theme === "light" ? <Moon className="h-4 w-4 text-indigo-700" /> : <Sun className="h-4 w-4 text-amber-400" />}
+            {theme === "light" ? <Moon className="h-4 w-4 text-indigo-600" /> : <Sun className="h-4 w-4 text-amber-400" />}
           </button>
-          <span className="inline-flex items-center gap-1 text-[8px] font-black px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 text-emerald-400 uppercase tracking-wider">
-            <span className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="app-badge badge-verified">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             {t("online")}
           </span>
         </div>
@@ -520,7 +510,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileDrawerOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 lg:hidden"
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 lg:hidden"
             />
 
             {/* Slide-out Panel */}
@@ -529,24 +519,24 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className={`fixed top-0 bottom-0 left-0 w-[300px] max-w-[85vw] z-50 flex flex-col justify-between shadow-2xl border-r lg:hidden ${theme === "light" ? "bg-white border-indigo-100 text-indigo-950" : "bg-[#1e233a] border-[#5d6fa3]/20 text-[#e0dafc]"
-                }`}
+              className={`fixed top-0 bottom-0 left-0 w-[300px] max-w-[85vw] z-50 flex flex-col justify-between shadow-2xl border-r lg:hidden ${
+                theme === "light" ? "bg-white border-slate-200 text-slate-900" : "bg-[#111726] border-slate-800 text-slate-100"
+              }`}
             >
               {/* Drawer Top Branding & Close Button */}
-              <div className="p-4 flex items-center justify-between border-b border-[#5d6fa3]/10 shrink-0">
+              <div className="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="lc-brand-mark h-8 w-8 rounded-lg">
-                    <Shield className="h-4 w-4 text-indigo-700" />
+                  <div className="h-8 w-8 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-lg flex items-center justify-center text-white shadow-xs">
+                    <Shield className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-black text-sm text-inherit tracking-tight">{t("brandName")}</h2>
-                    <p className="text-[8px] text-[#5d6fa3] tracking-widest uppercase font-mono">{t("secureSession")}</p>
+                    <h2 className="font-bold text-sm text-slate-900 dark:text-white tracking-tight">{t("brandName")}</h2>
+                    <p className="text-[9px] text-slate-400 tracking-widest uppercase font-mono">{t("secureSession")}</p>
                   </div>
                 </div>
                 <button
-                  type="button"
                   onClick={() => setIsMobileDrawerOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-inherit cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
                   aria-label="Close menu"
                 >
                   <X className="h-5 w-5" />
@@ -558,7 +548,7 @@ export default function App() {
 
                 {/* General Links */}
                 <div className="space-y-1">
-                  <h3 className="px-3 text-[9px] font-bold text-[#5d6fa3] uppercase tracking-wider mb-2">General Portal</h3>
+                  <h3 className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">General Portal</h3>
                   {[
                     { id: "Dashboard", label: t("tabDashboard") || "Dashboard", icon: LayoutDashboard },
                     { id: "Profile", label: t("tabProfile") || "Security Profile", icon: KeyRound },
@@ -569,18 +559,17 @@ export default function App() {
                     const IconComp = item.icon;
                     const isSelected = currentTab === item.id;
                     return (
-                       <button
-                         key={item.id}
-                         type="button"
-                         onClick={() => {
-                           setCurrentTab(item.id as Tab);
-                           setIsMobileDrawerOpen(false);
-                         }}
-                         aria-current={isSelected ? "page" : undefined}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected ? "lc-active-nav font-bold" : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
-                          }`}
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setCurrentTab(item.id as Tab);
+                          setIsMobileDrawerOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer font-semibold ${
+                          isSelected ? "bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                        }`}
                       >
-                        <IconComp className="h-5 w-5 shrink-0" />
+                        <IconComp className={`h-4.5 w-4.5 shrink-0 ${isSelected ? "text-white" : "text-slate-500 dark:text-slate-400"}`} />
                         <span className="text-xs">{item.label}</span>
                       </button>
                     );
@@ -589,7 +578,7 @@ export default function App() {
 
                 {/* Safety Handover & Emergency Links */}
                 <div className="space-y-1">
-                  <h3 className="px-3 text-[9px] font-bold text-[#5d6fa3] uppercase tracking-wider mb-2">Safety & Handover</h3>
+                  <h3 className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Safety & Handover</h3>
                   {[
                     { id: "SafetyPanel", label: t("tabSafetyPanel") || "Resilience Settings", icon: Sliders },
                     { id: "SafetyCheckIn", label: "Proof-of-Life Check-In", icon: CheckCircle },
@@ -599,18 +588,17 @@ export default function App() {
                     const IconComp = item.icon;
                     const isSelected = currentTab === item.id;
                     return (
-                       <button
-                         key={item.id}
-                         type="button"
-                         onClick={() => {
-                           setCurrentTab(item.id as Tab);
-                           setIsMobileDrawerOpen(false);
-                         }}
-                         aria-current={isSelected ? "page" : undefined}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${isSelected ? "lc-active-nav font-bold" : "text-inherit hover:bg-black/5 dark:hover:bg-white/5"
-                          }`}
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setCurrentTab(item.id as Tab);
+                          setIsMobileDrawerOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer font-semibold ${
+                          isSelected ? "bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                        }`}
                       >
-                        <IconComp className="h-5 w-5 shrink-0" />
+                        <IconComp className={`h-4.5 w-4.5 shrink-0 ${isSelected ? "text-white" : "text-slate-500 dark:text-slate-400"}`} />
                         <span className="text-xs">{item.label}</span>
                       </button>
                     );
@@ -619,20 +607,20 @@ export default function App() {
               </div>
 
               {/* Drawer Footer controls */}
-              <div className="p-4 border-t border-[#5d6fa3]/10 space-y-4 shrink-0">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-4 shrink-0">
                 {/* Language list */}
-                <div className="flex items-center justify-between gap-2 bg-black/5 dark:bg-white/5 p-2 rounded-xl">
-                  <span className="text-[10px] uppercase font-bold text-[#5d6fa3] flex items-center gap-1">
-                    <Languages className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
+                <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/40 dark:border-slate-700/40">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <Languages className="h-4 w-4 text-indigo-500" />
                     Language
                   </span>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="bg-transparent text-xs font-bold uppercase text-inherit outline-none cursor-pointer"
+                    className="bg-transparent text-xs font-bold uppercase text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
                   >
                     {languages.map((lang) => (
-                      <option key={lang.code} value={lang.code} className="text-black bg-white dark:bg-[#1e233a] dark:text-white font-bold text-xs">
+                      <option key={lang.code} value={lang.code} className="text-slate-900 bg-white dark:bg-slate-900 dark:text-white font-bold text-xs">
                         {lang.nativeName}
                       </option>
                     ))}
@@ -640,18 +628,17 @@ export default function App() {
                 </div>
 
                 {/* User Info & Logout */}
-                <div className="bg-black/5 dark:bg-white/5 p-3 rounded-xl flex items-center justify-between gap-2">
+                <div className="bg-slate-100 dark:bg-slate-800/60 p-3 rounded-xl flex items-center justify-between gap-2 border border-slate-200/40 dark:border-slate-700/40">
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold truncate leading-tight">{user.name}</p>
-                    <p className="text-[10px] text-[#5d6fa3] truncate font-mono mt-0.5">{user.email}</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">{user.name}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-mono mt-0.5">{user.email}</p>
                   </div>
                   <button
-                    type="button"
                     onClick={() => {
                       setIsMobileDrawerOpen(false);
                       handleLogout();
                     }}
-                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl cursor-pointer transition-colors"
+                    className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-xl cursor-pointer transition-colors"
                     title={t("logout")}
                   >
                     <LogOut className="h-5 w-5" />
@@ -669,33 +656,41 @@ export default function App() {
       <div className="flex-1 flex flex-col min-h-screen min-w-0 relative">
 
         {/* Tab Context Sub-Header */}
-        <div className={`lc-topbar py-3 px-4 sm:px-6 flex items-center justify-between shrink-0 text-xs transition-colors duration-300`}>
-          <h2 className="lc-topbar-title" id="header-tab-title">
-            {currentTab === "Dashboard" && (t("titleDashboard") || "Resilience Timeline")}
-            {currentTab === "Profile" && (t("titleProfile") || "Nominee Access Settings")}
-            {currentTab === "Vault" && (t("titleVault") || "Zero-Knowledge Documents")}
-            {currentTab === "GmailSync" && (t("titleGmailSync") || "Email Directives Analyzer")}
-            {currentTab === "SafetyCheckIn" && (t("titleSafetyCheckIn") || "Proof-of-Life Check-In")}
-            {currentTab === "EmergencyActivation" && (t("titleEmergencyActivation") || "Emergency Handover")}
-            {currentTab === "ReminderAgent" && (t("titleReminderAgent") || "Safety Automation Logs")}
-            {currentTab === "SafetyPanel" && (t("titleSafetyPanel") || "Fail-Safe Protocol Panel")}
-            {currentTab === "NomineeDashboard" && (t("titleNomineeDashboard") || "Nominee Handover Portal")}
-          </h2>
-          <div className="flex items-center gap-2 font-mono text-[10px] text-[#5d6fa3]">
-            <span>{t("appStatus")}</span>
-            <span className="text-green-500 dark:text-green-400 font-bold uppercase">{t("online")}</span>
+        <div className={`py-3.5 px-4 sm:px-8 flex items-center justify-between shrink-0 text-xs border-b transition-colors duration-300 ${
+          theme === "light" ? "bg-white/80 backdrop-blur-md border-slate-200 text-slate-900" : "bg-[#0f1523]/80 backdrop-blur-md border-slate-800 text-slate-100"
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+            <h2 className="font-extrabold uppercase tracking-wider text-slate-900 dark:text-white text-xs sm:text-sm" id="header-tab-title">
+              {currentTab === "Dashboard" && (t("titleDashboard") || "Resilience Timeline")}
+              {currentTab === "Profile" && (t("titleProfile") || "Nominee Access Settings")}
+              {currentTab === "Vault" && (t("titleVault") || "Zero-Knowledge Documents")}
+              {currentTab === "GmailSync" && (t("titleGmailSync") || "Email Directives Analyzer")}
+              {currentTab === "SafetyCheckIn" && (t("titleSafetyCheckIn") || "Proof-of-Life Check-In")}
+              {currentTab === "EmergencyActivation" && (t("titleEmergencyActivation") || "Emergency Handover")}
+              {currentTab === "ReminderAgent" && (t("titleReminderAgent") || "Safety Automation Logs")}
+              {currentTab === "SafetyPanel" && (t("titleSafetyPanel") || "Fail-Safe Protocol Panel")}
+              {currentTab === "NomineeDashboard" && (t("titleNomineeDashboard") || "Nominee Handover Portal")}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="hidden sm:inline">{t("appStatus")}:</span>
+            <span className="app-badge badge-verified">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {t("online")}
+            </span>
           </div>
         </div>
 
         {/* Core Component Window */}
-        <main className="flex-1 p-3 sm:p-5 md:p-6 w-full max-w-7xl mx-auto relative overflow-x-hidden pb-24 lg:pb-6">
+        <main className="flex-1 p-3 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative overflow-hidden pb-28 lg:pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentTab}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.22, ease: "easeInOut" }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
               {currentTab === "Dashboard" && (
                 <LifeGraphDashboard
@@ -742,18 +737,18 @@ export default function App() {
       {/* -------------------------------------------------------------
           5. MOBILE & TABLET COMPACT THUMB-DOCK (< 1024px Only)
           ------------------------------------------------------------- */}
-      <div className="lc-mobile-dock lc-safe-bottom lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] sm:w-[380px] backdrop-blur-md rounded-2xl border shadow-2xl px-4 py-2 z-40 flex items-center justify-between gap-2 animate-fade-in">
+      <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] sm:w-[380px] bg-slate-900/90 dark:bg-[#111726]/90 backdrop-blur-lg rounded-2xl border border-slate-700/60 shadow-2xl px-4 py-2 z-40 flex items-center justify-between gap-2 animate-fade-in text-white">
         {/* Mobile Dashboard thumb link */}
         <button
-          type="button"
           onClick={() => {
             setCurrentTab("Dashboard");
             setShowQuickAccess(false);
           }}
-           className={`lc-touch-target flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${currentTab === "Dashboard"
-            ? "bg-[#e0dafc] text-[#2c3353] shadow-md font-extrabold"
-            : "text-indigo-200/80 hover:bg-white/5"
-            }`}
+          className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+            currentTab === "Dashboard"
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold"
+              : "text-slate-400 hover:text-white hover:bg-white/5"
+          }`}
         >
           <LayoutDashboard className="h-5 w-5 shrink-0" />
           <span className="text-[9px] font-bold">Dashboard</span>
@@ -761,33 +756,32 @@ export default function App() {
 
         {/* Central Plus safety quick actions button */}
         <div className="relative flex items-center justify-center px-1">
-           {showQuickAccess && (
-             <div id="mobile-quick-safety-controls" className="absolute bottom-16 left-1/2 -translate-x-1/2 w-72 bg-[#1e233a] border border-[#5d6fa3]/40 rounded-xl p-3 shadow-2xl z-50 animate-fade-in space-y-2">
-              <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-1.5">
-                <h4 className="text-[10px] font-black text-[#e0dafc] uppercase tracking-wider">Quick Safety Controls</h4>
+          {showQuickAccess && (
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-72 bg-slate-900 border border-slate-700 rounded-2xl p-3 shadow-2xl z-50 animate-fade-in space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Safety Controls</h4>
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {[
-                  { tab: "SafetyCheckIn", title: "Proof-of-Life Check-In", desc: "Signal active presence & reset grace timer", color: "text-emerald-400 bg-emerald-950/40 border-emerald-500/20", icon: CheckCircle },
-                  { tab: "EmergencyActivation", title: "Emergency Handover", desc: "Instantly deploy plans and release vaults", color: "text-red-400 bg-red-950/40 border-red-500/20", icon: ShieldAlert },
-                  { tab: "NomineeDashboard", title: "Nominee Portal View", desc: "Audit live handover visibility", color: "text-indigo-400 bg-indigo-950/40 border-indigo-500/20", icon: Eye }
+                  { tab: "SafetyCheckIn", title: "Proof-of-Life Check-In", desc: "Signal active presence & reset timer", color: "text-emerald-400 bg-emerald-950/30 border-emerald-500/20 hover:bg-emerald-950/50", icon: CheckCircle },
+                  { tab: "EmergencyActivation", title: "Emergency Handover", desc: "Deploy continuity plan & release vault", color: "text-rose-400 bg-rose-950/30 border-rose-500/20 hover:bg-rose-950/50", icon: ShieldAlert },
+                  { tab: "NomineeDashboard", title: "Nominee Portal View", desc: "Audit live handover visibility", color: "text-indigo-400 bg-indigo-950/30 border-indigo-500/20 hover:bg-indigo-950/50", icon: Eye }
                 ].map((act, index) => {
                   const ActIcon = act.icon;
                   return (
                     <button
                       key={index}
-                      type="button"
                       onClick={() => {
                         setCurrentTab(act.tab as Tab);
                         setShowQuickAccess(false);
                       }}
-                      className={`w-full flex items-start gap-2 p-1.5 rounded-lg border text-left transition-all hover:brightness-110 active:scale-[0.99] cursor-pointer ${act.color}`}
+                      className={`w-full flex items-start gap-2.5 p-2 rounded-xl border text-left transition-all cursor-pointer ${act.color}`}
                     >
                       <ActIcon className="h-4 w-4 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-[11px] font-bold text-white leading-none">{act.title}</p>
-                        <p className="text-[8px] text-[#e0dafc]/70 leading-normal mt-0.5">{act.desc}</p>
+                        <p className="text-xs font-bold text-white leading-none">{act.title}</p>
+                        <p className="text-[9px] text-slate-400 leading-normal mt-1">{act.desc}</p>
                       </div>
                     </button>
                   );
@@ -797,11 +791,8 @@ export default function App() {
           )}
 
           <button
-            type="button"
             onClick={() => setShowQuickAccess(!showQuickAccess)}
-            aria-expanded={showQuickAccess}
-            aria-controls="mobile-quick-safety-controls"
-            className={`w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 hover:scale-105 active:scale-95 transition-all text-white flex items-center justify-center shadow-lg border border-indigo-400/40 relative z-50 cursor-pointer ${showQuickAccess ? "rotate-45" : ""}`}
+            className={`w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 hover:scale-105 active:scale-95 transition-all text-white flex items-center justify-center shadow-lg shadow-indigo-600/30 border border-indigo-400/40 relative z-50 cursor-pointer ${showQuickAccess ? "rotate-45" : ""}`}
             title="Quick Controls"
           >
             <Plus className="h-5 w-5" />
@@ -810,13 +801,12 @@ export default function App() {
 
         {/* Mobile AI Chat toggle button */}
         <button
-          type="button"
           onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-          aria-pressed={isChatbotOpen}
-           className={`lc-touch-target flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${isChatbotOpen
-            ? "bg-[#e0dafc] text-[#2c3353] shadow-md font-extrabold"
-            : "text-indigo-200/80 hover:bg-white/5"
-            }`}
+          className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+            isChatbotOpen
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold"
+              : "text-slate-400 hover:text-white hover:bg-white/5"
+          }`}
         >
           <MessageSquare className="h-5 w-5 shrink-0" />
           <span className="text-[9px] font-bold">AI Chat</span>
@@ -838,30 +828,31 @@ export default function App() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className={`fixed bottom-6 right-6 z-[100] max-w-sm w-full bg-slate-900 border ${toast.type === "success" ? "border-emerald-500/30 shadow-emerald-500/10" : "border-rose-500/30 shadow-rose-500/10"
-              } rounded-2xl p-4 shadow-2xl flex items-start gap-3.5 text-white`}
+            className={`fixed bottom-6 right-6 z-[100] max-w-sm w-full bg-slate-900/95 backdrop-blur-md border ${
+              toast.type === "success" ? "border-emerald-500/30 shadow-emerald-500/10" : "border-rose-500/30 shadow-rose-500/10"
+            } rounded-2xl p-4 shadow-2xl flex items-start gap-3.5 text-white`}
           >
-            <div className={`p-2 rounded-xl shrink-0 ${toast.type === "success" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
-              }`}>
+            <div className={`p-2 rounded-xl shrink-0 ${
+              toast.type === "success" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+            }`}>
               <CheckCircle className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-white leading-tight">{toast.message}</h4>
               {toast.details && (
-                <p className="text-[10px] text-slate-400 leading-normal mt-1">{toast.details}</p>
+                <p className="text-[11px] text-slate-400 leading-normal mt-1">{toast.details}</p>
               )}
             </div>
             <button
-              type="button"
               onClick={() => setToast({ message: "", type: null })}
-              className="text-slate-500 hover:text-slate-300 p-1 rounded-lg transition-colors cursor-pointer"
-              aria-label="Dismiss notification"
+              className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
+
 
     </div>
   );

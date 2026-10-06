@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import NomineeLockedDashboard from "./NomineeLockedDashboard";
-import LoadingState from "./LoadingState";
 import { apiFetch } from "../lib/api";
 import { 
   AlertTriangle, 
@@ -93,7 +92,7 @@ export default function NomineeDashboard({
             isCharging: true
           }
         });
-        setAiBrief("Manual Emergency Activation: Primary user Alex Mercer triggered an emergency standdown. Ensure active health insurance policy claims are ready, and notify the local Stanford clinic for scheduled follow-ups.");
+        setAiBrief("Manual Emergency Activation: Primary user Alex Mercer triggered an emergency standdown. Ensure active health insurance policy claims are ready, and notify the local clinic for scheduled follow-ups.");
       } else if (simulationMode === "active_missed") {
         setIsActive(true);
         setPlan({
@@ -108,7 +107,7 @@ export default function NomineeDashboard({
             isCharging: false
           }
         });
-        setAiBrief("Automated Escalation: Standard daily checking threshold has been breached. Geolocation coordinates show last active signal was recorded near Stanford Campus. Check in with sister Sarah Mercer, then coordinate urgent outstanding insurance claims.");
+        setAiBrief("Automated Escalation: Standard daily checking threshold has been breached. Geolocation coordinates show last active signal was recorded near Stanford Campus. Check in with trusted contacts, then coordinate urgent outstanding claims.");
       }
 
     } catch (e) {
@@ -124,8 +123,9 @@ export default function NomineeDashboard({
 
   if (loading) {
     return (
-      <div className="p-4 sm:p-6">
-        <LoadingState label="Decrypting secure handover vaults" />
+      <div className="min-h-[400px] flex flex-col justify-center items-center text-xs text-[var(--text-muted)] font-medium p-8">
+        <Sparkles className="h-8 w-8 text-indigo-400 animate-spin mb-3" />
+        <span>Decrypting secure handover vaults...</span>
       </div>
     );
   }
@@ -134,45 +134,45 @@ export default function NomineeDashboard({
   const renderSimulatorToolbar = () => {
     if (!isOwnerPreview) return null;
     return (
-      <div className="bg-[#1e233a] border border-[#5d6fa3]/30 rounded-2xl p-4 mb-6 space-y-3.5 shadow-inner">
+      <div className="app-card p-5 mb-6 space-y-3.5 bg-gradient-to-r from-[var(--bg-card)] to-indigo-950/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Sliders className="h-4.5 w-4.5 text-indigo-400" />
-            <h4 className="text-xs font-black text-white uppercase tracking-wider">
+            <Sliders className="h-5 w-5 text-indigo-400" />
+            <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">
               Nominee Vault Sandbox Controller
             </h4>
           </div>
-          <span className="text-[10px] bg-indigo-950/40 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-900/40 font-semibold self-start sm:self-auto">
+          <span className="app-badge app-badge-info text-[10px] font-semibold self-start sm:self-auto">
             Interactive Testbed
           </span>
         </div>
 
-        <p className="text-[11px] text-[#5d6fa3] leading-relaxed">
-          Test and preview exactly what your nominated legal contact will see when they access their handover portal. Change the simulation mode below to verify the conditional visibility.
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+          Test and preview exactly what your nominated legal contact will see when they access their handover portal. Change the simulation mode below to verify conditional visibility.
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
           {[
             { id: "database", title: "Live Status", icon: RefreshCwIcon, desc: "Sync with DB state" },
             { id: "locked", title: "Simulate Locked", icon: Lock, desc: "Handover vault hidden" },
             { id: "active_manual", title: "Active (Manual)", icon: Unlock, desc: "Manual emergency state" },
-            { id: "active_missed", title: "Active (Missed Checkin)", icon: AlertTriangle, desc: "Dead-man switch active" }
+            { id: "active_missed", title: "Active (Missed)", icon: AlertTriangle, desc: "Dead-man switch active" }
           ].map((opt) => (
             <button
               type="button"
               key={opt.id}
               onClick={() => setSimulationMode(opt.id as any)}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 simulationMode === opt.id
-                  ? "bg-[#e0dafc] border-[#e0dafc] text-[#2c3353]"
-                  : "bg-[#2c3353]/50 border-[#5d6fa3]/15 text-[#e0dafc]/80 hover:bg-[#2c3353]/90"
+                  ? "bg-indigo-600 border-indigo-500 text-white shadow-md"
+                  : "bg-[var(--bg-app)] border-[var(--border-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
             >
-              <div className="flex items-center gap-1.5 font-bold text-xs">
+              <div className="flex items-center gap-2 font-bold text-xs">
                 <opt.icon className="h-3.5 w-3.5" />
                 <span>{opt.title}</span>
               </div>
-              <span className={`block text-[9px] mt-1 ${simulationMode === opt.id ? "text-[#2c3353]/80" : "text-[#5d6fa3]"}`}>
+              <span className={`block text-[10px] mt-1 ${simulationMode === opt.id ? "text-white/80" : "text-[var(--text-muted)]"}`}>
                 {opt.desc}
               </span>
             </button>
@@ -188,7 +188,7 @@ export default function NomineeDashboard({
 
   if (!isActive) {
     return (
-       <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc]">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {renderSimulatorToolbar()}
         <NomineeLockedDashboard
           ownerUid={ownerUid}
@@ -204,7 +204,6 @@ export default function NomineeDashboard({
 
   // Extract device telemetry from lastKnownLocation payload
   const deviceLoc = plan?.lastKnownLocation;
-  // Use intelligent default fallbacks if properties are not fully populated in the DB yet
   const batteryLevel = deviceLoc?.batteryLevel !== undefined 
     ? deviceLoc.batteryLevel 
     : (plan?.triggeredBy === "missedCheckIn" ? 9 : 82);
@@ -214,113 +213,115 @@ export default function NomineeDashboard({
   const isLowBattery = batteryLevel <= 20;
 
   return (
-    <div className="lc-page-wrap max-w-7xl mx-auto p-4 sm:p-6 text-[#e0dafc] space-y-6">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
       
       {renderSimulatorToolbar()}
 
       {/* Header bar */}
       {!isOwnerPreview && (
-        <header className="lc-panel text-white py-4 px-6 shadow-md flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-[#e0dafc]" />
+        <header className="app-card py-4 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+              <Sparkles className="h-5 w-5" />
+            </div>
             <div>
-              <h1 className="text-sm font-bold">Lighthouse Nominee Resilience Desk</h1>
-              <p className="text-[10px] text-green-400">Authorized Mobile: {nomineePhone}</p>
+              <h1 className="text-sm font-bold text-[var(--text-primary)]">Lighthouse Nominee Resilience Desk</h1>
+              <p className="text-xs text-emerald-400 font-medium">Authorized Mobile: {nomineePhone}</p>
             </div>
           </div>
           <button
             onClick={onLogout}
-            className="bg-[#1e233a] hover:bg-[#1e233a]/80 text-[#e0dafc] border border-[#5d6fa3]/30 font-bold text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
+            className="btn-secondary py-2 px-3.5 text-xs font-bold"
           >
             <LogOut className="h-3.5 w-3.5" />
-            Secure Exit
+            <span>Secure Exit</span>
           </button>
         </header>
       )}
 
       {/* Banner Alert: Missed Checkin Automated Escalation */}
       {plan?.triggeredBy === "missedCheckIn" ? (
-        <div className="bg-red-950/60 text-white p-5 rounded-2xl shadow-lg border border-red-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
-          <div className="space-y-1">
-            <h3 className="font-bold text-sm text-red-400 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
-              CRITICAL ESCALATION: DEAD-MAN SWITCH ACTIVE
+        <div className="bg-gradient-to-r from-rose-950/70 via-rose-900/40 to-slate-900/70 text-white p-6 rounded-2xl shadow-xl border border-rose-500/40 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in backdrop-blur-md">
+          <div className="space-y-1.5">
+            <h3 className="font-extrabold text-sm text-rose-300 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-rose-400 animate-pulse" />
+              <span>CRITICAL ESCALATION: DEAD-MAN SWITCH ACTIVE</span>
             </h3>
-            <p className="text-xs text-gray-300 max-w-2xl leading-relaxed">
-              This digital handover vault was automatically activated because <span className="font-bold text-white">{ownerName}</span> failed to confirm their daily check-in safety window. Standard safety protocols have initiated.
+            <p className="text-xs text-slate-200 max-w-2xl leading-relaxed">
+              This digital handover vault was automatically activated because <strong className="text-white font-bold">{ownerName}</strong> failed to confirm their daily check-in safety window. Emergency handover protocols have initiated.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-semibold shrink-0 bg-red-900/20 p-3 rounded-xl border border-red-800/40">
+          <div className="flex items-center gap-4 text-xs font-semibold shrink-0 bg-rose-950/50 p-4 rounded-xl border border-rose-500/30">
             {plan?.lastKnownLocation ? (
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 <div>
-                  <p className="text-red-400 text-[10px] font-bold uppercase tracking-wider">Last Recorded Coordinates</p>
-                  <p className="text-white flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-4 w-4 text-red-400 animate-pulse" />
-                    {plan.lastKnownLocation.latitude?.toFixed(4)}, {plan.lastKnownLocation.longitude?.toFixed(4)}
+                  <p className="text-rose-300 text-[10px] font-bold uppercase tracking-wider">Last Recorded Coordinates</p>
+                  <p className="text-white flex items-center gap-1.5 mt-1 font-mono text-xs">
+                    <MapPin className="h-4 w-4 text-rose-400 animate-pulse" />
+                    <span>{plan.lastKnownLocation.latitude?.toFixed(4)}, {plan.lastKnownLocation.longitude?.toFixed(4)}</span>
                   </p>
                 </div>
-                <div className="border-l border-red-800/40 pl-4 sm:pl-6">
-                  <p className="text-red-400 text-[10px] font-bold uppercase tracking-wider">Device Power Status</p>
+                <div className="border-l border-rose-800/40 pl-4 sm:pl-6">
+                  <p className="text-rose-300 text-[10px] font-bold uppercase tracking-wider">Device Power Status</p>
                   <p className="text-white flex items-center gap-1.5 mt-1">
                     {isCharging ? (
-                      <BatteryCharging className="h-4 w-4 text-green-400" />
+                      <BatteryCharging className="h-4 w-4 text-emerald-400" />
                     ) : isLowBattery ? (
-                      <BatteryWarning className="h-4 w-4 text-red-500 animate-pulse" />
+                      <BatteryWarning className="h-4 w-4 text-rose-400 animate-pulse" />
                     ) : (
-                      <Battery className="h-4 w-4 text-yellow-400" />
+                      <Battery className="h-4 w-4 text-amber-400" />
                     )}
-                    <span className={isLowBattery && !isCharging ? "text-red-400 font-extrabold animate-pulse" : "text-white"}>
+                    <span className={isLowBattery && !isCharging ? "text-rose-400 font-extrabold animate-pulse" : "text-white"}>
                       {batteryLevel}%
                     </span>
-                    {isCharging && <span className="text-[9px] text-green-400 uppercase tracking-wider font-extrabold ml-1">(Charging)</span>}
-                    {!isCharging && isLowBattery && <span className="text-[9px] text-red-400 uppercase tracking-wider font-extrabold ml-1 animate-pulse">(Low Battery)</span>}
+                    {isCharging && <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-extrabold ml-1">(Charging)</span>}
+                    {!isCharging && isLowBattery && <span className="text-[10px] text-rose-400 uppercase tracking-wider font-extrabold ml-1 animate-pulse">(Low Battery)</span>}
                   </p>
                 </div>
               </div>
             ) : (
-              <p className="text-red-400">Last known GPS coordinate unavailable</p>
+              <p className="text-rose-300 text-xs">Last known GPS coordinate unavailable</p>
             )}
           </div>
         </div>
       ) : (
-        <div className="bg-indigo-950/50 text-white p-5 rounded-2xl shadow-lg border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
-          <div className="space-y-1">
-            <h3 className="font-bold text-sm text-indigo-400 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-indigo-950/70 via-slate-900/60 to-indigo-950/70 text-white p-6 rounded-2xl shadow-xl border border-indigo-500/40 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in backdrop-blur-md">
+          <div className="space-y-1.5">
+            <h3 className="font-extrabold text-sm text-indigo-300 flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 shrink-0 text-indigo-400" />
-              EMERGENCY HANDOVER PORTAL UNLOCKED
+              <span>EMERGENCY HANDOVER PORTAL UNLOCKED</span>
             </h3>
-            <p className="text-xs text-gray-300 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-200 max-w-2xl leading-relaxed">
               This secure cabinet has been unlocked by a direct manual emergency request. You have full read-only access to vital planning checklists, clinical guidelines, and authorized files.
             </p>
           </div>
           {plan?.lastKnownLocation ? (
-            <div className="flex gap-4 sm:gap-6 bg-indigo-900/20 p-3 rounded-xl border border-indigo-800/40 text-xs font-semibold shrink-0">
+            <div className="flex gap-4 sm:gap-6 bg-indigo-950/50 p-4 rounded-xl border border-indigo-500/30 text-xs font-semibold shrink-0">
               <div>
-                <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-wider">Last Sync Coordinates</p>
-                <p className="text-white flex items-center gap-1 mt-1 font-mono">
+                <p className="text-indigo-300 text-[10px] font-bold uppercase tracking-wider">Last Sync Coordinates</p>
+                <p className="text-white flex items-center gap-1.5 mt-1 font-mono">
                   <MapPin className="h-3.5 w-3.5 text-indigo-400" />
-                  {plan.lastKnownLocation.latitude?.toFixed(4)}, {plan.lastKnownLocation.longitude?.toFixed(4)}
+                  <span>{plan.lastKnownLocation.latitude?.toFixed(4)}, {plan.lastKnownLocation.longitude?.toFixed(4)}</span>
                 </p>
               </div>
               <div className="border-l border-indigo-800/40 pl-4 sm:pl-6">
-                <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-wider">Device Power</p>
+                <p className="text-indigo-300 text-[10px] font-bold uppercase tracking-wider">Device Power</p>
                 <p className="text-white flex items-center gap-1.5 mt-1">
                   {isCharging ? (
-                    <BatteryCharging className="h-4 w-4 text-green-400" />
+                    <BatteryCharging className="h-4 w-4 text-emerald-400" />
                   ) : isLowBattery ? (
-                    <BatteryWarning className="h-4 w-4 text-red-500 animate-pulse" />
+                    <BatteryWarning className="h-4 w-4 text-rose-400 animate-pulse" />
                   ) : (
                     <Battery className="h-4 w-4 text-indigo-300" />
                   )}
                   <span>{batteryLevel}%</span>
-                  {isCharging && <span className="text-[9px] text-green-400 uppercase tracking-wider font-bold ml-1">(Charging)</span>}
+                  {isCharging && <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-bold ml-1">(Charging)</span>}
                 </p>
               </div>
             </div>
           ) : (
-            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-900/20 py-2 px-3 rounded-lg border border-indigo-800/30">
+            <div className="app-badge app-badge-info text-xs font-bold uppercase">
               Status: Active Handover
             </div>
           )}
@@ -328,31 +329,31 @@ export default function NomineeDashboard({
       )}
 
       {/* Emergency Status: user name, last active time, current status */}
-       <div className="lc-panel shadow-lg p-6 space-y-4">
-        <h3 className="font-black text-white text-sm flex items-center gap-1.5">
-          <HeartPulse className="h-4.5 w-4.5 text-indigo-300" />
-          Emergency Status
+      <div className="app-card p-6 space-y-4">
+        <h3 className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2 border-b border-[var(--border-card)] pb-3">
+          <HeartPulse className="h-4.5 w-4.5 text-indigo-400" />
+          <span>Emergency Status Overview</span>
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15">
-            <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">User Name</p>
-            <p className="text-sm font-bold text-white mt-1">{ownerName}</p>
+          <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)]">
+            <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">User Name</p>
+            <p className="text-sm font-bold text-[var(--text-primary)] mt-1">{ownerName}</p>
           </div>
-          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15">
-            <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Last Active Time</p>
-            <p className="text-sm font-bold text-white mt-1">
+          <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)]">
+            <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Last Active Time</p>
+            <p className="text-sm font-bold text-[var(--text-primary)] mt-1 font-mono">
               {profile?.lastActiveTimestamp
                 ? new Date(profile.lastActiveTimestamp).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
                 : "—"}
             </p>
           </div>
-          <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15">
-            <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Current Status</p>
-            <p className={`text-sm font-black mt-1 ${profile?.currentStreakStatus === "Safe" ? "text-green-400" : profile?.currentStreakStatus === "Awaiting Confirmation" ? "text-amber-400" : "text-red-400"}`}>
+          <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)]">
+            <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Current Status</p>
+            <p className={`text-sm font-bold mt-1 ${profile?.currentStreakStatus === "Safe" ? "text-emerald-400" : profile?.currentStreakStatus === "Awaiting Confirmation" ? "text-amber-400" : "text-rose-400"}`}>
               {profile?.currentStreakStatus || "Safe"}
             </p>
             {profile?.statusChangedAt && (
-              <p className="text-[9px] text-[#5d6fa3] mt-1">
+              <p className="text-[10px] text-[var(--text-muted)] mt-1">
                 changed {new Date(profile.statusChangedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
               </p>
             )}
@@ -360,27 +361,27 @@ export default function NomineeDashboard({
         </div>
       </div>
 
-      {/* Gemini AI Priority Timeline Overview */}
-       <div className="lc-panel shadow-lg p-6 space-y-3">
-        <h3 className="font-black text-white text-sm flex items-center gap-1.5">
-          <Sparkles className="h-4.5 w-4.5 text-indigo-300" />
-          Priority Action Briefing Narrative
+      {/* Priority Action Briefing Narrative */}
+      <div className="app-card p-6 space-y-3">
+        <h3 className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2">
+          <Sparkles className="h-4.5 w-4.5 text-indigo-400" />
+          <span>Priority Action Briefing Narrative</span>
         </h3>
-        <div className="p-4 bg-[#1e233a] border border-[#5d6fa3]/20 rounded-xl text-xs text-[#e0dafc] leading-relaxed font-medium">
+        <div className="p-4 bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl text-xs sm:text-sm text-[var(--text-primary)]/90 leading-relaxed font-normal shadow-inner">
           {aiBrief}
         </div>
       </div>
 
       {/* Real-time Device Telemetry & Location tracking Panel */}
       {plan?.lastKnownLocation && (
-         <div className="lc-panel shadow-lg p-6 space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between border-b border-[#5d6fa3]/20 pb-3">
-            <h3 className="font-black text-white text-sm flex items-center gap-1.5">
-              <Smartphone className="h-4.5 w-4.5 text-indigo-300" />
-              Owner Mobile Device Status & Telemetry
+        <div className="app-card p-6 space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-3">
+            <h3 className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2">
+              <Smartphone className="h-4.5 w-4.5 text-indigo-400" />
+              <span>Owner Mobile Device Status & Telemetry</span>
             </h3>
-            <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-green-400 tracking-wider">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               Active Signal Feed
             </span>
           </div>
@@ -388,46 +389,46 @@ export default function NomineeDashboard({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Column 1: Power & Battery Status */}
-            <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15 flex items-center gap-4">
-              <div className={`p-3 rounded-lg border ${isLowBattery && !isCharging ? "bg-red-950/40 border-red-900/30 text-red-400 animate-pulse" : "bg-[#2c3353]/60 border-[#5d6fa3]/25 text-[#e0dafc]"}`}>
+            <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)] flex items-center gap-4">
+              <div className={`p-3 rounded-xl border ${isLowBattery && !isCharging ? "bg-rose-500/10 border-rose-500/30 text-rose-400 animate-pulse" : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"}`}>
                 {isCharging ? (
-                  <BatteryCharging className="h-6 w-6 text-green-400" />
+                  <BatteryCharging className="h-6 w-6 text-emerald-400" />
                 ) : isLowBattery ? (
-                  <BatteryWarning className="h-6 w-6 text-red-500 animate-pulse" />
+                  <BatteryWarning className="h-6 w-6 text-rose-400 animate-pulse" />
                 ) : (
-                  <Battery className="h-6 w-6 text-yellow-400" />
+                  <Battery className="h-6 w-6 text-amber-400" />
                 )}
               </div>
               <div>
-                <p className="text-[10px] text-[#5d6fa3] font-bold uppercase tracking-wider">Battery Charge Status</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <p className={`text-base font-black text-white ${isLowBattery && !isCharging ? "text-red-400 animate-pulse font-black" : ""}`}>{batteryLevel}%</p>
+                <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Battery Charge Status</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className={`text-base font-extrabold text-[var(--text-primary)] ${isLowBattery && !isCharging ? "text-rose-400 animate-pulse" : ""}`}>{batteryLevel}%</p>
                   {isCharging ? (
-                    <span className="text-[9px] text-green-400 font-extrabold uppercase bg-green-950/50 px-1.5 py-0.5 rounded border border-green-900/30">Charging</span>
+                    <span className="text-[9px] text-emerald-400 font-bold uppercase bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Charging</span>
                   ) : isLowBattery ? (
-                    <span className="text-[9px] text-red-400 font-extrabold uppercase bg-red-950/50 px-1.5 py-0.5 rounded border border-red-900/30 animate-pulse">Low Battery</span>
+                    <span className="text-[9px] text-rose-400 font-bold uppercase bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 animate-pulse">Low Battery</span>
                   ) : (
-                    <span className="text-[9px] text-[#5d6fa3] font-bold uppercase bg-[#2c3353]/50 px-1.5 py-0.5 rounded border border-[#5d6fa3]/15">On Battery</span>
+                    <span className="text-[9px] text-[var(--text-muted)] font-bold uppercase bg-[var(--bg-card)] px-2 py-0.5 rounded border border-[var(--border-card)]">On Battery</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Column 2: Last Known GPS coordinates */}
-            <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15 flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-[#2c3353]/60 border border-[#5d6fa3]/25 text-indigo-400">
+            <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)] flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                 <MapPin className="h-6 w-6 text-indigo-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] text-[#5d6fa3] font-bold uppercase tracking-wider">Last Sync Location Coordinates</p>
-                <p className="text-xs font-mono font-bold text-white truncate mt-1">
+                <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Last Sync Coordinates</p>
+                <p className="text-xs font-mono font-bold text-[var(--text-primary)] truncate mt-1">
                   {plan.lastKnownLocation.latitude?.toFixed(5)}, {plan.lastKnownLocation.longitude?.toFixed(5)}
                 </p>
                 <a 
                   href={`https://maps.google.com/?q=${plan.lastKnownLocation.latitude},${plan.lastKnownLocation.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[9px] text-indigo-400 hover:underline mt-1.5 flex items-center gap-1 font-bold uppercase tracking-wide cursor-pointer"
+                  className="text-[10px] text-indigo-400 hover:underline mt-1.5 flex items-center gap-1 font-bold uppercase tracking-wide cursor-pointer"
                 >
                   View Sat-Map Grid ↗
                 </a>
@@ -435,17 +436,17 @@ export default function NomineeDashboard({
             </div>
 
             {/* Column 3: Diagnostic Report */}
-            <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/15 flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-[#2c3353]/60 border border-[#5d6fa3]/25 text-[#e0dafc]">
-                <Zap className="h-6 w-6 text-indigo-300" />
+            <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)] flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                <Zap className="h-6 w-6 text-indigo-400" />
               </div>
               <div>
-                <p className="text-[10px] text-[#5d6fa3] font-bold uppercase tracking-wider">Device Power Diagnostic</p>
-                <p className="text-xs font-semibold text-[#e0dafc] mt-1 leading-normal">
+                <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Device Power Diagnostic</p>
+                <p className="text-xs font-semibold text-[var(--text-primary)] mt-1 leading-normal">
                   {isCharging ? (
-                    <span className="text-green-400 font-medium">Device plugged in and receiving power.</span>
+                    <span className="text-emerald-400 font-medium">Device plugged in and receiving power.</span>
                   ) : isLowBattery ? (
-                    <span className="text-red-400 font-extrabold animate-pulse">CRITICAL: Device unpowered and near depletion.</span>
+                    <span className="text-rose-400 font-bold animate-pulse">CRITICAL: Device unpowered and near depletion.</span>
                   ) : (
                     <span>Normal active state. Connected to battery power.</span>
                   )}
@@ -458,29 +459,29 @@ export default function NomineeDashboard({
       )}
 
       {/* Action Panels Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Panel 1: Critical bills & pending EMIs */}
-         <div className="lc-panel shadow-lg p-6 space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-3">
-            <Calendar className="h-4.5 w-4.5 text-red-400" />
-            <h3 className="font-bold text-white text-sm">
+        <div className="app-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-[var(--border-card)] pb-3">
+            <Calendar className="h-4.5 w-4.5 text-rose-400" />
+            <h3 className="font-bold text-[var(--text-primary)] text-sm">
               Critical EMIs & Outstanding Bills
             </h3>
           </div>
 
           <div className="space-y-3">
             {!Array.isArray(plan?.pendingBills) || plan.pendingBills.length === 0 ? (
-              <div className="text-center py-8 text-[#5d6fa3] text-xs italic">
+              <div className="text-center py-8 text-[var(--text-muted)] text-xs italic bg-[var(--bg-app)] rounded-2xl border border-[var(--border-card)]">
                 No approaching liabilities or pending EMIs on schedule.
               </div>
             ) : (
               plan.pendingBills.map((b: string, idx: number) => (
-                <div key={idx} className="p-3 bg-red-950/20 border border-red-900/30 rounded-xl text-xs">
-                  <p className="font-bold text-white">{b}</p>
-                  <p className="text-[10px] text-[#5d6fa3] mt-1.5 flex items-center gap-1 font-medium">
-                    <Info className="h-3 w-3 text-red-400" />
-                    Status: Outstanding / Pay Immediately
+                <div key={idx} className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-xs space-y-1">
+                  <p className="font-bold text-[var(--text-primary)]">{b}</p>
+                  <p className="text-[10px] text-rose-400 flex items-center gap-1 font-semibold">
+                    <Info className="h-3 w-3 text-rose-400" />
+                    <span>Status: Outstanding / Pay Immediately</span>
                   </p>
                 </div>
               ))
@@ -489,37 +490,37 @@ export default function NomineeDashboard({
         </div>
 
         {/* Panel 2: Secure released documents */}
-         <div className="lc-panel shadow-lg p-6 space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-3">
+        <div className="app-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-[var(--border-card)] pb-3">
             <FileText className="h-4.5 w-4.5 text-indigo-400" />
-            <h3 className="font-bold text-white text-sm">
+            <h3 className="font-bold text-[var(--text-primary)] text-sm">
               Released Secure Vault Documents
             </h3>
           </div>
 
           <div className="space-y-3">
             {securedDocs.length === 0 ? (
-              <div className="text-center py-8 text-[#5d6fa3] text-xs italic">
+              <div className="text-center py-8 text-[var(--text-muted)] text-xs italic bg-[var(--bg-app)] rounded-2xl border border-[var(--border-card)]">
                 No documents were authorized with "Nominee Access" privileges.
               </div>
             ) : (
               securedDocs.map((doc) => (
                 <div 
                   key={doc.id} 
-                  className="p-3 bg-[#1e233a] border border-[#5d6fa3]/20 rounded-xl flex items-center justify-between text-xs hover:border-[#5d6fa3]/40 transition-all group"
+                  className="p-3.5 bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl flex items-center justify-between text-xs hover:border-indigo-500/40 transition-all group"
                 >
                   <div className="min-w-0 pr-2">
-                    <p className="font-bold text-white truncate group-hover:text-[#e0dafc] transition-colors">{doc.fileName}</p>
-                    <p className="text-[10px] text-[#5d6fa3] uppercase mt-0.5 font-bold tracking-wide">{doc.documentType}</p>
+                    <p className="font-bold text-[var(--text-primary)] truncate group-hover:text-indigo-400 transition-colors">{doc.fileName}</p>
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase mt-0.5 font-bold">{doc.documentType}</p>
                   </div>
                   <a
                     href={doc.fileUrl}
                     download
-                    className="p-1.5 bg-[#2c3353] hover:bg-indigo-950/40 text-[#e0dafc] border border-[#5d6fa3]/30 rounded-lg shadow-sm transition-all shrink-0 cursor-pointer"
+                    className="btn-secondary p-2 rounded-xl shrink-0 cursor-pointer"
                     title="Download document copy"
                     referrerPolicy="no-referrer"
                   >
-                    <Download className="h-3.5 w-3.5 text-[#e0dafc]" />
+                    <Download className="h-3.5 w-3.5" />
                   </a>
                 </div>
               ))
@@ -528,39 +529,39 @@ export default function NomineeDashboard({
         </div>
 
         {/* Panel 3: Medical Alert info & responders */}
-        <div className="bg-[#2c3353] rounded-2xl border border-[#5d6fa3]/30 shadow-lg p-6 space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#5d6fa3]/20 pb-3">
-            <HeartPulse className="h-4.5 w-4.5 text-green-400" />
-            <h3 className="font-bold text-white text-sm">
+        <div className="app-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-[var(--border-card)] pb-3">
+            <HeartPulse className="h-4.5 w-4.5 text-emerald-400" />
+            <h3 className="font-bold text-[var(--text-primary)] text-sm">
               Clinical Profile & Urgent Contacts
             </h3>
           </div>
 
           <div className="space-y-4 text-xs">
-            <div className="bg-[#1e233a] p-4 rounded-xl border border-[#5d6fa3]/20 space-y-2">
-              <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Owner Medical Warnings</p>
-              <p className="text-[#e0dafc] leading-relaxed font-semibold">
+            <div className="bg-[var(--bg-app)] p-4 rounded-2xl border border-[var(--border-card)] space-y-2">
+              <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Owner Medical Directives</p>
+              <p className="text-[var(--text-primary)] leading-relaxed font-semibold">
                 {profile?.medicalInfo || "No critical respiratory or allergy history reported on registry."}
               </p>
-              <div className="flex items-center gap-4 text-[10px] pt-2.5 border-t border-[#5d6fa3]/10 mt-1.5 text-[#5d6fa3] font-medium">
-                <p>Age: <span className="font-bold text-[#e0dafc]">{profile?.age || "30"}</span></p>
-                <p>Blood Group: <span className="font-bold text-[#e0dafc]">{profile?.bloodGroup || "O+"}</span></p>
+              <div className="flex items-center gap-4 text-[11px] pt-2.5 border-t border-[var(--border-card)] mt-1.5 text-[var(--text-muted)]">
+                <p>Age: <strong className="text-[var(--text-primary)]">{profile?.age || "30"}</strong></p>
+                <p>Blood Group: <strong className="text-[var(--text-primary)]">{profile?.bloodGroup || "O+"}</strong></p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-[10px] uppercase font-bold text-[#5d6fa3] tracking-wider">Designated Emergency Contacts</p>
-              <div className="p-3 bg-[#1e233a] border border-[#5d6fa3]/15 rounded-xl flex items-center justify-between">
+              <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Designated Emergency Contacts</p>
+              <div className="p-3.5 bg-[var(--bg-app)] border border-[var(--border-card)] rounded-2xl flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-white">{profile?.emergencyContactName || "Not configured"}</p>
-                  <p className="text-[10px] text-[#5d6fa3] mt-0.5 font-medium">Spouse / Main Coordinator</p>
+                  <p className="font-bold text-[var(--text-primary)]">{profile?.emergencyContactName || "Not configured"}</p>
+                  <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Spouse / Main Coordinator</p>
                 </div>
                 {profile?.emergencyContactPhone && (
                   <a
                     href={`tel:${profile.emergencyContactPhone}`}
-                    className="p-2 bg-[#2c3353] hover:bg-[#1e233a] text-[#e0dafc] border border-[#5d6fa3]/25 rounded-lg transition-all"
+                    className="btn-secondary p-2.5 rounded-xl transition-all cursor-pointer"
                   >
-                    <Phone className="h-3.5 w-3.5 text-[#e0dafc]" />
+                    <Phone className="h-3.5 w-3.5 text-indigo-400" />
                   </a>
                 )}
               </div>
